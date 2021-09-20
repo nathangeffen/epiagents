@@ -1,0 +1,91 @@
+.epi-simulation {
+    border: 1px solid lightgray;
+    border-radius:3px;
+    padding: 4px;
+}
+
+.epi-canvas {
+    resizable: both;
+}
+
+.epi-button {
+	background-color:#44c767;
+	border-radius:3px;
+	border:1px solid #18ab29;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+        width: 100px;
+	font-family:Arial;
+	font-size:19px;
+	font-weight:bold;
+	padding:16px 31px;
+	text-decoration:none;
+	text-shadow:0px 1px 2px #2f6627;
+        margin: 6px;
+}
+
+.epi-button:hover {
+	background-color:#5cbf2a;
+}
+
+.epi-button:disabled {
+	background-color:gray;
+}
+
+
+.epi-button:active {
+	position:relative;
+	top:1px;
+}
+
+.epi-chart { background: #eee;}
+
+.epi-stats, .epi-model-world {
+    width: 43%;
+    height: 250px;
+    overflow: auto;
+    padding: 20px;
+    border: 1px solid black;
+    border-radius: 5px;
+    resize: both;
+    display: inline-block;
+    margin: 6px 12px 6px 0;
+}
+
+.epi-stats {
+    margin: 6px 0px 6px 12px;
+}
+
+.epi-stats p {
+    margin-bottom: 12px;
+}
+
+.epi-model-name {
+    margin-bottom: 12px;
+}
+
+.epi-model-description {
+    margin-bottom: 12px;
+    font-size: 110%;
+}
+.epi-entry {
+    display: grid;
+    grid-template-columns: 200px 30px 30px;
+    width: 300px;
+}
+
+.epi-iteration-head {
+    font-size: 120%;
+    font-weight: bold;
+}
+
+.epi-value {
+    text-align: right;
+    color: green;
+}
+
+.epi-slider {
+    margin-left: 12px;
+    width: 40px;
+}

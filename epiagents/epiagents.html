@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Vaccine strategy comparison</title>
+        <style>
+    	 * { padding: 0; margin: 0; }
+         body {
+             max-width: 800px;
+             margin: 20px auto 20px auto;
+             font-size: 16px;
+         }
+        </style>
+        <link rel="stylesheet" href="epiagents.css">
+    </head>
+    <body>
+        <h1>Comparison of vaccine strategies</h1>
+
+        <div id="vaccine-strategy-1" class="epi-simulation"></div>
+
+        <!-- <div id="vaccine-strategy-2"></div>
+             <div id="stats-2">
+             </div>
+             <button id="play-2">Play</button> -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="epiagents.js"></script>
+        <script>
+         let sim_1 = EpiAgentsUI.create("vaccine-strategy-1", {
+             name: "Test model",
+             description: "Model used for testing EpiAgents",
+             num_agents: 2000,
+             interval: 0
+         });
+         sim_1.clear();
+
+         sim_1.setInitialRatios([
+             ["SUSCEPTIBLE", 990],
+             ["INFECTED_EXPOSED", 10]
+         ]);
+
+         sim_1.setInfectiousness("INFECTED_SYMPTOMATIC", 1.0);
+
+         sim_1.setTransitions([
+             ["INFECTED_EXPOSED", "INFECTED_SYMPTOMATIC", 1.0],
+             ["INFECTED_SYMPTOMATIC", "RECOVERED", 0.01]
+         ]);
+
+         sim_1.init();
+         /* let sim_2 = EpiAgents.create(document.
+          * getElementById("vaccine-strategy-2"), {
+          *     width: 700,
+          *     height: 500,
+          *     num_agents: 2000,
+          *     max_iterations: 200,
+          *     extra_during_events: [function(simulation) {
+          *         updateStats("stats-2", simulation);
+          *     }],
+          *     extra_after_events: [function(simulation) {
+          *         document.getElementById("play-2").textContent = "Play";
+          *     }],
+          * });
+          * document.getElementById("play-2").addEventListener("click", function (e) {
+          *     if (sim_2.state == EpiAgents.SimulationState.PAUSED) {
+          *         e.target.textContent = "Pause";
+          *         sim_2.play();
+          *     } else {
+          *         e.target.textContent = "Play";
+             *         sim_2.pause();
+          *     }
+          * }); */
+        </script>
+    </body>
+</html>
