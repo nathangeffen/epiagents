@@ -586,9 +586,14 @@
                         "<span class='epi-entry'>" +
                         "<span class='epi-description'>" +
                         stages[stage].description +
-                        "</span><span class='epi-value' contenteditable=true>" +
+                        "</span><span id='" + stage + "-infectiousness' " +
+                        "class='epi-value' contenteditable=true>" +
                         stages[stage].infectiousness.toFixed(2) +
-                        "</span></span>"
+                        "</span>" +
+                        "<input id='" + stage + "-infectiousness-slider' " +
+                        "type='range' min='0' max='1.0' step='0.1' value='" +
+                        stages[stage].infectiousness.toFixed(2) +
+                        "' class='epi-slider'></span>"
                 }
             }
 
@@ -603,11 +608,15 @@
                             "<span class='epi-description'>" +
                             stages[from_stage].description + " - " +
                             stages[to_stage].description +
-                            "</span><span class='epi-value' contenteditable=true>" +
+                            "</span><span id='" + from_stage + "-" + to_stage +
+                            "-transition' " +
+                            "class='epi-value' contenteditable=true>" +
                             stages[from_stage].next_stage_prob[to_stage].
                             toFixed(2) +
                             "</span>" +
-                            "<input type='range' min='0' max='1.0' step='0.1' " +
+                            "<input id='" + from_stage + "-" + to_stage +
+                            "-transition-slider' type='range' " +
+                            "min='0' max='1.0' step='0.1' " +
                             "value='" +
                             stages[from_stage].next_stage_prob[to_stage].
                             toFixed(2) +
@@ -737,10 +746,10 @@
         step.classList.add('epi-button');
         div.append(step);
 
-        let save = document.createElement("button");
-        save.textContent = "Save";
-        save.classList.add('epi-button');
-        div.append(save);
+        // let save = document.createElement("button");
+        // save.textContent = "Save";
+        // save.classList.add('epi-button');
+        // div.append(save);
 
         ui_elements[div_id] = {
             'simulation': simulation,
@@ -749,14 +758,14 @@
             'modelWorld': modelWorld,
             'play': play,
             'step': step,
-            'save': save
+         //   'save': save
         };
     }
 
     function assignEvents(div_id, sim) {
         let play = ui_elements[div_id].play;
         let step = ui_elements[div_id].step;
-        let save = ui_elements[div_id].save;
+        //let save = ui_elements[div_id].save;
         play.addEventListener("click", function (e) {
             if (sim.state == EpiAgents.SimulationState.PAUSED) {
                 e.target.textContent = "Pause";
@@ -774,9 +783,9 @@
                 sim.step();
             }
         });
-        save.addEventListener("click", function(e) {
-            EpiAgents.save(sim);
-        });
+        //save.addEventListener("click", function(e) {
+        //    EpiAgents.save(sim);
+        //});
 
         sim.modelWorld(ui_elements[div_id].modelWorld);
     }
