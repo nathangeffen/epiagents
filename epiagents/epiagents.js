@@ -1,5 +1,9 @@
 /*
+  EpiAgents: simulating infectious diseases.
+
   Author: Nathan Geffen
+
+  LICENSE
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -15,6 +19,22 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+/*
+  There are two classes: EpiAgents and EpiAgentsUI.
+
+  The EpiAgents class is responsible for executing the simulation (or model
+  world) that consists of agents moving about in a 2-d plane, knocking into each
+  other and, sometimes, becoming infected. The simulation is continuously
+  iterated. On each iteration agents may also change states, e.g. recover, get
+  vaccinated, isolate etc.
+
+  The EpiAgentUI class is responsible for the browser user interface. It is
+  responsible for iteratively drawing the canvas on which the simulation takes
+  place, drawing the accompanying chart, providing a form for users to change
+  the model parameters, and printing the model output.
+ */
+
+
 "use strict";
 
 (function (EpiAgents) {
@@ -25,8 +45,8 @@
             color: "rgb(0, 0, 255)",
             infected: false,
             infectiousness: 0.0,
-            initial_ratio: 95,
-            next_stage_prob: {
+            initialRatio: 95,
+            nextStageProb: {
                 VACCINATED: 0.0025
             }
         },
@@ -35,8 +55,8 @@
             color: "rgb(200, 0, 0)",
             infected: true,
             infectiousness: 0.0,
-            initial_ratio: 3,
-            next_stage_prob: {
+            initialRatio: 3,
+            nextStageProb: {
                 INFECTED_ASYMPTOMATIC: 0.33
             }
         },
@@ -45,8 +65,8 @@
             color: "rgb(210, 0, 0)",
             infected: true,
             infectiousness: 0.1,
-            initial_ratio: 1,
-            next_stage_prob: {
+            initialRatio: 1,
+            nextStageProb: {
                 INFECTED_SYMPTOMATIC: 0.33,
                 RECOVERED: 0.33
             }
@@ -56,8 +76,20 @@
             color: "rgb(220, 0, 0)",
             infected: true,
             infectiousness: 0.5,
-            initial_ratio: 1,
-            next_stage_prob: {
+            initialRatio: 1,
+            nextStageProb: {
+                INFECTED_ISOLATED: 0.1,
+                INFECTED_HOSPITAL: 0.1,
+                RECOVERED: 0.1
+            }
+        },
+        INFECTED_ISOLATED: {
+            description: "symptomatic",
+            color: "rgb(225, 0, 0)",
+            infected: true,
+            infectiousness: 0.001,
+            initialRatio: 0,
+            nextStageProb: {
                 INFECTED_HOSPITAL: 0.1,
                 RECOVERED: 0.1
             }
@@ -68,21 +100,32 @@
             infected: true,
             infected: true,
             infectiousness: 0.5,
-            initial_ratio: 0,
-            next_stage_prob: {
+            initialRatio: 0,
+            nextStageProb: {
                 INFECTED_ICU: 0.1,
                 RECOVERED: 0.1
             }
         },
         INFECTED_ICU: {
-            description: "intensive care",
+            description: "high care",
             color: "rgb(240, 0, 0)",
             infected: true,
             infectiousness: 0.5,
-            initial_ratio: 0,
-            next_stage_prob: {
+            initialRatio: 0,
+            nextStageProb: {
                 DEAD: 0.5,
                 RECOVERED: 0.1
+            }
+        },
+        TREATED: {
+            description: "treated",
+            color: "rgb(0, 150, 40)",
+            infected: true,
+            infectiousness: 0.001,
+            initialRatio: 0,
+            nextStageProb: {
+                DEAD: 0.0001,
+                INFECTED_ASYMPTOMATIC: 0.001
             }
         },
         RECOVERED: {
@@ -90,8 +133,8 @@
             color: "rgb(0, 150, 0)",
             infected: false,
             infectiousness: 0.0,
-            initial_ratio: 0,
-            next_stage_prob: {
+            initialRatio: 0,
+            nextStageProb: {
                 SUSCEPTIBLE: 0.001,
                 VACCINATED: 0.001
             }
@@ -101,8 +144,8 @@
             color: "rgb(0, 255, 0)",
             infected: false,
             infectiousness: 0.0,
-            initial_ratio: 0,
-            next_stage_prob: {
+            initialRatio: 0,
+            nextStageProb: {
                 SUSCEPTIBLE: 0.0005
             }
         },
@@ -111,8 +154,8 @@
             color: "rgb(0, 0, 0)",
             infected: false,
             infectiousness: 0.0,
-            initial_ratio: 0,
-            next_stage_prob: {}
+            initialRatio: 0,
+            nextStageProb: {}
         },
     };
 
@@ -137,6 +180,37 @@
     function round(value, places=0) {
         let val = value * Math.pow(10, places);
         return Math.round(val) / Math.pow(10, places);
+    }
+
+    /* From
+       https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
+     */
+    function gaussian(mean, stdev) {
+        var y2;
+        var use_last = false;
+        return function() {
+            var y1;
+            if (use_last) {
+                y1 = y2;
+                use_last = false;
+            } else {
+                var x1, x2, w;
+                do {
+        x1 = 2.0 * Math.random() - 1.0;
+                    x2 = 2.0 * Math.random() - 1.0;
+                    w = x1 * x1 + x2 * x2;
+                } while (w >= 1.0);
+                w = Math.sqrt((-2.0 * Math.log(w)) / w);
+                y1 = x1 * w;
+                y2 = x2 * w;
+                use_last = true;
+            }
+
+            var retval = mean + stdev * y1;
+            if (retval > 0)
+                return retval;
+            return -retval;
+        }
     }
 
     function shuffleArray(arr) {
@@ -205,11 +279,11 @@
         for (let agent of simulation.agents) {
             for (const stage in simulation.stages) {
                 if (simulation.stages.hasOwnProperty(stage) &&
-                   agent.stage === simulation.stages[stage]) {
+                    agent.stage === simulation.stages[stage]) {
                     for (const next_stage in
-                         simulation.stages[stage].next_stage_prob) {
+                         simulation.stages[stage].nextStageProb) {
                         const risk = simulation.stages[stage].
-                              next_stage_prob[next_stage];
+                              nextStageProb[next_stage];
                         if (Math.random() < risk) {
                             agent.stage = simulation.stages[next_stage];
                         }
@@ -220,7 +294,7 @@
     }
 
 
-    function eventCalcStats(simulation) {
+    function eventCalcResults(simulation) {
         for (const key in simulation.counters) {
             if (key.substr(0, 6) !== "total_")
                 simulation.counters[key] = 0;
@@ -241,13 +315,16 @@
     class Agent {
         constructor(simulation) {
             this.simulation = simulation;
-            this.radius = simulation.agent_radius;
+            this.radius = simulation.agentRadius;
             this.id = simulation.agent_counter;
             simulation.agent_counter++;
             this.speed = simulation.agent_speed;
             this.stage = simulation.stages.SUSCEPTIBLE;
             this.x = Math.random() * simulation.width;
             this.y = Math.random() * simulation.height;
+            this.movementRandomness = gaussian(
+                simulation.movementRandomnessMean,
+                simulation.movementRandomnessStdev);
             this.setDirection();
         }
 
@@ -277,6 +354,15 @@
             for (let agent of this.simulation.agents) {
                 if (agent.id !== this.id) {
                     if (detectCollision(this.simulation, this, agent)) {
+                        if (this.simulation.elasticCollisions &&
+                            this.id < agent.id) {
+                            const dx = this.dx;
+                            this.dx = agent.dx;
+                            agent.dx = dx;
+                            const dy = this.dy;
+                            this.dy = agent.dy;
+                            agent.dy = dy;
+                        }
                         this.infectAgent(agent);
                     }
                 }
@@ -288,16 +374,16 @@
                 this.x = this.y = -1000;
                 return;
             }
-            if (Math.random() < 0.1) {
+            if (Math.random() < this.movement_randomness) {
                 this.setDirection();
             }
 
-            if (this.x + this.dx > this.simulation.width - this.radius ||
-                this.x + this.dx < this.radius) {
+            if (this.x + this.dx >= this.simulation.width - this.radius ||
+                this.x + this.dx <= this.radius) {
                 this.dx = -this.dx;
             }
-            if (this.y + this.dy > this.simulation.height - this.radius ||
-                this.y + this.dy < this.radius) {
+            if (this.y + this.dy >= this.simulation.height - this.radius ||
+                this.y + this.dy <= this.radius) {
                 this.dy = -this.dy;
             }
 
@@ -307,16 +393,12 @@
             this.y += this.dy;
         }
 
-        draw() {
-            if (this.stage !== this.simulation.stages.DEAD) {
-                let ctx = this.simulation.ctx;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
-                ctx.fillStyle = this.stage.color;
-                ctx.fill();
-                ctx.closePath();
+        squeezeLeft() {
+            if (this.x >= this.simulation.width) {
+                this.x = this.simulation.width - 1;
             }
         }
+
     };
 
     class Simulation {
@@ -325,16 +407,17 @@
             this.name = options.name || null;
             this.description = options.description || null;
             this.div = options.div || null;
-            this.canvas = options.canvas || null;
-            this.ctx = null,
             this.width = options.width || 790;
             this.height = options.height || 500;
             this.state = SimulationState.PAUSED;
             this.interval = options.interval || 10;
             this.timer = undefined;
-            this.num_agents = options.num_agents || 2000;
-            this.agent_radius = options.agent_radius || 3;
-            this.agent_counter = options.agent_counter || 0;
+            this.numAgents = options.numAgents || 2000;
+            this.agentRadius = options.agentRadius || 3;
+            this.agentCounter = options.agentCounter || 0;
+            this.movementRandomnessMean = options.movementRandomnessMean || 0.1;
+            this.movementRandomnessStdev = options.movementRandomnessStdev || 0.0;
+            this.elasticCollisions = false || options.elasticCollisions;
             this.agent_speed = options.agent_speed || 1.0;
             this.agents = [];
 
@@ -346,16 +429,16 @@
             this.before_events = options.before_events ||
                 [].concat(this.extra_before_events);
             this.during_events = options.during_events ||
-                [eventAdvanceAgents, eventMoveAgents, eventCalcStats].
+                [eventAdvanceAgents, eventMoveAgents, eventCalcResults].
                 concat(this.extra_during_events) || options.during_events;
             this.after_events = options.after_events ||
-                [eventCalcStats].concat(this.extra_after_events);
+                [eventCalcResults].concat(this.extra_after_events);
 
             this.initial_exposed = 10 || options.initial_exposed;
             this.iteration = 0;
             this.max_iterations = options.max_iterations || 0;
             this.stages = JSON.parse(JSON.stringify(SimulationStages))
-                || options.simulation_stages;
+                || options.simulationStages;
 
             this.asymptomatic_infectiousness  = 0.1 ||
                 options.asymptomatic_infectiousness;
@@ -375,7 +458,7 @@
 
         setInitialRatio(stage, val) {
             if (stage in this.stages) {
-                this.stages[stage].initial_ratio = val;
+                this.stages[stage].initialRatio = val;
             } else {
                 throw "Error in setInitialRatio. Unknown stage: " + stage;
             }
@@ -386,9 +469,11 @@
                 this.setInitialRatio(parms[0], parms[1]);
             }
         }
+
         clearInitialRatio(stage) {
             this.setInitialRatio(stage, 0);
         }
+
         clearAllInitialRatios() {
             for (let stage in this.stages)
                 this.clearInitialRatio(stage);
@@ -406,9 +491,11 @@
                 this.setInfectiousness(parms[0], parms[1]);
             }
         }
+
         clearInfectiousness(stage) {
             this.setInfectiousness(stage, 0.0);
         }
+
         clearAllInfectiousness(stage) {
             for (let stage in this.stages)
                 this.clearInfectiousness(stage);
@@ -421,16 +508,19 @@
             if (!to_stage in this.stages) {
                 throw "Error in setTransitions. Unknown to stage: " + to_stage;
             }
-            this.stages[from_stage].next_stage_prob[to_stage] = val;
+            this.stages[from_stage].nextStageProb[to_stage] = val;
         }
+
         setTransitions(arr) {
             for (const parms of arr) {
                 this.setTransition(parms[0], parms[1], parms[2]);
             }
         }
+
         clearTransitions(stage) {
-            this.stages[stage].next_stage_prob = {};
+            this.stages[stage].nextStageProb = {};
         }
+
         clearAllTransitions() {
             for (let stage in this.stages)
                 this.clearTransitions(stage);
@@ -446,23 +536,14 @@
             for (let event of events) event(this);
         }
 
-        drawCanvas() {
-            this.ctx.clearRect(0, 0, this.width, this.height);
-            for (let agent of this.agents) {
-                agent.draw();
-            }
-        }
-
         beforeIteration() {
             this.event_stage = EventStage.BEFORE;
             this.runEvents(this.before_events);
-            this.drawCanvas();
         };
 
         oneIteration() {
             this.event_stage = EventStage.DURING;
             this.runEvents(this.during_events);
-            this.drawCanvas();
             ++this.iteration;
             if (this.max_iterations > 0 &&
                 this.iteration % this.max_iterations === 0) {
@@ -473,7 +554,6 @@
         afterIteration() {
             this.event_stage = EventStage.AFTER;
             this.runEvents(this.after_events);
-            this.drawCanvas();
         };
 
         step() {
@@ -509,18 +589,8 @@
             this.afterIteration();
         }
 
-        setupSimulationCanvas() {
-            if (this.canvas === null) {
-                this.canvas = document.createElement("CANVAS");
-                this.div.appendChild(this.canvas);
-                this.canvas.width = this.width;
-                this.canvas.height = this.height;
-                this.ctx = this.canvas.getContext("2d");
-            }
-        }
-
-        generateAgents(num_agents) {
-            for (let i = 0; i < num_agents; i++) {
+        generateAgents(numAgents) {
+            for (let i = 0; i < numAgents; i++) {
                 this.agents.push(new Agent(this));
             }
         }
@@ -528,11 +598,11 @@
         calcInitialRatios() {
             let total = 0.0;
             for (const stage in this.stages) {
-                total += this.stages[stage].initial_ratio;
+                total += this.stages[stage].initialRatio;
             }
             let cumulative = 0.0;
             for (let stage in this.stages) {
-                let r = this.stages[stage].initial_ratio / total + cumulative;
+                let r = this.stages[stage].initialRatio / total + cumulative;
                 this.stages[stage]["initial_proportion"] = r;
                 cumulative = r;
             }
@@ -554,90 +624,16 @@
 
         createAgents() {
             this.agents = [];
-            this.generateAgents(this.num_agents);
+            this.generateAgents(this.numAgents);
         }
 
         initialize() {
             this.createAgents();
             this.calcInitialRatios();
             this.calcInitialStages();
-            eventCalcStats(this);
-            this.drawCanvas();
+            eventCalcResults(this);
         }
 
-        modelWorld(elem) {
-            let output = "";
-            if (this.name)
-                output += "<h2 class='epi-model-name' contenteditable=true>" +
-                this.name + "</h2>";
-            if (this.description)
-                output += "<p class='epi-model-description' contenteditable=true>" +
-                this.description +
-                "<p>";
-            output+=
-                "<p>" + "Number of agents: " + this.num_agents + "</p>";
-
-            // Infectiousness
-            output+= "<h2 class='epi-model-infectiousness'>Infectiousness</h2>"
-            const stages = this.stages;
-            for (const stage in stages) {
-                if (this.show_zeros == true || stages[stage].infectiousness) {
-                    output +=
-                        "<span class='epi-entry'>" +
-                        "<span class='epi-description'>" +
-                        stages[stage].description +
-                        "</span><span id='" + stage + "-infectiousness' " +
-                        "class='epi-value' contenteditable=true>" +
-                        stages[stage].infectiousness.toFixed(2) +
-                        "</span>" +
-                        "<input id='" + stage + "-infectiousness-slider' " +
-                        "type='range' min='0' max='1.0' step='0.1' value='" +
-                        stages[stage].infectiousness.toFixed(2) +
-                        "' class='epi-slider'></span>"
-                }
-            }
-
-            // Transitions
-            output+= "<h2 class='epi-model-transitions'>Transitions</h2><p>"
-            for (const from_stage in stages) {
-                for (const to_stage in stages[from_stage].next_stage_prob) {
-                    if (this.show_zeros == true ||
-                        stages[from_stage].next_stage_prob[to_stage] != 0) {
-                        output +=
-                            "<span class='epi-entry'>" +
-                            "<span class='epi-description'>" +
-                            stages[from_stage].description + " - " +
-                            stages[to_stage].description +
-                            "</span><span id='" + from_stage + "-" + to_stage +
-                            "-transition' " +
-                            "class='epi-value' contenteditable=true>" +
-                            stages[from_stage].next_stage_prob[to_stage].
-                            toFixed(2) +
-                            "</span>" +
-                            "<input id='" + from_stage + "-" + to_stage +
-                            "-transition-slider' type='range' " +
-                            "min='0' max='1.0' step='0.1' " +
-                            "value='" +
-                            stages[from_stage].next_stage_prob[to_stage].
-                            toFixed(2) +
-                            "' class='epi-slider'>" +
-                            "</span>"
-                    }
-                }
-            }
-            output += "</p>"
-            output += '<label for="epi-show-zeros">Show zeros</label>';
-            output +=
-                '<input type="checkbox" id="epi-show-zeros" ' +
-                'name="epi-show-zeros"';
-            if (this.show_zeros) {
-                output += 'checked >';
-            } else {
-                output += '>';
-            }
-
-            elem.innerHTML = output;
-        }
     }
 
     EpiAgents.save = function(sim) {
@@ -648,16 +644,57 @@
     EpiAgents.create = function(div, options={}) {
         let simulation = new Simulation(options);
         simulation.div = div;
-        simulation.setupSimulationCanvas();
         return simulation;
     }
 
 } (window.EpiAgents = window.EpiAgents || {}));
 
 
+
 (function (EpiAgentsUI) {
 
+    const INF = "epi-infectiousness-";
+    const TRANS = "epi-transition-";
+    const INF_SLIDER = INF + "slider-"
+    const TRANS_SLIDER = TRANS + "slider-";
+    EpiAgentsUI.default_options = {
+        chart_options: {
+            animation: false,
+            aspectRatio: 790.0 / 500.0
+        }
+    };
+
     let ui_elements = {};
+
+    function createSimulationCanvas(div_id, simulation) {
+        if (simulation.canvas === null) {
+            simulation.canvas = document.createElement("canvas");
+            simulation.canvas.classList.add("epi-game-canvas");
+            simulation.canvas.id = div_id + '-canvas';
+            simulation.div.appendChild(simulation.canvas);
+            simulation.canvas.width = simulation.width;
+            simulation.canvas.height = simulation.height;
+            simulation.ctx = simulation.canvas.getContext("2d");
+        }
+    }
+
+    function eventDrawCanvas(simulation) {
+        simulation.ctx.clearRect(0, 0, simulation.width, simulation.height);
+        for (let agent of simulation.agents) {
+            drawAgent(agent);
+        }
+    }
+
+    function drawAgent(agent) {
+        if (agent.stage !== agent.simulation.stages.DEAD) {
+            let ctx = agent.simulation.ctx;
+            ctx.beginPath();
+            ctx.arc(agent.x, agent.y, agent.radius, 0, Math.PI*2);
+            ctx.fillStyle = agent.stage.color;
+                ctx.fill();
+            ctx.closePath();
+        }
+    }
 
     function createGraph(elem, simulation) {
         const labels = [
@@ -684,7 +721,7 @@
         const config = {
             type: 'line',
             data,
-            options: {}
+            options: simulation.chart_options
         };
         let chart = new Chart(elem, config);
         return chart;
@@ -699,7 +736,7 @@
         chart.update();
     }
 
-    function writeStats(div, simulation) {
+    function writeResults(div, simulation) {
         let text = "";
         if (simulation.event_stage === EpiAgents.EventStage.DURING) {
             text += "<p class='epi-iteration-head'>Iteration: " +
@@ -714,37 +751,71 @@
         for (let stat in simulation.counters)
             text += stat + ": " + simulation.counters[stat] + "<br/>";
         text += "</p>"
-        div.insertAdjacentHTML('beforeend', text);
+        div.insertAdjacentHTML('afterbegin', text);
     }
 
     function createUIElements(div_id) {
         let div = document.getElementById(div_id);
 
         let simulation =  document.createElement("div");
-        simulation.classList.add('epi-canvas');
+        simulation.classList.add('epi-game');
+        let sim_min_max = document.createElement("button");
+        sim_min_max.classList.add("epi-min-max");
+        sim_min_max.textContent = "x";
+        simulation.append(sim_min_max);
         div.append(simulation);
 
+        let chart_holder  = document.createElement("div");
         let chart = document.createElement("canvas");
+        let chart_min_max = document.createElement("button");
+        chart_holder.classList.add('epi-chart-holder');
         chart.classList.add('epi-chart');
-        div.append(chart);
+        chart_min_max.classList.add("epi-min-max");
+        chart_min_max.textContent = "x";
+        div.append(chart_holder);
+        chart_holder.append(chart_min_max);
+        chart_holder.append(chart);
 
-        let modelWorld = document.createElement("div");
-        modelWorld.classList.add('epi-model-world');
-        div.append(modelWorld);
+        let parameterBox = document.createElement("div");
+        parameterBox.classList.add('epi-parameter-box');
+        let parameter_min_max = document.createElement("button");
+        parameter_min_max.classList.add("epi-min-max");
+        parameter_min_max.textContent = "x";
+        parameterBox.append(parameter_min_max);
+        div.append(parameterBox);
 
-        let stats = document.createElement("div");
-        stats.classList.add('epi-stats');
-        div.append(stats);
+        let parameters = document.createElement("div");
+        parameters.classList.add('epi-parameters');
+        parameterBox.append(parameters);
+
+        let showZeros = document.createElement("div");
+        showZeros.classList.add('epi-show-zeros');
+        parameterBox.append(showZeros);
+
+        let results_box = document.createElement("div");
+        results_box.classList.add("epi-results-box");
+        let results_min_max = document.createElement("button");
+        results_min_max.classList.add("epi-min-max");
+        results_min_max.textContent = "x";
+        results_box.append(results_min_max);
+        let results = document.createElement("div");
+        results.classList.add('epi-results');
+        results_box.append(results);
+        div.append(results_box);
+
+        let controls = document.createElement("div");
+        controls.classList.add('epi-controls');
+        div.append(controls);
 
         let play = document.createElement("button");
         play.textContent = "Play";
         play.classList.add('epi-button');
-        div.append(play);
+        controls.append(play);
 
         let step = document.createElement("button");
         step.textContent = "Step";
         step.classList.add('epi-button');
-        div.append(step);
+        controls.append(step);
 
         // let save = document.createElement("button");
         // save.textContent = "Save";
@@ -754,12 +825,161 @@
         ui_elements[div_id] = {
             'simulation': simulation,
             'chart': chart,
-            'stats': stats,
-            'modelWorld': modelWorld,
+            'parameterBox': parameterBox,
+            'parameters': parameters,
+            'results': results,
+            'showZeros': showZeros,
             'play': play,
             'step': step,
-         //   'save': save
+            //   'save': save
         };
+    }
+
+
+    function changeParameter(sim, elem) {
+        let id = elem.id;
+        const l_i = sim.inf_slider.length;
+        const l_t = sim.trans_slider.length;
+        if (id.substr(0, l_i) === sim.inf_slider) {
+            const stage = id.substr(l_i);
+            sim.stages[stage].infectiousness = elem.value;
+            document.getElementById(sim.div_id + INF + stage).textContent =
+                Number(elem.value).toFixed(2);
+        } else if (id.substr(0, l_t) === sim.trans_slider) {
+            const transition = id.substr(l_t);
+            const stages = transition.split("-");
+            const stage_from = stages[0];
+            const stage_to = stages[1];
+            sim.stages[stage_from].nextStageProb[stage_to] = elem.value;
+            document.getElementById(sim.trans + stage_from + '-' + stage_to).
+                textContent = Number(elem.value).toFixed(2);
+        }
+    }
+
+    function showParameters(sim, elem) {
+        let infectious_ids = [];
+        let transition_ids = [];
+        let output = "";
+        if (sim.name)
+            output += "<h2 class='epi-model-name'>" +
+            sim.name + "</h2>";
+        if (sim.description)
+            output += "<p class='epi-model-description'>" +
+            sim.description +
+            "<p>";
+        output +=
+            "<p>" + "Number of agents: " + sim.numAgents + "</p>";
+
+        output +=
+            "<span class='epi-entry'>" +
+            "<span class='epi-description'>speed (millisecs)</span>" +
+            "<span id='" + sim.div_id + "-speed' class='epi-value'>" +
+            sim.interval + "</span> <input id='" + sim.div_id + "-speed-slider'" +
+            "type='range' min=0 max=2000 step='1' class='epi-slider' " +
+            "value=" + sim.interval + " ></span>";
+
+        output +=
+            "<span class='epi-entry'>" +
+            "<span class='epi-description'>width</span>" +
+            "<span id='" + sim.div_id + "-width' class='epi-value'>" +
+            sim.width + "</span> <input id='" + sim.div_id + "-width-slider'" +
+            "type='range' min=100 max=2000 step='10' class='epi-slider' " +
+            "value=" + sim.width + " ></span>";
+
+
+        // Infectiousness
+        output += "<h2 class='epi-model-infectiousness'>Infectiousness</h2>";
+        const stages = sim.stages;
+        for (const stage in stages) {
+            let id = sim.inf_slider + stage;
+            output +=
+                "<span class='epi-entry'>" +
+                "<span class='epi-description'>" +
+                stages[stage].description +
+                "</span><span id='" + sim.div_id + INF + stage + "' " +
+                "class='epi-value' >" +
+                stages[stage].infectiousness.toFixed(2) +
+                "</span>" +
+                "<input id='" + id + "' " +
+                "type='range' min='0' max='1.0' step='0.01' value='" +
+                stages[stage].infectiousness.toFixed(2) +
+                "' class='epi-slider'></span>";
+            infectious_ids.push(id);
+        }
+
+        // Transitions
+        output+= "<h2 class='epi-model-transitions'>Transitions</h2><p>"
+        for (const from_stage in stages) {
+            for (const to_stage in stages[from_stage].nextStageProb) {
+                let id = sim.trans_slider + from_stage + "-" + to_stage;
+                    output +=
+                    "<span class='epi-entry'>" +
+                    "<span class='epi-description'>" +
+                    stages[from_stage].description + " - " +
+                    stages[to_stage].description +
+                    "</span><span id='" + sim.trans + from_stage + "-" + to_stage +
+                    "' " + "class='epi-value' >" +
+                    Number(stages[from_stage].nextStageProb[to_stage]).
+                    toFixed(2) +
+                    "</span>" +
+                    "<input id='" + id + "' " +
+                    "type=range min='0' max='1.0' step='0.01' " +
+                    "value='" +
+                    Number(stages[from_stage].nextStageProb[to_stage]).
+                    toFixed(2) +
+                    "' class='epi-slider'>" +
+                    "</span>"
+                transition_ids.push(id);
+            }
+        }
+        output += "</p>"
+
+        elem.innerHTML = output;
+        const widgets = {
+            "infectious_ids": infectious_ids,
+            "transition_ids": transition_ids
+        };
+        return widgets;
+    }
+
+    function setupShowZeros(div_id, sim) {
+        let output = '';
+        output += '<label for="epi-show-zeros">Show zeros</label>';
+        output +=
+            '<input type="checkbox" id="epi-show-zeros-checkbox" ' +
+            'name="epi-show-zeros"';
+        if (sim.show_zeros) {
+            output += 'checked >';
+        } else {
+            output += '></div>';
+        }
+        ui_elements[div_id].showZeros.innerHTML = output;
+        document.getElementById('epi-show-zeros-checkbox').addEventListener(
+            "change", function (e) {
+                if (e.target.checked)
+                    sim.show_zeros = true;
+                else
+                    sim.show_zeros = false;
+                let elems = ui_elements[div_id].parameterBox.
+                    getElementsByClassName("epi-entry");
+                for (let elem of elems) {
+                    let slider = elem.getElementsByClassName("epi-slider")[0];
+                    if (Number(slider.value) === 0) {
+                        if (sim.show_zeros)
+                            elem.classList.remove("epi-hidden")
+                        else
+                            elem.classList.add("epi-hidden");
+                    }
+                }
+            });
+    }
+
+    function getAllSiblings(elem) {
+        let sibs = [];
+        while (elem = elem.nextSibling) {
+            sibs.push(elem);
+        };
+        return sibs;
     }
 
     function assignEvents(div_id, sim) {
@@ -786,31 +1006,103 @@
         //save.addEventListener("click", function(e) {
         //    EpiAgents.save(sim);
         //});
+        let widgets = showParameters(sim, ui_elements[div_id].parameters);
+        setupShowZeros(div_id, sim);
 
-        sim.modelWorld(ui_elements[div_id].modelWorld);
+        document.getElementById(div_id + '-speed-slider').
+            addEventListener("input", function(e) {
+                sim.interval = e.target.value;
+                document.getElementById(div_id + '-speed').textContent =
+                    e.target.value;
+                if (sim.state === EpiAgents.SimulationState.PLAYING) {
+                    sim.pause();
+                    sim.play();
+                }
+            });
+
+        document.getElementById(div_id + '-width-slider').
+            addEventListener("input", function(e) {
+                sim.width = e.target.value;
+                document.getElementById(div_id + '-width').textContent =
+                    e.target.value;
+                sim.canvas.width = sim.width;
+                for (let agent of sim.agents) {
+                    agent.squeezeLeft();
+                }
+                eventDrawCanvas(sim);
+            });
+
+        for (let id of widgets["infectious_ids"]) {
+            document.getElementById(id).addEventListener(
+                "input", function (e) {
+                    changeParameter(sim, e.target); });
+        }
+        for (let id of widgets["transition_ids"]) {
+            document.getElementById(id).addEventListener(
+                "input", function (e) {
+                    changeParameter(sim, e.target);
+                });
+        }
+
+        let elems = document.getElementById(div_id).
+            getElementsByClassName("epi-min-max");
+        for (let elem of elems) {
+            elem.addEventListener("click", function() {
+                if (elem.textContent === "x") {
+                    elem.textContent = "+";
+                    for (let sib of getAllSiblings(elem)) {
+                        sib.style.display = "none";
+                    }
+                } else {
+                    elem.textContent = "x";
+                    for (let sib of getAllSiblings(elem)) {
+                        sib.style.display = "inherit";
+                    }
+                }
+            });
+        }
+
     }
+
 
     EpiAgentsUI.create = function(div_id, options={}) {
         createUIElements(div_id);
         let chart = {};
         let override_options = options;
+        override_options.extra_before_events = options.extra_before_events ||
+            [eventDrawCanvas];
         override_options.extra_during_events = options.extra_during_events ||
-            [function(simulation) {
-                writeStats(ui_elements[div_id].stats, simulation);
-                updateGraph(simulation, chart);
-            }];
+            [
+                eventDrawCanvas,
+                function(simulation) {
+                    writeResults(ui_elements[div_id].results, simulation);
+                    updateGraph(simulation, chart);
+                }
+            ];
+        override_options.extra_after_events = options.extra_after_events ||
+            [eventDrawCanvas];
 
         let sim = EpiAgents.create(ui_elements[div_id].simulation,
                                    override_options);
+        sim.canvas = options.canvas || null;
+        sim.ctx = null;
         sim.div_id = div_id;
+        sim.inf = INF + div_id;
+        sim.inf_slider = sim.inf + "-";
+        sim.trans = TRANS + div_id;
+        sim.trans_slider = sim.trans + "-";
         sim.init = function() {
             sim.initialize();
-            writeStats(ui_elements[div_id].stats, sim);
+            createSimulationCanvas(div_id, sim);
+            eventDrawCanvas(sim);
+            assignEvents(div_id, sim);
+            writeResults(ui_elements[div_id].results, sim);
         }
         sim.show_zeros = true;
 
+        sim.chart_options = override_options.chart_options ||
+            EpiAgentsUI.default_options.chart_options;
         chart = createGraph(ui_elements[div_id].chart, sim);
-        assignEvents(div_id, sim);
 
         if (options.auto_play) {
             sim.init();

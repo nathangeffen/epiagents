@@ -2,22 +2,24 @@
 <html>
     <head>
         <meta charset="utf-8" />
+        <meta name=viewport content="width=device-width, initial-scale=1">
         <title>Vaccine strategy comparison</title>
+        <link rel="stylesheet" href="epiagents.css">
         <style>
-    	 * { padding: 0; margin: 0; }
          body {
-             max-width: 800px;
-             margin: 20px auto 20px auto;
+             max-width: 1800px;
+             margin: auto;
              font-size: 16px;
          }
+
         </style>
-        <link rel="stylesheet" href="epiagents.css">
+
     </head>
     <body>
         <h1>Comparison of vaccine strategies</h1>
 
         <div id="vaccine-strategy-1" class="epi-simulation"></div>
-
+        <div id="vaccine-strategy-2" class="epi-simulation"></div>
         <!-- <div id="vaccine-strategy-2"></div>
              <div id="stats-2">
              </div>
@@ -28,8 +30,8 @@
          let sim_1 = EpiAgentsUI.create("vaccine-strategy-1", {
              name: "Test model",
              description: "Model used for testing EpiAgents",
-             num_agents: 2000,
-             interval: 0
+             numAgents: 2000,
+             interval: 1000
          });
          sim_1.clear();
 
@@ -42,32 +44,20 @@
 
          sim_1.setTransitions([
              ["INFECTED_EXPOSED", "INFECTED_SYMPTOMATIC", 1.0],
-             ["INFECTED_SYMPTOMATIC", "RECOVERED", 0.01]
+             ["INFECTED_SYMPTOMATIC", "RECOVERED", 0.01],
+             ["RECOVERED", "SUSCEPTIBLE", 0.0]
          ]);
 
          sim_1.init();
-         /* let sim_2 = EpiAgents.create(document.
-          * getElementById("vaccine-strategy-2"), {
-          *     width: 700,
-          *     height: 500,
-          *     num_agents: 2000,
-          *     max_iterations: 200,
-          *     extra_during_events: [function(simulation) {
-          *         updateStats("stats-2", simulation);
-          *     }],
-          *     extra_after_events: [function(simulation) {
-          *         document.getElementById("play-2").textContent = "Play";
-          *     }],
-          * });
-          * document.getElementById("play-2").addEventListener("click", function (e) {
-          *     if (sim_2.state == EpiAgents.SimulationState.PAUSED) {
-          *         e.target.textContent = "Pause";
-          *         sim_2.play();
-          *     } else {
-          *         e.target.textContent = "Play";
-             *         sim_2.pause();
-          *     }
-          * }); */
+         let sim_2 = EpiAgentsUI.create("vaccine-strategy-2", {
+             name: "Test model 2",
+             description: "Model 2 used for testing EpiAgents",
+             numAgents: 20,
+             interval: 200,
+             movementRandomnessMean: 0,
+             elasticCollisions: true
+         });
+         sim_2.init();
         </script>
     </body>
 </html>

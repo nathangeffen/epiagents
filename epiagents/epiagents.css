@@ -1,17 +1,49 @@
 .epi-simulation {
-    border: 1px solid lightgray;
-    border-radius:3px;
     padding: 4px;
+    border-bottom: 1px solid lightgray;
+    padding: 16px;
+    margin: 16px;
+    display: grid;
 }
 
-.epi-canvas {
-    resizable: both;
+@media screen and (min-width: 992px) {
+    .epi-simulation {
+        grid-template-columns: 50% 50%;
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .epi-simulation {
+        grid-template-columns: auto;
+    }
+}
+
+
+.epi-game, .epi-chart-holder, .epi-parameter-box, .epi-results-box  {
+    resize: both;
+    margin: 6px;
+    padding: 12px;
+    border: 1px solid lightgray;
+    border-radius: 3px;
+    position: relative;
+    min-height: 18px;
+}
+
+
+.epi-game-canvas {
+    border: 2px solid black;
+    border-radius: 3px;
+    padding: 0;
+    margin: 12px auto 12px auto;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
 }
 
 .epi-button {
 	background-color:#44c767;
 	border-radius:3px;
-	border:1px solid #18ab29;
+	border: 1px solid #18ab29;
 	display:inline-block;
 	cursor:pointer;
 	color:#ffffff;
@@ -39,26 +71,29 @@
 	top:1px;
 }
 
-.epi-chart { background: #eee;}
+/*.epi-chart { background: #eee;}*/
 
-.epi-stats, .epi-model-world {
-    width: 43%;
-    height: 250px;
-    overflow: auto;
-    padding: 20px;
-    border: 1px solid black;
+.epi-results-box, .epi-parameter-box {
+    max-height: 250px;
+    padding: 10px;
+    border: 1px solid lightgray;
     border-radius: 5px;
     resize: both;
-    display: inline-block;
-    margin: 6px 12px 6px 0;
 }
 
-.epi-stats {
-    margin: 6px 0px 6px 12px;
+.epi-canvas canvas, .epi-results-box, .epi-parameter-box {
+    border: 1px solid lightgray;
+    border-radius: 5px;
 }
 
-.epi-stats p {
-    margin-bottom: 12px;
+.epi-results, .epi-parameters {
+    max-height: 220px;
+    margin-bottom: 10px;
+    overflow: scroll;
+}
+
+.epi-parameters {
+    border-bottom: 1px solid lightgray;
 }
 
 .epi-model-name {
@@ -71,7 +106,7 @@
 }
 .epi-entry {
     display: grid;
-    grid-template-columns: 200px 30px 30px;
+    grid-template-columns: 185px 25px 100px;
     width: 300px;
 }
 
@@ -80,12 +115,38 @@
     font-weight: bold;
 }
 
+.epi-description {
+    text-transform: capitalize;
+}
+
 .epi-value {
-    text-align: right;
+    /*text-align: right;*/
     color: green;
 }
 
 .epi-slider {
     margin-left: 12px;
-    width: 40px;
+    width: 100px;
+}
+
+
+.epi-hidden {
+    display: none;
+}
+
+#epi-show-zeros-checkbox {
+    margin-left: 12px;
+}
+
+.epi-min-max {
+    cursor: pointer;
+}
+
+.epi-min-max {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 14px;
+    font-weight: bold;
+    border: none;
 }
