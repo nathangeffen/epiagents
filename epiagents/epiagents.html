@@ -27,11 +27,16 @@
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="epiagents.js"></script>
         <script>
+         let div = document.getElementById("vaccine-strategy-1");
+         let width =  Math.min(500, div.offsetWidth - 50);
+         let height = width;
          let sim_1 = EpiAgentsUI.create("vaccine-strategy-1", {
              name: "Test model",
              description: "Model used for testing EpiAgents",
              numAgents: 2000,
-             interval: 1000
+             height: height,
+             width: width,
+             interval: 10
          });
          sim_1.clear();
 
@@ -47,15 +52,16 @@
              ["INFECTED_SYMPTOMATIC", "RECOVERED", 0.01],
              ["RECOVERED", "SUSCEPTIBLE", 0.0]
          ]);
-
          sim_1.init();
          let sim_2 = EpiAgentsUI.create("vaccine-strategy-2", {
              name: "Test model 2",
              description: "Model 2 used for testing EpiAgents",
-             numAgents: 20,
+             numAgents: 500,
              interval: 200,
              movementRandomnessMean: 0,
-             elasticCollisions: true
+             elasticCollisions: true,
+             height: height,
+             width: width
          });
          sim_2.init();
         </script>

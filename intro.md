@@ -1,9 +1,27 @@
 # Understanding epidemics
 
-## Intro: Covid
+## The catastrophic effect of plagues
+
+Intro on Covid (newest)
+
+Thucydides description of the Plague of Athens (oldest reliably recorded?)
+What was this plague? How many people died? How did it affect the rest of
+the Greek/Persian world? Did it spread to China? Did it change the world?
+
+What Thucydides knew - it was contagious between people.
 
 Also talk about how infectious disease as cause of death has declined through
 the 20th/21st century, only to spring up on us again.
+
+How much our knowledge has grown. And how much we still don't know - uncertainty
+of statistics. Maybe talk about Ronald Fisher
+
+## Modelling measles
+
+Introduce equation-based vs simulation models
+
+Brian Williams wrote a very cool tutorial on this
+
 
 ## 1918 Flu pandemic
 
@@ -81,4 +99,13 @@ Start off with Jude's death in Jude the Obscure.
 
 ## Modelling Measles
 
-Brian Williams wrote a very cool tutorial on this
+
+# Contact tracing
+
+# Against Socrates - an appeal for modesty
+
+# On mortality
+
+We are obsessed with staying alive, but are we focussing on living?
+-- Over-exuberant lockdowns
+-- Over-exuberant treatment

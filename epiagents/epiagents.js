@@ -213,6 +213,75 @@
         }
     }
 
+    function deepCopy(aObject) {
+        if (!aObject) {
+            return aObject;
+        }
+        let v;
+        let bObject = Array.isArray(aObject) ? [] : {};
+        for (const k in aObject) {
+            v = aObject[k];
+            bObject[k] = (typeof v === "object") ? deepCopy(v) : v;
+        }
+        return bObject;
+    }
+
+    EpiAgents.deepCopy = deepCopy;
+
+    function objToString(obj, indent=0) {
+        let str;
+        let t = typeof(obj);
+        let delim = "    ";
+        let spaces = "";
+        let functionSpaces = "";
+        for (let i = 0; i < indent; i++) {
+            spaces += delim;
+        }
+        for (let i = 0; i < indent - 1; i++) {
+            functionSpaces += delim;
+        }
+
+        if (t === "undefined") {
+            str = "";
+        } else if (t === "number") {
+            str = obj.toString();
+        } else if (t === "function") {
+            str = obj.toString();
+
+            // A valiant but not very good attempt to format functions nicely
+            let lines = str.split("\n");
+            for (let i = 1; i < lines.length; i++) {
+                 lines[i] = functionSpaces + lines[i];
+            }
+            str = "";
+            for (let i = 0; i < lines.length; i++) {
+                str += lines[i] + "\n";
+            }
+            str = str.slice(0, -1); // Get rid of last "\n"
+
+        } else if (t === "object") {
+            if (Array.isArray(obj)) {
+                str = "[\n";
+                for (let elem of obj) {
+                    str += spaces + delim + objToString(elem, indent + 1) + ",\n";
+                }
+                str += spaces + "]";
+            } else {
+                str = "{\n";
+                for (let elem in obj) {
+                    str += spaces + delim + elem + ": " +
+                        objToString(obj[elem], indent + 1) + ",\n";
+                }
+                str += spaces + "}";
+            }
+        } else {
+            str = '"' + obj.toString() + '"';
+        }
+        return str;
+    }
+
+    EpiAgents.objToString = objToString;
+
     function shuffleArray(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -235,11 +304,11 @@
         return x + y;
     }
 
-    function detectCollision(simulation, agent_a, agent_b) {
+    function detectCollision(sim, agent_a, agent_b) {
         if (distanceSquared(agent_a.x, agent_b.x, agent_a.y, agent_b.y) <
             (agent_a.radius + agent_b.radius) *
             (agent_a.radius + agent_b.radius)) {
-            ++simulation.collisions;
+            ++sim.collisions;
             return true;
         }
 
@@ -257,14 +326,14 @@
 
     function makeInfection(from_agent, to_agent, risk) {
         if (Math.random() < risk) {
-            to_agent.stage = to_agent.simulation.stages.INFECTED_EXPOSED;
-            ++to_agent.simulation.counters.total_simulation_infections;
+            to_agent.stage = to_agent.sim.stages.INFECTED_EXPOSED;
+            ++to_agent.sim.counters.total_simulation_infections.num;
         }
     }
 
-    function eventMoveAgents(simulation) {
-        for (let agent of simulation.agents) {
-            if (agent.stage != agent.simulation.stages.DEAD)
+    function eventMoveAgents(sim) {
+        for (let agent of sim.agents) {
+            if (agent.stage != agent.sim.stages.DEAD)
                 agent.move();
         }
     }
@@ -275,17 +344,17 @@
         }
     }
 
-    function eventAdvanceAgents(simulation) {
-        for (let agent of simulation.agents) {
-            for (const stage in simulation.stages) {
-                if (simulation.stages.hasOwnProperty(stage) &&
-                    agent.stage === simulation.stages[stage]) {
+    function eventAdvanceAgents(sim) {
+        for (let agent of sim.agents) {
+            for (const stage in sim.stages) {
+                if (sim.stages.hasOwnProperty(stage) &&
+                    agent.stage === sim.stages[stage]) {
                     for (const next_stage in
-                         simulation.stages[stage].nextStageProb) {
-                        const risk = simulation.stages[stage].
+                         sim.stages[stage].nextStageProb) {
+                        const risk = sim.stages[stage].
                               nextStageProb[next_stage];
                         if (Math.random() < risk) {
-                            agent.stage = simulation.stages[next_stage];
+                            agent.stage = sim.stages[next_stage];
                         }
                     }
                 }
@@ -293,38 +362,65 @@
         }
     }
 
-
-    function eventCalcResults(simulation) {
-        for (const key in simulation.counters) {
+    function eventCalcResults(sim) {
+        for (const key in sim.counters) {
             if (key.substr(0, 6) !== "total_")
-                simulation.counters[key] = 0;
+                sim.counters[key].num = 0;
         }
-        for (const agent of simulation.agents) {
-            if (! (agent.stage.description in simulation.counters) ) {
-                simulation.counters[agent.stage.description] = 1;
-            } else {
-                ++simulation.counters[agent.stage.description];
+        for (const agent of sim.agents) {
+            if (agent.stage.description in sim.counters) {
+                ++sim.counters[agent.stage.description].num;
             }
             if (agent.stage.infected)
-                ++simulation.counters.infections;
-            if (agent.stage !== simulation.stages.DEAD)
-                ++simulation.counters.alive;
+                ++sim.counters.infections.num;
+            if (agent.stage !== sim.stages.DEAD)
+                ++sim.counters.alive.num;
         }
     }
 
+    function eventRecordResultHeader(sim) {
+        let header = ["#",];
+        for (let key in sim.counters) header.push(key);
+        sim.results.push(header);
+    }
+
+    EpiAgents.eventRecordResultHeader = eventRecordResultHeader;
+
+    function eventRecordResult(sim) {
+        let result = [];
+        if (sim.event_stage === EpiAgents.EventStage.DURING) {
+            result.push(sim.iteration);
+        } else if (sim.event_stage === EpiAgents.EventStage.BEFORE) {
+            result.push("S");
+        } else if (sim.event_stage === EpiAgents.EventStage.AFTER) {
+            result.push("E");
+        }
+        for (let key in sim.counters)
+            result.push(sim.counters[key].num);
+        sim.results.push(result);
+    }
+
+    function ifElse(x, y) {
+        if (x !== undefined)
+            return x;
+        return y;
+    }
+
+    EpiAgents.eventRecordResult = eventRecordResult;
+
     class Agent {
-        constructor(simulation) {
-            this.simulation = simulation;
-            this.radius = simulation.agentRadius;
-            this.id = simulation.agent_counter;
-            simulation.agent_counter++;
-            this.speed = simulation.agent_speed;
-            this.stage = simulation.stages.SUSCEPTIBLE;
-            this.x = Math.random() * simulation.width;
-            this.y = Math.random() * simulation.height;
+        constructor(sim) {
+            this.sim = sim;
+            this.radius = sim.config.agentRadius;
+            this.id = sim.agent_counter;
+            sim.agent_counter++;
+            this.speed = sim.config.agent_speed;
+            this.stage = sim.stages.SUSCEPTIBLE;
+            this.x = Math.random() * sim.config.width;
+            this.y = Math.random() * sim.config.height;
             this.movementRandomness = gaussian(
-                simulation.movementRandomnessMean,
-                simulation.movementRandomnessStdev);
+                sim.config.movementRandomnessMean,
+                sim.config.movementRandomnessStdev);
             this.setDirection();
         }
 
@@ -341,20 +437,20 @@
         infectAgent(agent) {
             let this_infectiousness = this.getInfectiousness();
             let agent_infectiousness = agent.getInfectiousness();
-            if (this.stage === this.simulation.stages.SUSCEPTIBLE &&
+            if (this.stage === this.sim.stages.SUSCEPTIBLE &&
                 agent_infectiousness > 0) {
                 makeInfection(agent, this, agent_infectiousness);
-            } else if (agent.stage === agent.simulation.stages.SUSCEPTIBLE &&
+            } else if (agent.stage === agent.sim.stages.SUSCEPTIBLE &&
                        this_infectiousness > 0) {
                 makeInfection(this, agent, this_infectiousness);
             }
         }
 
         detectInfections() {
-            for (let agent of this.simulation.agents) {
+            for (let agent of this.sim.agents) {
                 if (agent.id !== this.id) {
-                    if (detectCollision(this.simulation, this, agent)) {
-                        if (this.simulation.elasticCollisions &&
+                    if (detectCollision(this.sim, this, agent)) {
+                        if (this.sim.config.elasticCollisions &&
                             this.id < agent.id) {
                             const dx = this.dx;
                             this.dx = agent.dx;
@@ -370,7 +466,7 @@
         }
 
         move() {
-            if (this.stage === this.simulation.stages.DEAD) {
+            if (this.stage === this.sim.stages.DEAD) {
                 this.x = this.y = -1000;
                 return;
             }
@@ -378,11 +474,11 @@
                 this.setDirection();
             }
 
-            if (this.x + this.dx >= this.simulation.width - this.radius ||
+            if (this.x + this.dx >= this.sim.width - this.radius ||
                 this.x + this.dx <= this.radius) {
                 this.dx = -this.dx;
             }
-            if (this.y + this.dy >= this.simulation.height - this.radius ||
+            if (this.y + this.dy >= this.sim.height - this.radius ||
                 this.y + this.dy <= this.radius) {
                 this.dy = -this.dy;
             }
@@ -394,8 +490,8 @@
         }
 
         squeezeLeft() {
-            if (this.x >= this.simulation.width) {
-                this.x = this.simulation.width - 1;
+            if (this.x >= this.sim.config.width) {
+                this.x = this.sim.config.width - 1;
             }
         }
 
@@ -403,57 +499,82 @@
 
     class Simulation {
 
-        constructor(options) {
-            this.name = options.name || null;
-            this.description = options.description || null;
-            this.div = options.div || null;
-            this.width = options.width || 790;
-            this.height = options.height || 500;
+        processOptions(options) {
+            // Simulation parameters
+            this.config = {};
+            let config = this.config;
+            config.name = options.name || null;
+            config.description = options.description || null;
+            config.width = options.width || 790;
+            config.height = options.height || 500;
+            config.interval = options.interval || 0;
+            config.numAgents = options.numAgents || 1000;
+            config.agentRadius = options.agentRadius || 3;
+            config.movementRandomnessMean = ifElse(options.movementRandomnessMean,
+                                                 0.1);
+            config.movementRandomnessStdev = options.movementRandomnessStdev || 0.0;
+            config.elasticCollisions = options.elasticCollisions || false;
+            config.agent_speed = ifElse(options.agents_speed, 1.0);
+            config.extra_before_events = options.extra_before_events || [];
+            config.extra_during_events = options.extra_during_events || [];
+            config.extra_after_events = options.extra_after_events || [];
+            config.before_events = options.before_events ||
+                [].concat(config.extra_before_events);
+            config.during_events = options.during_events ||
+                [eventAdvanceAgents, eventMoveAgents, eventCalcResults,
+                 eventRecordResult].
+                concat(config.extra_during_events) || options.during_events;
+            config.after_events = options.after_events ||
+                [eventCalcResults, eventRecordResult].
+                concat(config.extra_after_events);
+            config.max_iterations = options.max_iterations || 0;
+            config.stages = options.simulationStages || deepCopy(SimulationStages);
+
             this.state = SimulationState.PAUSED;
-            this.interval = options.interval || 10;
             this.timer = undefined;
-            this.numAgents = options.numAgents || 2000;
-            this.agentRadius = options.agentRadius || 3;
             this.agentCounter = options.agentCounter || 0;
-            this.movementRandomnessMean = options.movementRandomnessMean || 0.1;
-            this.movementRandomnessStdev = options.movementRandomnessStdev || 0.0;
-            this.elasticCollisions = false || options.elasticCollisions;
-            this.agent_speed = options.agent_speed || 1.0;
             this.agents = [];
+            this.stages = config.stages // Convenience because stages used so often
 
-            // Events
-            this.extra_before_events = options.extra_before_events || [];
-            this.extra_during_events = options.extra_during_events || [];
-            this.extra_after_events = options.extra_after_events || [];
-
-            this.before_events = options.before_events ||
-                [].concat(this.extra_before_events);
-            this.during_events = options.during_events ||
-                [eventAdvanceAgents, eventMoveAgents, eventCalcResults].
-                concat(this.extra_during_events) || options.during_events;
-            this.after_events = options.after_events ||
-                [eventCalcResults].concat(this.extra_after_events);
-
-            this.initial_exposed = 10 || options.initial_exposed;
-            this.iteration = 0;
-            this.max_iterations = options.max_iterations || 0;
-            this.stages = JSON.parse(JSON.stringify(SimulationStages))
-                || options.simulationStages;
-
-            this.asymptomatic_infectiousness  = 0.1 ||
-                options.asymptomatic_infectiousness;
-            this.symptomatic_infectiousness  = 0.5 ||
-                options.symptomatic_infectiousness;
-            this.hospital_infectiousness = 0.5 ||
-                options.hospital_infectiousness;
-            this.icu_infectiousness = 0.5 ||
-                options.icu_infectiousness;
-            this.counters = {
-                alive: 0,
-                infections: 0,
-                total_initial_infections: 0,
-                total_simulation_infections: 0
+            this.user_counters = {};
+            for (let stage in SimulationStages) {
+                const description = SimulationStages[stage].description;
+                this.user_counters[description] = {
+                    num: 0,
+                    print: false,
+                }
+            }
+            this.user_counters["susceptible"].print = true;
+            this.user_counters["recovered"].print = true;
+            this.compulsory_counters = {
+                alive: {
+                    print: true,
+                    num: 0
+                },
+                total_initial_infections: {
+                    print: false,
+                    num: 0
+                },
+                total_simulation_infections: {
+                    print: true,
+                    num: 0
+                },
+                infections: {
+                    print: true,
+                    num: 0
+                }
             };
+            this.counters = {
+                ...this.compulsory_counters,
+                ...this.user_counters
+            };
+            this.event_stage = options.event_stage || EventStage.BEFORE;
+            this.results = [];
+            this.iteration = 0;
+        }
+
+        constructor(options) {
+            this.processOptions(options);
         }
 
         setInitialRatio(stage, val) {
@@ -538,22 +659,22 @@
 
         beforeIteration() {
             this.event_stage = EventStage.BEFORE;
-            this.runEvents(this.before_events);
+            this.runEvents(this.config.before_events);
         };
 
         oneIteration() {
             this.event_stage = EventStage.DURING;
-            this.runEvents(this.during_events);
+            this.runEvents(this.config.during_events);
             ++this.iteration;
-            if (this.max_iterations > 0 &&
-                this.iteration % this.max_iterations === 0) {
+            if (this.config.max_iterations > 0 &&
+                this.iteration % this.config.max_iterations === 0) {
                 this.stop();
             }
         }
 
         afterIteration() {
             this.event_stage = EventStage.AFTER;
-            this.runEvents(this.after_events);
+            this.runEvents(this.config.after_events);
         };
 
         step() {
@@ -567,12 +688,12 @@
         play() {
             if (this.state != SimulationState.PLAYING) {
                 this.state = SimulationState.PLAYING;
-                let simulation = this;
+                let sim = this;
                 if (this.iteration === 0)
                     this.beforeIteration();
                 this.timer = setInterval(function() {
-                    simulation.oneIteration();
-                }, this.interval);
+                    sim.oneIteration();
+                }, this.config.interval);
             }
         }
 
@@ -615,7 +736,7 @@
                     if (r < this.stages[stage].initial_proportion) {
                         agent.stage = this.stages[stage];
                         if (stage.substr(0, 8) === "INFECTED")
-                            ++this.counters.total_initial_infections;
+                            ++this.counters.total_initial_infections.num;
                         break;
                     }
                 }
@@ -624,7 +745,7 @@
 
         createAgents() {
             this.agents = [];
-            this.generateAgents(this.numAgents);
+            this.generateAgents(this.config.numAgents);
         }
 
         initialize() {
@@ -636,16 +757,12 @@
 
     }
 
-    EpiAgents.save = function(sim) {
-        const obj =  JSON.stringify(sim);
-        console.log(obj);
+    EpiAgents.create = function(options={}) {
+        let sim = new Simulation(options);
+        return sim;
     }
 
-    EpiAgents.create = function(div, options={}) {
-        let simulation = new Simulation(options);
-        simulation.div = div;
-        return simulation;
-    }
+    EpiAgents.Simulation = Simulation;
 
 } (window.EpiAgents = window.EpiAgents || {}));
 
@@ -666,28 +783,31 @@
 
     let ui_elements = {};
 
-    function createSimulationCanvas(div_id, simulation) {
-        if (simulation.canvas === null) {
-            simulation.canvas = document.createElement("canvas");
-            simulation.canvas.classList.add("epi-game-canvas");
-            simulation.canvas.id = div_id + '-canvas';
-            simulation.div.appendChild(simulation.canvas);
-            simulation.canvas.width = simulation.width;
-            simulation.canvas.height = simulation.height;
-            simulation.ctx = simulation.canvas.getContext("2d");
-        }
+    EpiAgentsUI.ui_elements = ui_elements;
+
+    function createSimulationCanvas(div_id, sim)
+    {
+        sim.canvas = document.createElement("canvas");
+        sim.canvas.classList.add("epi-game-canvas");
+        sim.canvas.id = div_id + '-canvas';
+        sim.sim_div.appendChild(sim.canvas);
+        sim.canvas.width = sim.config.width;
+        sim.canvas.height = sim.config.height;
+        sim.ctx = sim.canvas.getContext("2d");
     }
 
-    function eventDrawCanvas(simulation) {
-        simulation.ctx.clearRect(0, 0, simulation.width, simulation.height);
-        for (let agent of simulation.agents) {
+    function eventDrawCanvas(sim)
+    {
+        sim.ctx.clearRect(0, 0, sim.config.width, sim.config.height);
+        for (let agent of sim.agents) {
             drawAgent(agent);
         }
     }
 
-    function drawAgent(agent) {
-        if (agent.stage !== agent.simulation.stages.DEAD) {
-            let ctx = agent.simulation.ctx;
+    function drawAgent(agent)
+    {
+        if (agent.stage !== agent.sim.stages.DEAD) {
+            let ctx = agent.sim.ctx;
             ctx.beginPath();
             ctx.arc(agent.x, agent.y, agent.radius, 0, Math.PI*2);
             ctx.fillStyle = agent.stage.color;
@@ -696,9 +816,10 @@
         }
     }
 
-    function createGraph(elem, simulation) {
+    function createGraph(elem, sim)
+    {
         const labels = [
-            [simulation.iteration]
+            [sim.iteration]
         ];
         const data = {
             labels: labels,
@@ -707,63 +828,82 @@
                     label: 'Total infections',
                     backgroundColor: 'rgb(255, 99, 132)',
                     borderColor: 'rgb(255, 99, 132)',
-                    data: [simulation.counters.total_initial_infections +
-                           simulation.counters.total_simulation_infections],
+                    data: [sim.counters.total_initial_infections.num +
+                           sim.counters.total_simulation_infections.num],
                 },
                 {
                     label: 'Current infections',
                     backgroundColor: 'rgb( 99, 255, 132)',
                     borderColor: 'rgb(99, 255, 132)',
-                    data: [simulation.counters.infections],
+                    data: [sim.counters.infections.num],
                 }
             ]
         };
         const config = {
             type: 'line',
             data,
-            options: simulation.chart_options
+            options: sim.chart_options
         };
         let chart = new Chart(elem, config);
         return chart;
     }
 
-    function updateGraph(simulation, chart) {
-        chart.data.labels.push(simulation.iteration);
+    function updateGraph(sim)
+    {
+        let chart = sim.chart;
+        chart.data.labels.push(sim.iteration);
         chart.data.datasets[0].data.push(
-            simulation.counters.total_initial_infections +
-                simulation.counters.total_simulation_infections);
-        chart.data.datasets[1].data.push(simulation.counters.infections);
+            sim.counters.total_initial_infections.num +
+                sim.counters.total_simulation_infections.num);
+        chart.data.datasets[1].data.push(sim.counters.infections.num);
         chart.update();
     }
 
-    function writeResults(div, simulation) {
-        let text = "";
-        if (simulation.event_stage === EpiAgents.EventStage.DURING) {
-            text += "<p class='epi-iteration-head'>Iteration: " +
-                simulation.iteration + "<p></p>";
-        } else if (simulation.event_stage === EpiAgents.EventStage.BEFORE) {
-            text += "<p class='epi-iteration-head'>At start</p><p>";
-        } else if (simulation.event_stage === EpiAgents.EventStage.AFTER) {
-            text += "<p class='epi-iteration-head'>At end</p><p>";
-        } else {
-            text += "<p class='epi-iteration-head'>Simulation status</p><p>";
+    function writeResultsHeader(div, sim)
+    {
+        let table = div.getElementsByTagName("table")[0];
+        table.insertRow();
+        let head = table.createTHead();
+        let row = head.insertRow(0);
+        let cell = row.insertCell(0);
+        cell.innerHTML = "#";
+        for (let stat in sim.counters) {
+            if (sim.counters[stat].print) {
+                let cell = row.insertCell(-1);
+                cell.innerHTML = stat.replace(/_/g, ' ');
+            }
         }
-        for (let stat in simulation.counters)
-            text += stat + ": " + simulation.counters[stat] + "<br/>";
-        text += "</p>"
-        div.insertAdjacentHTML('afterbegin', text);
+    }
+
+    function writeResults(div, sim) {
+        let table = div.getElementsByTagName("table")[0];
+        let row = table.insertRow(1);
+        let cell = row.insertCell(0);
+        if (sim.event_stage === EpiAgents.EventStage.DURING) {
+            cell.innerHTML = sim.iteration;
+        } else if (sim.event_stage === EpiAgents.EventStage.BEFORE) {
+            cell.innerHTML = "S";
+        } else if (sim.event_stage === EpiAgents.EventStage.AFTER) {
+            cell.innerHTML = "E";
+        }
+        for (let stat in sim.counters) {
+            if (sim.counters[stat].print) {
+                let cell = row.insertCell(-1);
+                cell.innerHTML = sim.counters[stat].num;
+            }
+        }
     }
 
     function createUIElements(div_id) {
         let div = document.getElementById(div_id);
 
-        let simulation =  document.createElement("div");
-        simulation.classList.add('epi-game');
+        let sim_div =  document.createElement("div");
+        sim_div.classList.add('epi-game');
         let sim_min_max = document.createElement("button");
         sim_min_max.classList.add("epi-min-max");
         sim_min_max.textContent = "x";
-        simulation.append(sim_min_max);
-        div.append(simulation);
+        sim_div.append(sim_min_max);
+        div.append(sim_div);
 
         let chart_holder  = document.createElement("div");
         let chart = document.createElement("canvas");
@@ -788,20 +928,32 @@
         parameters.classList.add('epi-parameters');
         parameterBox.append(parameters);
 
+        let downloadConfig = document.createElement("div");
+        downloadConfig.classList.add('epi-download');
+        parameterBox.append(downloadConfig);
+
         let showZeros = document.createElement("div");
         showZeros.classList.add('epi-show-zeros');
-        parameterBox.append(showZeros);
+        downloadConfig.append(showZeros);
 
-        let results_box = document.createElement("div");
-        results_box.classList.add("epi-results-box");
-        let results_min_max = document.createElement("button");
-        results_min_max.classList.add("epi-min-max");
-        results_min_max.textContent = "x";
-        results_box.append(results_min_max);
+        let resultsBox = document.createElement("div");
+        resultsBox.classList.add("epi-results-box");
+
+        let resultsMinMax = document.createElement("button");
+        resultsMinMax.classList.add("epi-min-max");
+        resultsMinMax.textContent = "x";
+        resultsBox.append(resultsMinMax);
         let results = document.createElement("div");
         results.classList.add('epi-results');
-        results_box.append(results);
-        div.append(results_box);
+
+        let table = document.createElement("table");
+        results.append(table);
+        resultsBox.append(results);
+        div.append(resultsBox);
+
+        let downloadResults = document.createElement("div");
+        downloadResults.classList.add('epi-download');
+        resultsBox.append(downloadResults);
 
         let controls = document.createElement("div");
         controls.classList.add('epi-controls');
@@ -817,21 +969,23 @@
         step.classList.add('epi-button');
         controls.append(step);
 
-        // let save = document.createElement("button");
-        // save.textContent = "Save";
-        // save.classList.add('epi-button');
-        // div.append(save);
+        let reset = document.createElement("button");
+        reset.textContent = "Reset";
+        reset.classList.add('epi-button');
+        controls.append(reset);
 
         ui_elements[div_id] = {
-            'simulation': simulation,
+            'sim_div': sim_div,
             'chart': chart,
             'parameterBox': parameterBox,
             'parameters': parameters,
             'results': results,
             'showZeros': showZeros,
+            'downloadResults': downloadResults,
+            'downloadConfig': downloadConfig,
             'play': play,
             'step': step,
-            //   'save': save
+            'reset': reset,
         };
     }
 
@@ -860,31 +1014,33 @@
         let infectious_ids = [];
         let transition_ids = [];
         let output = "";
-        if (sim.name)
+        if (sim.config.name)
             output += "<h2 class='epi-model-name'>" +
-            sim.name + "</h2>";
-        if (sim.description)
+            sim.config.name + "</h2>";
+        if (sim.config.description)
             output += "<p class='epi-model-description'>" +
-            sim.description +
+            sim.config.description +
             "<p>";
         output +=
-            "<p>" + "Number of agents: " + sim.numAgents + "</p>";
+            "<p>" + "Number of agents: " + sim.config.numAgents + "</p>";
 
         output +=
             "<span class='epi-entry'>" +
             "<span class='epi-description'>speed (millisecs)</span>" +
             "<span id='" + sim.div_id + "-speed' class='epi-value'>" +
-            sim.interval + "</span> <input id='" + sim.div_id + "-speed-slider'" +
+            sim.config.interval + "</span> <input id='" +
+            sim.div_id + "-speed-slider'" +
             "type='range' min=0 max=2000 step='1' class='epi-slider' " +
-            "value=" + sim.interval + " ></span>";
+            "value=" + sim.config.interval + " ></span>";
 
         output +=
             "<span class='epi-entry'>" +
             "<span class='epi-description'>width</span>" +
             "<span id='" + sim.div_id + "-width' class='epi-value'>" +
-            sim.width + "</span> <input id='" + sim.div_id + "-width-slider'" +
+            sim.config.width + "</span> <input id='" +
+            sim.div_id + "-width-slider'" +
             "type='range' min=100 max=2000 step='10' class='epi-slider' " +
-            "value=" + sim.width + " ></span>";
+            "value=" + sim.config.width + " ></span>";
 
 
         // Infectiousness
@@ -943,18 +1099,19 @@
     }
 
     function setupShowZeros(div_id, sim) {
+        const id = 'epi-show-zeros-checkbox-' + div_id;
         let output = '';
-        output += '<label for="epi-show-zeros">Show zeros</label>';
+        output += '<label for="' + id + '">Show zeros</label>';
         output +=
-            '<input type="checkbox" id="epi-show-zeros-checkbox" ' +
-            'name="epi-show-zeros"';
+            '<input type="checkbox" id="' + id + '" ' +
+            'name="epi-show-zeros-checkbox"';
         if (sim.show_zeros) {
             output += 'checked >';
         } else {
             output += '></div>';
         }
         ui_elements[div_id].showZeros.innerHTML = output;
-        document.getElementById('epi-show-zeros-checkbox').addEventListener(
+        document.getElementById(id).addEventListener(
             "change", function (e) {
                 if (e.target.checked)
                     sim.show_zeros = true;
@@ -974,6 +1131,50 @@
             });
     }
 
+    function downloadFile(filename, text,
+                          mime='data:application/csv;charset=utf-8,') {
+        var e = document.createElement('a');
+        e.setAttribute('href', mime + encodeURIComponent(text));
+        e.setAttribute('download', filename);
+        e.style.display = 'none';
+        document.body.appendChild(e);
+        e.click();
+        document.body.removeChild(e);
+    }
+
+    function setupDownloadConfig(div_id, sim) {
+        const id = 'epi-download-config-link-' + div_id;
+        const output = '<a href="#"' + 'id="' + id +
+              '" class="epi-download-link">Download configuration as JSON</a>';
+
+        ui_elements[div_id].downloadConfig.insertAdjacentHTML("afterbegin", output);
+        document.getElementById(id).addEventListener(
+            "click", function (e) {
+                let text = EpiAgents.objToString(sim.config);
+                downloadFile("epiconfig.json", text,
+                             'data:text/javascript;charset=utf-8,');
+            });
+    }
+
+    function setupDownloadResults(div_id, sim) {
+        const id = 'epi-download-results-link-' + div_id;
+        const output = '<a href="#"' + 'id="' + id +
+              '" class="epi-download-link">Download results as CSV</a>';
+
+        ui_elements[div_id].downloadResults.innerHTML = output;
+        document.getElementById(id).addEventListener(
+            "click", function (e) {
+                let text = "";
+                for (let result of sim.results) {
+                    for (let cell of result) {
+                        text += cell + ",";
+                    }
+                    text += "\n";
+                }
+                downloadFile("epiresults.csv", text);
+            });
+    }
+
     function getAllSiblings(elem) {
         let sibs = [];
         while (elem = elem.nextSibling) {
@@ -985,33 +1186,48 @@
     function assignEvents(div_id, sim) {
         let play = ui_elements[div_id].play;
         let step = ui_elements[div_id].step;
-        //let save = ui_elements[div_id].save;
+        let reset = ui_elements[div_id].reset;
         play.addEventListener("click", function (e) {
             if (sim.state == EpiAgents.SimulationState.PAUSED) {
                 e.target.textContent = "Pause";
                 step.disabled = true;
+                reset.disabled = true;
                 sim.play();
             } else {
                 e.target.textContent = "Play";
                 step.disabled = false;
+                reset.disabled = false;
                 sim.pause();
             }
         });
         step.addEventListener("click", function (e) {
             if (sim.state == EpiAgents.SimulationState.PAUSED) {
-                let t = sim.max_iterations;
                 sim.step();
             }
         });
-        //save.addEventListener("click", function(e) {
-        //    EpiAgents.save(sim);
-        //});
+        reset.addEventListener("click", function (e) {
+            let div = document.getElementById(div_id);
+            div.innerHTML = "";
+            let stages = ui_elements[div_id].stages;
+            let options = ui_elements[div_id].options;
+            ui_elements[div_id] = undefined;
+            let tempSim = create(div_id, options);
+            for (let obj in tempSim) {
+                sim[obj] = tempSim[obj];
+            }
+            sim.stages = EpiAgents.deepCopy(stages);
+            init(sim, div_id);
+        });
+
+
         let widgets = showParameters(sim, ui_elements[div_id].parameters);
         setupShowZeros(div_id, sim);
+        setupDownloadConfig(div_id, sim);
+        setupDownloadResults(div_id, sim);
 
         document.getElementById(div_id + '-speed-slider').
             addEventListener("input", function(e) {
-                sim.interval = e.target.value;
+                sim.config.interval = e.target.value;
                 document.getElementById(div_id + '-speed').textContent =
                     e.target.value;
                 if (sim.state === EpiAgents.SimulationState.PLAYING) {
@@ -1022,10 +1238,10 @@
 
         document.getElementById(div_id + '-width-slider').
             addEventListener("input", function(e) {
-                sim.width = e.target.value;
+                sim.config.width = e.target.value;
                 document.getElementById(div_id + '-width').textContent =
                     e.target.value;
-                sim.canvas.width = sim.width;
+                sim.canvas.width = sim.config.width;
                 for (let agent of sim.agents) {
                     agent.squeezeLeft();
                 }
@@ -1064,8 +1280,19 @@
 
     }
 
+    function init(sim, div_id) {
+        sim.initialize();
+        createSimulationCanvas(div_id, sim);
+        eventDrawCanvas(sim);
+        assignEvents(div_id, sim);
+        writeResultsHeader(ui_elements[div_id].results, sim);
+        writeResults(ui_elements[div_id].results, sim);
+        EpiAgents.eventRecordResultHeader(sim);
+        EpiAgents.eventRecordResult(sim);
+        ui_elements[div_id].stages = EpiAgents.deepCopy(sim.stages);
+    }
 
-    EpiAgentsUI.create = function(div_id, options={}) {
+    function create(div_id, options={}) {
         createUIElements(div_id);
         let chart = {};
         let override_options = options;
@@ -1074,44 +1301,46 @@
         override_options.extra_during_events = options.extra_during_events ||
             [
                 eventDrawCanvas,
-                function(simulation) {
-                    writeResults(ui_elements[div_id].results, simulation);
-                    updateGraph(simulation, chart);
+                function(sim)
+                {
+                    writeResults(ui_elements[div_id].results, sim);
+                    updateGraph(sim);
                 }
             ];
         override_options.extra_after_events = options.extra_after_events ||
             [eventDrawCanvas];
 
-        let sim = EpiAgents.create(ui_elements[div_id].simulation,
-                                   override_options);
-        sim.canvas = options.canvas || null;
+        let sim = new EpiAgents.Simulation(options);
+        sim.sim_div = ui_elements[div_id].sim_div;
+        sim.canvas = null;
         sim.ctx = null;
         sim.div_id = div_id;
         sim.inf = INF + div_id;
         sim.inf_slider = sim.inf + "-";
         sim.trans = TRANS + div_id;
         sim.trans_slider = sim.trans + "-";
-        sim.init = function() {
-            sim.initialize();
-            createSimulationCanvas(div_id, sim);
-            eventDrawCanvas(sim);
-            assignEvents(div_id, sim);
-            writeResults(ui_elements[div_id].results, sim);
-        }
         sim.show_zeros = true;
 
         sim.chart_options = override_options.chart_options ||
             EpiAgentsUI.default_options.chart_options;
         chart = createGraph(ui_elements[div_id].chart, sim);
+        sim.chart = chart;
+
+        sim.init = function() {
+            init(sim, div_id);
+        }
+        ui_elements[div_id].options = EpiAgents.deepCopy(options);
 
         if (options.auto_play) {
-            sim.init();
+            init(sim, div_id);
             sim.play();
         } else if (options.init) {
-            sim.init();
+            init(sim, div_id);
         }
 
         return sim;
     }
+
+    EpiAgentsUI.create = create;
 
 } (window.EpiAgentsUI = window.EpiAgentsUI || {}));

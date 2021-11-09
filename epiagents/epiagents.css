@@ -87,13 +87,38 @@
 }
 
 .epi-results, .epi-parameters {
-    max-height: 220px;
-    margin-bottom: 10px;
+    min-height: 100px;
+    height: 85%;
     overflow: scroll;
 }
 
-.epi-parameters {
-    border-bottom: 1px solid lightgray;
+.epi-results table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.epi-results thead {
+    text-transform: capitalize;
+    font-weight: bold;
+}
+
+.epi-results table, .epi-results th, .epi-results td {
+    border: 1px solid black;
+}
+
+.epi-download {
+    width: 95%;
+    padding: 6px;
+    margin-top: 6px;
+    border-top: 1px solid lightgray;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.epi-show-zeros {
+    display: inline-block;
+    margin-left: 15px;
 }
 
 .epi-model-name {
@@ -132,10 +157,6 @@
 
 .epi-hidden {
     display: none;
-}
-
-#epi-show-zeros-checkbox {
-    margin-left: 12px;
 }
 
 .epi-min-max {
