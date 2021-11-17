@@ -1,8 +1,4 @@
 .epi-simulation {
-    padding: 4px;
-    border-bottom: 1px solid lightgray;
-    padding: 16px;
-    margin: 16px;
     display: grid;
 }
 
@@ -14,51 +10,77 @@
 
 @media screen and (max-width: 992px) {
     .epi-simulation {
-        grid-template-columns: auto;
+        grid-template-columns: 100%;
     }
+    .epi-controls {
+        text-align: center;
+    }
+
 }
 
 
 .epi-game, .epi-chart-holder, .epi-parameter-box, .epi-results-box  {
-    resize: both;
     margin: 6px;
     padding: 12px;
-    border: 1px solid lightgray;
+    border: 1px solid #f0eded;
     border-radius: 3px;
     position: relative;
-    min-height: 18px;
+    min-height: 150px;
 }
 
+.epi-game::before, .epi-chart-holder::before,
+.epi-parameter-box::before, .epi-results-box::before {
+    color: #5F9EA0;
+    padding-bottom: 8px;
+}
 
+.epi-game::before {
+    content: "Simulation";
+}
+
+.epi-chart-holder::before {
+    content: "Graph";
+}
+
+.epi-parameter-box::before {
+    content: "Parameters";
+}
+
+.epi-results-box::before {
+    content: "Results";
+}
+
+.epi-parameters h2 {
+    margin-bottom: 6px;
+}
 .epi-game-canvas {
-    border: 2px solid black;
-    border-radius: 3px;
     padding: 0;
     margin: 12px auto 12px auto;
     margin-left: auto;
     margin-right: auto;
     display: block;
+    border: 1px solid black;
 }
 
 .epi-button {
 	background-color:#44c767;
-	border-radius:3px;
+	border-radius: 3px;
 	border: 1px solid #18ab29;
 	display:inline-block;
 	cursor:pointer;
 	color:#ffffff;
-        width: 100px;
+        width: 80px;
 	font-family:Arial;
-	font-size:19px;
+	font-size: 16px;
 	font-weight:bold;
-	padding:16px 31px;
+	padding:12px;
 	text-decoration:none;
 	text-shadow:0px 1px 2px #2f6627;
-        margin: 6px;
+        margin: 3px;
 }
 
 .epi-button:hover {
-	background-color:#5cbf2a;
+background-color:#5cbf2a;
 }
 
 .epi-button:disabled {
@@ -71,28 +93,27 @@
 	top:1px;
 }
 
-/*.epi-chart { background: #eee;}*/
-
 .epi-results-box, .epi-parameter-box {
-    max-height: 250px;
+    height: 250px;
     padding: 10px;
-    border: 1px solid lightgray;
-    border-radius: 5px;
-    resize: both;
-}
-
-.epi-canvas canvas, .epi-results-box, .epi-parameter-box {
-    border: 1px solid lightgray;
-    border-radius: 5px;
+    overflow-x: auto;
+    overflow-y: none;
 }
 
 .epi-results, .epi-parameters {
     min-height: 100px;
-    height: 85%;
+    height: 75%;
     overflow: scroll;
 }
 
+.epi-entry {
+    display: grid;
+    grid-template-columns: 165px 45px 90px;
+    width: 100%;
+}
+
 .epi-results table {
+    margin-top: 6px;
     border-collapse: collapse;
     width: 100%;
 }
@@ -103,17 +124,20 @@
 }
 
 .epi-results table, .epi-results th, .epi-results td {
-    border: 1px solid black;
+    border: 1px solid lightgray;
+}
+
+.epi-results td {
+    padding: 4px;
 }
 
 .epi-download {
     width: 95%;
-    padding: 6px;
-    margin-top: 6px;
+    padding-top: 12px;
+    padding-bottom: 8px;
     border-top: 1px solid lightgray;
     position: absolute;
     bottom: 0;
-    left: 0;
 }
 
 .epi-show-zeros {
@@ -122,36 +146,25 @@
 }
 
 .epi-model-name {
-    margin-bottom: 12px;
+    margin-top: 6px;
+    margin-bottom: 6px;
 }
 
 .epi-model-description {
-    margin-bottom: 12px;
-    font-size: 110%;
-}
-.epi-entry {
-    display: grid;
-    grid-template-columns: 185px 25px 100px;
-    width: 300px;
-}
-
-.epi-iteration-head {
-    font-size: 120%;
-    font-weight: bold;
-}
-
-.epi-description {
+    margin-bottom: 6px;
     text-transform: capitalize;
 }
 
 .epi-value {
-    /*text-align: right;*/
-    color: green;
+    font-size: 80%;
+    height: 14px;
+    margin-bottom: 6px;
 }
 
 .epi-slider {
     margin-left: 12px;
     width: 100px;
+    height: 14px;
 }
 
 
@@ -170,4 +183,25 @@
     font-size: 14px;
     font-weight: bold;
     border: none;
+}
+
+.epi-transition-table {
+    overflow: auto;
+    font-size: 80%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 900px;
+    margin-bottom: 24px;
+}
+
+.epi-transition-table td {
+    border: solid 1px black;
+}
+
+.epi-transition-editable {
+    text-align: center;
+}
+
+.epi-transition-na {
+    background-color: gray;
 }
