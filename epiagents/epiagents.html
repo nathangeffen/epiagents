@@ -73,6 +73,26 @@
          let sim_3 = EpiAgentsUI.create("vaccine-strategy-3", {
              name: "Test model 3",
              description: "Model used for testing EpiAgents",
+             width: 400,
+             height: 400,
+             clusters: [
+                 {
+                     left: 0,
+                     top: 0,
+                     right: 240,
+                     bottom: 240,
+                     border: true,
+                     borderColor: "yellow"
+                 },
+                 {
+                     left: 160,
+                     top: 160,
+                     right: 400,
+                     bottom: 400,
+                     border: true,
+                     borderColor: "red"
+                 },
+             ]
          });
          sim_3.init();
         </script>

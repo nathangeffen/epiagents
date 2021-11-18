@@ -338,12 +338,6 @@
         }
     }
 
-    function advanceStage(agent, stage_from, stage_to, risk) {
-        if (agent.stage = stage_from) {
-            if (Math.random() < risk) agent.stage = stage_to;
-        }
-    }
-
     function eventAdvanceAgents(sim) {
         for (let agent of sim.agents) {
             for (const stage in sim.stages) {
@@ -355,6 +349,7 @@
                               nextStageProb[next_stage];
                         if (Math.random() < risk) {
                             agent.stage = sim.stages[next_stage];
+                            break;
                         }
                     }
                 }
@@ -418,9 +413,14 @@
             sim.agentCounter++;
             this.speed = sim.config.agentSpeed;
             this.stage = sim.stages.SUSCEPTIBLE;
-            this.cluster = Math.floor(Math.random() * sim.clusters.length);
-            this.x = Math.random() * sim.config.width;
-            this.y = Math.random() * sim.config.height;
+            this.stages = [ [0, sim.stages.SUSCEPTIBLE] ];
+            const index = Math.floor(Math.random() * sim.clusters.length);
+            this.cluster = sim.clusters[index];
+            this.x = Math.random() * (this.cluster.right - this.cluster.left) +
+                this.cluster.left;
+            this.y = Math.random() * (this.cluster.bottom - this.cluster.top) +
+                this.cluster.top;
+            this.correctPosition();
             this.movementRandomness = gaussian(
                 sim.config.movementRandomnessMean,
                 sim.config.movementRandomnessStdev);
@@ -469,14 +469,14 @@
         }
 
         correctPosition() {
-            if (this.x < 0)
-                this.x = 0;
-            else if (this.x > this.sim.config.width)
-                this.x = this.sim.config.width;
-            if (this.y < 0)
-                this.y = 0;
-            else if (this.y > this.sim.config.height)
-                this.y = this.sim.config.height;
+            if (this.x - this.radius < this.cluster.left)
+                this.x = this.cluster.left + this.radius;
+            else if (this.x + this.radius > this.cluster.right)
+                this.x = this.cluster.right - this.radius;
+            if (this.y - this.radius < this.cluster.top)
+                this.y = this.cluster.top + this.radius;
+            else if (this.y + this.radius > this.cluster.bottom)
+                this.y = this.cluster.bottom - this.radius;
         }
 
         move() {
@@ -488,12 +488,12 @@
                 this.setDirection();
             }
 
-            if (this.x + this.dx >= this.sim.config.width - this.radius ||
-                this.x + this.dx <= this.radius) {
+            if (this.x + this.dx >= this.cluster.right - this.radius ||
+                this.x + this.dx <= this.cluster.left + this.radius) {
                 this.dx = -this.dx;
             }
-            if (this.y + this.dy >= this.sim.config.height - this.radius ||
-                this.y + this.dy <= this.radius) {
+            if (this.y + this.dy >= this.cluster.bottom - this.radius ||
+                this.y + this.dy <= this.cluster.top + this.radius) {
                 this.dy = -this.dy;
             }
 
@@ -513,9 +513,9 @@
             let config = this.config;
             config.name = options.name || null;
             config.description = options.description || null;
-            config.width = options.width || 500;
-            config.height = options.height || 500;
-            config.maxArea = options.maxArea || 500 * 500;
+            config.width = options.width || 320;
+            config.height = options.height || 320;
+            config.maxArea = options.maxArea || config.width * config.height;
             config.interval = options.interval || 0;
             config.numAgents = options.numAgents || 1000;
             config.agentRadius = options.agentRadius || 3;
@@ -539,13 +539,13 @@
             config.stages = options.simulationStages || deepCopy(SimulationStages);
             config.clusters = options.clusters || [
                 {
-                    "left": 0,
-                    "top": 0,
-                    "right": config.width,
-                    "bottom": config.height,
-                    "border": false,
-                    "border-color": "black"
-                }
+                    left: 0,
+                    top: 0,
+                    right: config.width,
+                    bottom: config.height,
+                    border: true,
+                    borderColor: "black"
+                },
             ];
 
             this.clusters = deepCopy(config.clusters);
@@ -823,9 +823,16 @@
         let borderX = parseFloat(cs.borderLeftWidth) +
             parseFloat(cs.borderRightWidth);
         let elementWidth = sim.sim_div.offsetWidth - paddingX - borderX;
-        sim.config.maxArea = elementWidth * elementWidth;
+        let elementHeight = elementWidth;
         sim.config.width = Math.min(sim.config.width, elementWidth);
-        sim.config.height = sim.config.width;
+        sim.config.height = Math.min(sim.config.height, elementHeight);
+        sim.config.maxArea = sim.config.width * sim.config.height;
+        for (let cluster of sim.clusters) {
+            if (cluster.bottom > sim.config.height)
+                cluster.bottom = sim.config.height;
+            if (cluster.right > sim.config.width)
+                cluster.right = sim.config.width;
+        }
     }
 
     function createSimulationCanvas(div_id, sim)
@@ -856,9 +863,27 @@
 
     EpiAgentsUI.drawAgent = drawAgent;
 
+    function drawCluster(ctx, cluster)
+    {
+        if (cluster.border) {
+            ctx.beginPath();
+            ctx.strokeStyle = cluster.borderColor;
+            ctx.fillStyle = "red";
+            ctx.rect(cluster.left, cluster.top,
+                     cluster.right - cluster.left,
+                     cluster.bottom - cluster.top);
+            ctx.stroke();
+        }
+    }
+
+    EpiAgentsUI.drawCluster = drawCluster;
+
     function eventDrawCanvas(sim)
     {
         sim.ctx.clearRect(0, 0, sim.config.width, sim.config.height);
+        for (let cluster of sim.clusters) {
+            EpiAgentsUI.drawCluster(sim.ctx, cluster);
+        }
         for (let agent of sim.agents) {
             EpiAgentsUI.drawAgent(agent);
         }
@@ -1142,8 +1167,13 @@
         makeInput(elem, "speed (millisecs)", sim.div_id, sim.config.interval,
                   "-speed");
 
-        let area = (sim.config.height * sim.config.width) / sim.config.maxArea
-            * 100;
+        const clusterWidth = sim.clusters[0].right - sim.clusters[0].left;
+        const clusterHeight = sim.clusters[0].bottom - sim.clusters[0].top;
+        console.log(sim, clusterWidth, clusterHeight, clusterWidth * clusterHeight,
+                    sim.config.maxArea);
+        let area = (Math.sqrt(clusterWidth * clusterHeight) /
+                    Math.sqrt(sim.config.maxArea) * 100).
+            toFixed(1);
         makeInput(elem, "area (% of max)", sim.div_id, area, "-area",
                   10, 100, 1);
 
@@ -1342,14 +1372,15 @@
 
         document.getElementById(div_id + '-area-slider').
             addEventListener("input", function(e) {
-                let area = (parseFloat(e.target.value) / 100.0) *
-                    sim.config.maxArea;
-                let width = Math.sqrt(area);
-                let height = width;
-                sim.config.width = width;
-                sim.config.height = width;
-                sim.canvas.width = sim.config.width;
-                sim.canvas.height = sim.config.height;
+                let prop = parseFloat(e.target.value) / 100.0;
+                for (let cluster of sim.clusters) {
+                    cluster.right =
+                        Math.min(cluster.left + prop * sim.config.width,
+                                 sim.config.width);
+                    cluster.bottom =
+                        Math.min(cluster.top + prop * sim.config.height,
+                                 sim.config.height);
+                }
                 for (let a of sim.agents) a.correctPosition();
                 eventDrawCanvas(sim);
             });
