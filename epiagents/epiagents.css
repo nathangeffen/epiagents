@@ -25,7 +25,6 @@
     border: 1px solid #f0eded;
     border-radius: 3px;
     position: relative;
-    min-height: 150px;
 }
 
 .epi-game::before, .epi-chart-holder::before,
@@ -36,6 +35,12 @@
 
 .epi-game::before {
     content: "Simulation";
+}
+
+.epi-game-status {
+    font-size: 80%;
+    overflow-y: scroll;
+    max-height: 36px;
 }
 
 .epi-chart-holder::before {
@@ -131,7 +136,7 @@ background-color:#5cbf2a;
     padding: 4px;
 }
 
-.epi-download {
+.epi-download-box, .epi-show-zeros  {
     width: 95%;
     padding-top: 12px;
     padding-bottom: 8px;
@@ -140,9 +145,8 @@ background-color:#5cbf2a;
     bottom: 0;
 }
 
-.epi-show-zeros {
-    display: inline-block;
-    margin-left: 15px;
+.epi-download {
+    margin-left: 6px;
 }
 
 .epi-model-name {

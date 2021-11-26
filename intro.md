@@ -16,6 +16,17 @@ the 20th/21st century, only to spring up on us again.
 How much our knowledge has grown. And how much we still don't know - uncertainty
 of statistics. Maybe talk about Ronald Fisher
 
+<p id="hello-world">
+Hello world - Test to see if this works with Pandoc.
+</p>
+
+<script>
+    document.getElementById("hello-world").addEventListener("click",
+    function(e) {
+       e.target.style.backgroundColor="red";
+    });
+</script>
+
 ## Modelling measles
 
 Introduce equation-based vs simulation models
