@@ -537,19 +537,11 @@
             config.movementRandomnessStdev = options.movementRandomnessStdev || 0.0;
             config.elasticCollisions = options.elasticCollisions || true;
             config.agentSpeed = ifElse(options.agents_speed, 1.0);
+            config.maxIterations = options.maxIterations || 0;
             config.extraBeforeEvents = options.extraBeforeEvents || [];
             config.extraDuringEvents = options.extraDuringEvents || [];
             config.extraAfterEvents = options.extraAfterEvents || [];
-            config.beforeEvents = options.beforeEvents ||
-                [].concat(config.extraBeforeEvents);
-            config.duringEvents = options.duringEvents ||
-                [eventAdvanceAgents, eventMoveAgents, eventCalcResults,
-                 eventRecordResult].
-                concat(config.extraDuringEvents) || options.duringEvents;
-            config.afterEvents = options.afterEvents ||
-                [eventCalcResults, eventRecordResult].
-                concat(config.extraAfterEvents);
-            config.maxIterations = options.maxIterations || 0;
+
             config.clusters =  [
                 {
                     name: "default",
@@ -560,15 +552,24 @@
                     border: true,
                     borderColor: "black",
                     numAgents: options.numAgents || 0,
-                    states: options.simulationStates || deepCopy(SimulationStates)
+                    states: options.simulationStates || deepCopy(SimulationStates),
+                    beforeEvents: options.beforeEvents ||
+                        [].concat(config.extraBeforeEvents),
+                    duringEvents: options.duringEvents ||
+                        [eventAdvanceAgents, eventMoveAgents, eventCalcResults,
+                         eventRecordResult].
+                        concat(config.extraDuringEvents) || options.duringEvents,
+                    afterEvents: options.afterEvents ||
+                        [eventCalcResults, eventRecordResult].
+                        concat(config.extraAfterEvents)
                 },
             ];
+
             if ("clusters" in options) {
                 for (let i = 0; i < options.clusters.length; i++) {
                     if (i > 0) config.clusters.push(deepCopy(config.clusters[0]));
                     for (let key in options.clusters[i]) {
-                        config.clusters[i][key] =
-                            deepCopy(options.clusters[i][key]);
+                        config.clusters[i][key] = deepCopy(options.clusters[i][key]);
                     }
                 }
             }
@@ -577,7 +578,6 @@
             this.timer = undefined;
             this.agentCounter = options.agentCounter || 0;
             this.agents = [];
-            //this.states = config.states // Convenience because states used so often
             this.user_counters = {};
 
             for (let state in SimulationStates) {
@@ -739,12 +739,14 @@
 
         beforeIteration() {
             this.eventPhase = EventPhase.BEFORE;
-            this.runEvents(this.config.beforeEvents);
+            for (let cluster of this.clusters)
+                this.runEvents(cluster.beforeEvents);
         };
 
         oneIteration() {
             this.eventPhase = EventPhase.DURING;
-            this.runEvents(this.config.duringEvents);
+            for (let cluster of this.clusters)
+                this.runEvents(cluster.duringEvents);
             ++this.iteration;
             if (this.config.maxIterations > 0 &&
                 this.iteration % this.config.maxIterations === 0) {
@@ -754,7 +756,8 @@
 
         afterIteration() {
             this.eventPhase = EventPhase.AFTER;
-            this.runEvents(this.config.afterEvents);
+            for (let cluster of this.clusters)
+                this.runEvents(cluster.afterEvents);
         };
 
         step() {

@@ -1,6 +1,9 @@
-# Understanding epidemics
+---
+title: Understanding epidemics
+...
 
-## The catastrophic effect of plagues
+
+# The catastrophic effect of plagues
 
 Intro on Covid (newest)
 
@@ -27,7 +30,7 @@ Hello world - Test to see if this works with Pandoc.
     });
 </script>
 
-## Modelling measles
+# Modelling measles
 
 Introduce equation-based vs simulation models
 
