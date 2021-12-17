@@ -4,6 +4,71 @@
 title: Understanding epidemics
 ...
 
+# How we've lived and died with plagues
+
+- Oldest TB skeleton
+-- DNA sequencing of TB from 10k years ago
+-- TB till Jude the Obscure, Orwell and today
+
+- Simulation: Did plague wipe out other hominids? Not necessarily in one
+  go. Even a slight evolutionary advantage can lead to extinction.
+
+- Bible
+
+- Thucydides as a modern view of plague
+-- More factual and scientific than much written today published in journals
+
+- Decameron
+
+- Smallpox in Cape Town
+
+- 1918
+
+- AIDS
+
+- Covid
+
+- Do plagues change history?
+
+-- Roman decline with Aurelius death but Commodus would have come into power
+anyway.
+
+-- Athenian decline with Pericles death? Surely we need more than death of one
+man to postulate a systemic change.
+
+-- Consensus among historians that Black Death changed Europe.
+
+-- And the bible claims a plague led to the exodus
+
+# The struggle for medical equality
+
+# You're not special
+
+# Dealing with pseudoscience
+
+# Estimating the size of plagues
+
+# Alleviating suffering
+
+Medicine isn't just about extending life. Alleviating suffering as important.
+
+Perhaps a discussion on suffering
+
+# Modelling plagues
+
+# Viral escape - the evolution of pathogens
+
+Start with omicron and theories about how it arose:
+
+
+# Preparing for the next pandemic
+
+- Are there alternatives to lockdowns?
+
+- Can contact tracing be effective?
+
+
+#####################
 
 # The catastrophic effect of plagues
 
