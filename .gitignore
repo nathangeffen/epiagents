@@ -1,1 +1,9 @@
 *.epub
+*.swp
+*.png
+*.jpg
+*.jpeg
+*~
+*.pdf
+*.html
+*.csl
