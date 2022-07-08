@@ -19,3 +19,37 @@ body {
     margin: 24px auto 24px auto;
   }
 }
+
+.sir {
+  display: flex;
+  flex-direction: row;
+}
+
+.macro-results, .macro-chart {
+  flex: 50%;
+}
+
+.macro-results {
+  max-height: 400px;
+  overflow-y: scroll;
+  font-size: small;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.macro-results thead tr th {
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid gray;
+  opacity: 1.0;
+  background-color: white;
+  z-index 1;
+}
+
+.macro-results tbody tr {
+  /* `z-index: -1; */
+}
+
+.macro-results td {
+  padding: 10px;
+}

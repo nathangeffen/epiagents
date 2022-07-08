@@ -184,9 +184,14 @@ const exampleModel = {
 
   function run(model, div, options={}) {
     let resultsDiv = document.createElement('div');
+    resultsDiv.classList.add('macro-results');
+    let chartDiv = document.createElement('div');
+    chartDiv.classList.add('macro-chart');
     let chartCanvas = document.createElement('canvas');
+    chartCanvas.classList.add('macro-chart-canvas');
+    chartDiv.append(chartCanvas);
     div.append(resultsDiv);
-    div.append(chartCanvas);
+    div.append(chartDiv);
     runAndOutputResultsAndChart(model, resultsDiv, chartCanvas, options);
   }
 
