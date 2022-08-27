@@ -1,7 +1,31 @@
 body {
-  margin: auto;
-  font-size: 16px;
+    margin: auto;
+    padding: 9px;
+    font-size: 16px;
 }
+
+h1, h2, h3, p, ul, li, aside {
+    max-width: 600px;
+}
+
+@media screen and (min-width: 992px) {
+  body {
+    max-width: 992px;
+    margin: auto;
+    font-size: 16px;
+  }
+  h1 {
+    text-align: center;
+  }
+  .sir, .epi-simulation {
+    padding: 4px;
+    border: 1px dashed #6495ED;
+    border-radius: 5px;
+    padding: 16px;
+    margin: 24px auto 24px auto;
+  }
+}
+
 @media screen and (min-width: 992px) {
   body {
     max-width: 992px;
@@ -23,33 +47,116 @@ body {
 .sir {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
-.macro-results, .macro-chart {
-  flex: 50%;
+.sir > div {
+  width: 30%;
 }
 
-.macro-results {
-  max-height: 400px;
-  overflow-y: scroll;
-  font-size: small;
+@media (max-width: 800px) {
+  .sir {
+    flex-direction: column;
+  }
+}
+
+.macro-results, .macro-chart, .macro-parameters {
+  max-height: 356px;
   border: 1px solid black;
   border-radius: 5px;
+  padding: 4px;
+}
+
+.macro-results-table-holder {
+  overflow-y: scroll;
+  max-height: 325px;
+}
+
+.macro-results::before, .macro-parameters::before, .macro-chart::before {
+  display: block;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  margin-left: 3px;
+  color: #5F9EA0;
+}
+.macro-results::before {
+  content: "Results";
+}
+
+.macro-chart::before {
+  content: "Graph";
+}
+
+.macro-parameters::before {
+  content: "Parameters";
+}
+
+.macro-results table {
+  overflow: scroll;
+  height: 200px;
 }
 
 .macro-results thead tr th {
   position: sticky;
-  top: 0;
   border-bottom: 1px solid gray;
   opacity: 1.0;
   background-color: white;
   z-index 1;
 }
 
-.macro-results tbody tr {
-  /* `z-index: -1; */
-}
 
 .macro-results td {
-  padding: 10px;
+  padding: 3px;
+}
+
+.macro-parameters label {
+  display: block;
+}
+
+.macro-parameters input {
+  margin-bottom: 12px;
+}
+
+.macro-recalc button {
+	background-color:#44c767;
+	border-radius: 3px;
+	border: 1px solid #18ab29;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+        width: 80px;
+	font-family:Arial;
+	font-size: 16px;
+	font-weight:bold;
+	padding:12px;
+	text-decoration:none;
+	text-shadow:0px 1px 2px #2f6627;
+        margin: 3px;
+}
+
+
+aside {
+    background-color: #F6F6E6;
+    padding: 6px;
+    font-size: 80%;
+}
+
+aside:before {
+    content: "☞";
+    font-size: 300%;
+    margin-right: 30px;
+}
+
+aside h1 {
+    margin-top: -32px;
+    padding-left: 45px;
+}
+
+.open-close {
+    margin-left: 12px;
+}
+
+.aside-hide {
+    display: none;
 }
