@@ -14,7 +14,7 @@ function setupAsides()
                     console.log("Clicked");
                     if (e.target.textContent === "+") {
                         console.log("A", children.length);
-                        for (let c of children) {                            
+                        for (let c of children) {
                             c.classList.remove('aside-hide');
                         }
                         e.target.textContent = '-';
@@ -37,3 +37,9 @@ function setupAsides()
 }
 
 setupAsides();
+
+window.MathJax = {
+    tex: {
+        tags: 'ams'
+    }
+};

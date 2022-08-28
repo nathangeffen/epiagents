@@ -139,6 +139,8 @@ h1, h2, h3, p, ul, li, aside {
 aside {
     background-color: #F6F6E6;
     padding: 6px;
+    margin-top: 12px;
+    margin-bottom: 12px;
     font-size: 80%;
 }
 
