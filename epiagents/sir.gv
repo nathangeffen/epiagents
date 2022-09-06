@@ -2,7 +2,7 @@ digraph sir {
         rankdir=LR;
         shape=box;
         S -> I [label="-λS"]
-#        S -> I [label="βSI/N"];
+        #S -> I [label="βSI/N"];
         I -> R [label="+rI"];
 
 }

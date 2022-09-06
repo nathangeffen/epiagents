@@ -27,7 +27,7 @@
     </head>
     <body>
         <h1>Some notes on infectious disease modelling</h1>
-        <p>Date: June to November 2022</p>
+        <p>By Nathan Geffen, June to November 2022</p>
 
         <p>
             This webpage considers two different kinds of models, compartmental
@@ -89,20 +89,27 @@
             We start off with a very simple infectious disease. It has the following characteristics:
         </p>
 
-        <ul>
+        <ol>
             <li>A substantial population, at least 100 people, starts off with a
             tiny number of infected people, maybe even just one person.</li>
-            <li>People in this population randomly mix with each other.</li>
+            <li>People in this population randomly (homogenously) mix with each
+            other.</li>
             <lI>While there are a tiny number of infected people in the
                 population, they will on average infect two other people before they recover.</li>
             <li>Infected people on average take 5 days to recover.</li>
             <li>Once recovered, a person has immunity. They can't become
                 infected again and they can't transmit the infection to anyone else.</li>
-        </ul>
+        </ol>
 
         <p>Note that no-one dies and there are no births or migration into or
         out of this population, at least for the duration that we will model
         this disease.</p>
+
+        <p>
+            Characteristic 3 of our model is what's commonly called $\Re_0$ in
+            epidemiological literature. The real-world use of $\Re_0$ is much
+            more limited than is usually admitted but it's still useful.
+        </p>
 
         <p>
             In this population we have people who are <b>S</b>usceptible to the
@@ -115,42 +122,73 @@
             We initialize the model so that nearly everyone in the population is
             uninfected and has never had the infection. In other words everyone
             is in the Susceptible compartment and a tiny number are in the
-            Infectious compartment. Let's assume the population size is
-            100. Then we'll set S, the number of people in the Susceptible
-            compartment to 99 and I, the number of people in the Infectious
-            compartment to 1. The number of people, R, in the Recovered compartment is 0.
+            Infectious compartment. Let's assume the population size is 100.
+            Then we'll set $S$, the number of people in the Susceptible
+            compartment to 99 and $I$, the number of people in the Infectious
+            compartment to 1. The number of people, $R$, in the Recovered
+            compartment is 0.
         </p>
 
         <p>
-            We then iteratively update the S, I and R compartments with the
+            We then iteratively update the $S$, $I$ and $R$ compartments with the
             number of people who have moved between them. In our model each
             iteration represents a day in our infectious disease world.
             These equations describe what happens on each iteration:
         </p>
 
         <p>
-            \begin{equation}
-            S_{t+1}=S_t - \lambda S_t
-            \end{equation}
+            Note that the number of people in this model is a continuous real
+            number not discrete. As we'll see soon this is one of the big
+            differences between compartmental and agent-based models.
+        </p>
+
+        <p>
+            The number of people who become infected on each iteration, or day,
+            of our model is a function of S, I and the risk of infection $\lambda$.
+            Since all three of these variables change with time, we subscript them.
+            This equation describes the flow from $S$ to $I$:
 
             \begin{equation}
-            I_{t+1}=I_t + \lambda S_t - rI_t
+            S_{t+1}=S_t - \lambda_t S_t
+            \end{equation}
+        </p>
+
+        <p>
+            Since people mix homogenously, we have:
+
+            \begin{equation} \lambda_t = \beta I_t \end{equation}
+
+            where
+
+            \begin{equation} \beta = {\Re_0 \over {ND}} \end{equation}
+
+            where $N$ is the population size and $D$ is the average number of
+            days a person is infected (5 in our model).
+        </p>
+
+        <p>
+            The other equations in the model are simple:
+        </p>
+        <p>
+            \begin{equation}
+            I_{t+1}=I_t + \lambda_t S_t - rI_t
             \end{equation}
 
             \begin{equation}
             R_{t+1}=R_t + rI_t
             \end{equation}
+
+            where $r$ is the rate of recovery per day, or $1/5$ in our model.
         </p>
 
         <p>
-            This is represented in the following graph:
+            We can depict what happens on each time step (or day) graphically:
         </p>
 
         <p>
             <img src="sir.svg" alt="Basic SIR graph">
         </p>
 
-        <p>So what are the values for λ and <i>r</i>?</p>
 
 
 

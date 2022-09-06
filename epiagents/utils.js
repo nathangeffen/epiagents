@@ -39,7 +39,8 @@ function setupAsides()
 setupAsides();
 
 window.MathJax = {
-    tex: {
-        tags: 'ams'
-    }
+  tex: {
+    tags: 'ams',
+    inlineMath: [['$', '$'], ['\\(', '\\)']]
+  },
 };
