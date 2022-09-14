@@ -110,12 +110,17 @@ h1, h2, h3, p, ul, li, aside {
   padding: 3px;
 }
 
-.macro-parameters label {
-  display: block;
+.macro-parameters .form-group label {
+  display: inline-block;
+  width: 100px;
+  font-size: 80%
 }
 
-.macro-parameters input {
-  margin-bottom: 12px;
+.macro-parameters .form-group input {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 80%;
+  width: 60px;
 }
 
 .macro-recalc button {

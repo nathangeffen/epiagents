@@ -35,11 +35,15 @@
     return bObject;
   }
 
-  EpiMacro.delta_S_I = function(compartments, from, to, beta, N) {
+  EpiMacro.deepCopy = deepCopy;
+
+  EpiMacro.delta_S_I = function(compartments, from, to, beta) {
+    const delta = beta * compartments[to];
+    const S_I = delta * compartments[from];
     return {
       'from': from,
       'to': to,
-      'value': beta * compartments[from] * compartments[to] / N
+      'value': S_I
     }
   }
 
@@ -50,7 +54,6 @@
       'value': prop * compartments[from]
     };
   }
-
 
   EpiMacro.calcN = function(compartments, ignore=[]) {
     let N = 0;
@@ -87,40 +90,12 @@
 
   EpiMacro.iterateModel = function(model, n) {
     let series = [];
-    let currentCompartments = {};
     series.push(model.compartments);
-    let updatedModel = deepCopy(model);
+    //let updatedModel = deepCopy(model);
     for (let i = 1; i <= n; i++) {
-      updatedModel.compartments = EpiMacro.iterateModelOnce(updatedModel);
-      series.push(updatedModel.compartments);
+      model.compartments = EpiMacro.iterateModelOnce(model);
+      series.push(model.compartments);
     }
     return series;
   }
 } (window.EpiMacro = window.EpiMacro || {}));
-
-
-const exampleMacroModel = {
-  compartments:  {
-    'S': 98,
-    'I': 2,
-    'R': 0
-  },
-
-  parameters: {
-    β: 0.5,
-    γ: 0.15,
-    iterations: 100,
-  },
-
-  transitions: [
-    function(model) {
-      return EpiMacro.delta_S_I(model.compartments, 'S', 'I',
-                                model.parameters.β,
-                                EpiMacro.calcN(model.compartments, []));
-    },
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'I', 'R',
-                                model.parameters.γ);
-    }
-  ]
-};

@@ -1,8 +1,7 @@
 digraph sir {
         rankdir=LR;
         shape=box;
-        S -> I [label="-λS"]
-        #S -> I [label="βSI/N"];
-        I -> R [label="+rI"];
-
+        S -> I [label=< <I>λS</I> >]
+        #S -> I [label="<I>βSI/N</I>"];
+        I -> < <strike>R</strike> > [label=< <I>rI</I> >];
 }

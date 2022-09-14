@@ -22,6 +22,46 @@
 
 (function (EpiMacroUI) {
 
+  function initChart(chartCanvas, options, result_0) {
+    const colors = options.colors ||  ["red", "green", "blue"];
+    const chartjsOptions = options.chartjsOptions || {};
+    const labels = [0];
+    let datasets = [];
+    let i = 0;
+    for (let key in result_0) {
+      datasets.push({
+        label: key,
+        backgroundColor: colors[i % colors.length],
+        borderColor: colors[i % colors.length],
+        data: [result_0[key]]
+      });
+      i++;
+    }
+    const data = {
+      labels: labels,
+      datasets: datasets
+    };
+    const config = {
+      type: 'line',
+      data: data,
+      options: chartjsOptions
+    };
+    let chart = Chart.getChart(chartCanvas);
+    if (chart) chart.destroy();
+    const ctx = chartCanvas.getContext('2d');
+    chart = new Chart(ctx, config);
+    return chart;
+  }
+
+  function updateChart(chart, label, result)
+  {
+    chart.data.labels.push(label);
+    chart.data.datasets.forEach((dataset) => {
+      dataset.data.push(result[dataset.label]);
+    });
+    chart.update();
+  }
+
   function printHeader(table, result) {
     let thead = document.createElement("thead");
     table.append(thead);
@@ -38,7 +78,22 @@
     }
   }
 
-  function printResult(result, tbody, rowNumber, decimals=2) {
+  function initResults(resultsElem, options, series_0) {
+    resultsElem.innerHTML = "";
+    const decimals = options.decimals || 2;
+    let div = document.createElement("div");
+    div.classList.add("macro-results-table-holder");
+    let table = document.createElement("table");
+    table.classList.add("macro-results-table");
+    printHeader(table, series_0);
+    let tbody = document.createElement("tbody");
+    table.append(tbody);
+    div.append(table);
+    resultsElem.append(div);
+    return tbody;
+  }
+
+  function printResult(tbody, rowNumber, result, decimals=2) {
     let tr = document.createElement("tr");
     tbody.append(tr);
     let td = document.createElement("td");
@@ -51,72 +106,53 @@
     }
   }
 
-  function printResults(series, elem, options = {}) {
-    const decimals = options.decimals || 2;
-    let div = document.createElement("div");
-    div.classList.add("macro-results-table-holder");
-    let table = document.createElement("table");
-    table.classList.add("macro-results-table");
-    printHeader(table, series[0]);
-    let tbody = document.createElement("tbody");
-    table.append(tbody);
-    let rowNumber = 0;
-    for (const result of series) {
-      printResult(result, tbody, rowNumber, decimals);
-      rowNumber++;
-    }
-    div.append(table);
-    elem.append(div);
-  }
-
-
-
-  function makeChart(series, elem, options = {})
-  {
-    const colors = options.colors ||  ["red", "green", "blue"];
-    const chartjsOptions = options.chartjsOptions || {};
-    const result_0 = series[0];
-    let datasets = [];
-    let i = 0;
-    for (const key of Object.keys(result_0)) {
-      datasets.push({
-        label: key,
-        backgroundColor: colors[i % colors.length],
-        borderColor: colors[i % colors.length],
-        data: series.map(result => result[key])
-      });
-      i++;
-    }
-    const config = {
-      type: 'line',
-      data: {
-        labels: Array.from(Array(series.length).keys()),
-        datasets: datasets,
-      },
-      options: chartjsOptions
-    };
-    const ctx = elem.getContext('2d');
-    let chart = new Chart(ctx, config);
-    return chart;
-  }
-
-  function outputResultsChart(series, resultsElem, chartElem,
+  function outputResultsChart(result, resultsTbody, chart, currentIteration,
                               resultsOptions={}, chartOptions={}) {
-    printResults(series, resultsElem, resultsOptions);
-    makeChart(series, chartElem, chartOptions);
+    printResult(resultsTbody, currentIteration, result,
+                resultsOptions.decimals || 2);
+    updateChart(chart, currentIteration, result);
   }
 
+  function run(model, resultsDiv, chartCanvas, options={}) {
+    const defaultIterations = 1000;
+    const defaultInterval = 0;
+    const defaultUpdates = 10;
 
-  const defaultIterations = 1000;
-
-  function calc(model, resultsElem, chartElem, options={}) {
-    const iterations = (model.parameters && model.parameters.iterations) ||
+    const totalIterations = (model.parameters && model.parameters.iterations) ||
           defaultIterations;
+    const interval = (model.parameters && model.parameters.interval) ||
+          defaultInterval;
+    const iterationsPerUpdate = totalIterations /
+          ( (model.parameters && model.parameters.updates) ||
+            defaultUpdates);
+
     const resultsOptions = options.resultsOptions;
     const chartOptions = options.chartOptions;
-    let series = EpiMacro.iterateModel(model, iterations);
-    outputResultsChart(series, resultsElem, chartElem,
-                       resultsOptions, chartOptions);
+
+    let series = [];
+    series.push(model.compartments);
+    let currentCompartments = {};
+
+    let resultsTbody = initResults(resultsDiv, options, series[0]);
+    let chart = initChart(chartCanvas, options, series[0]);
+    let updatedModel = EpiMacro.deepCopy(model);
+
+    let currentIteration = 0;
+    setTimeout(updateLoop, interval);
+
+    function updateLoop() {
+      while (currentIteration < totalIterations) {
+        updatedModel.compartments = EpiMacro.iterateModelOnce(updatedModel);
+        series.push(updatedModel.compartments);
+        outputResultsChart(updatedModel.compartments, resultsTbody, chart,
+                           currentIteration, resultsOptions, chartOptions);
+        ++currentIteration;
+        if (currentIteration % iterationsPerUpdate == 0) {
+          setTimeout(updateLoop, interval);
+          break;
+        }
+      }
+    }
   }
 
   function createDivs(model, div, options) {
@@ -132,13 +168,13 @@
     div.append(resultsDiv);
     div.append(chartDiv);
     div.append(parametersDiv);
-    let recalcButtonDiv = document.createElement('div');
-    recalcButtonDiv.classList.add('macro-recalc');
-    let recalcButton = document.createElement('button');
-    recalcButton.textContent = "Recalc";
-    div.append(recalcButtonDiv);
-    recalcButtonDiv.append(recalcButton);
-    return [resultsDiv, chartDiv, parametersDiv, recalcButtonDiv];
+    let runButtonDiv = document.createElement('div');
+    runButtonDiv.classList.add('macro-run');
+    let runButton = document.createElement('button');
+    runButton.textContent = "Run";
+    div.append(runButtonDiv);
+    runButtonDiv.append(runButton);
+    return [resultsDiv, chartDiv, parametersDiv, runButtonDiv];
   }
 
   function setupParameters(div, model, options) {
@@ -150,6 +186,8 @@
       parameter.onChange = function(obj, elem) {
         obj[key] = Number(elem.value);
       }
+      let form_group = document.createElement('div');
+      form_group.classList.add('form-group');
       let label = document.createElement('label');
       let input = document.createElement('input');
       label.textContent = parameter.label;
@@ -161,8 +199,9 @@
       input.addEventListener('change', function(e) {
         parameter.onChange(group, e.target);
       });
-      div.append(label);
-      div.append(input);
+      form_group.append(label);
+      form_group.append(input);
+      div.append(form_group);
     }
 
     const parametersOptions = options.parametersOptions;
@@ -176,26 +215,20 @@
   }
 
 
-  function run(model, div, options={}) {
-    const [resultsDiv, chartDiv, parametersDiv, recalcButtonDiv] =
+  function create(model, div, options={}) {
+    const [resultsDiv, chartDiv, parametersDiv, runButtonDiv] =
           createDivs(model, div, options);
-    const chartElem = chartDiv.querySelector('canvas');
+    const chartCanvas = chartDiv.querySelector('canvas');
     setupParameters(parametersDiv, model, options);
-    calc(model,resultsDiv, chartElem, options);
-    let recalc = recalcButtonDiv.querySelector('button');
-    recalc.addEventListener('click', function() {
-      // Clear results
-      resultsDiv.innerHTML = "";
+    let runBtn = runButtonDiv.querySelector('button');
+    runBtn.addEventListener('click', function() {
       // Reset canvas
-      let canvas = chartDiv.querySelector('canvas');
-      chartDiv.removeChild(canvas);
-      canvas = document.createElement('canvas');
-      chartDiv.appendChild(canvas);
-      calc(model,resultsDiv, canvas, options);
+      let chartCanvas = chartDiv.querySelector('canvas');
+      run(model,resultsDiv, chartCanvas, options);
     });
   }
 
   // Exports
-  EpiMacroUI.run = run;
+  EpiMacroUI.create = create;
 
 } (window.EpiMacroUI = window.EpiMacroUI || {}));

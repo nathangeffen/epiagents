@@ -22,8 +22,8 @@
         <meta charset="utf-8" />
         <meta name=viewport content="width=device-width, initial-scale=1">
         <title>Two types of infectious disease models</title>
-        <link rel="stylesheet" href="epiagents.css?v=1">
-        <link rel="stylesheet" href="abm_sir.css?v=5">
+        <link rel="stylesheet" href="epiagents.css?v=2">
+        <link rel="stylesheet" href="abm_sir.css?v=6">
     </head>
     <body>
         <h1>Some notes on infectious disease modelling</h1>
@@ -190,10 +190,7 @@
         </p>
 
 
-
-
-        <div id="macro-basic" class="sir">
-        </div>
+        <div id="macroSIR" class="sir"></div>
         <div id="vaccine-strategy-1" class="epi-simulation"></div>
         <div id="vaccine-strategy-2" class="epi-simulation"></div>
         <div id="vaccine-strategy-3" class="epi-simulation"></div>
@@ -225,9 +222,11 @@
                 &mdash; castigated for exaggerating the scale of the pandemic, it
                 turned out that even with lockdowns, physical distancing, masks,
                 vaccines, improved intensive care management that between 16 and 26
-                million people had died of the disease by June 2022, according to <A href="https://www.economist.com/graphic-detail/coronavirus-excess-deaths-estimates">The Economist</a>.
+                million people had died of the disease by June 2022, according to
+                <a href="https://www.economist.com/graphic-detail/coronavirus-excess-deaths-estimates">The Economist</a>.
                 Vaccines are estimated to have saved between 14 and 20 million
-                lives, according to a study in <a href="https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(22)00320-6/fulltext">The Lancet</a>.
+                lives, according to a study in
+                <a href="https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(22)00320-6/fulltext">The Lancet</a>.
             </p>
             <p>
                 These estimates were all determined by models. Without reasonably
@@ -246,71 +245,8 @@
         <script id="MathJax-script" async
                 src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
         </script>
-        <script src="epiagents.js"></script>
-        <script>
-         /* EpiMacroUI.run(exampleMacroModel, document.getElementById('macro-basic'));
+        <script src="models.js"></script>
 
-          * let div = document.getElementById("vaccine-strategy-1");
-          * let sim_1 = EpiAgentsUI.create("vaccine-strategy-1", {
-          *     name: "Test model",
-          *     description: "Model used for testing EpiAgents",
-          *     numAgents: 1000,
-          *     interval: 10
-          * });
-          * sim_1.clear();
-
-          * sim_1.setInitialRatios([
-          *     ["SUSCEPTIBLE", 990],
-          *     ["INFECTED_EXPOSED", 10]
-          * ]);
-
-          * sim_1.setInfectiousness("INFECTED_SYMPTOMATIC", 1.0);
-
-          * sim_1.setTransitions([
-          *     ["INFECTED_EXPOSED", "INFECTED_SYMPTOMATIC", 1.0],
-          *     ["INFECTED_SYMPTOMATIC", "RECOVERED", 0.01],
-          *     ["RECOVERED", "SUSCEPTIBLE", 0.0]
-          * ]);
-          * sim_1.init();
-          * let sim_2 = EpiAgentsUI.create("vaccine-strategy-2", {
-          *     name: "Test model 2",
-          *     description: "Model 2 used for testing EpiAgents",
-          *     numAgents: 500,
-          *     interval: 200,
-          *     movementRandomnessMean: 0.1,
-          *     elasticCollisions: false
-          * });
-          * sim_2.init();
-
-          * let sim_3 = EpiAgentsUI.create("vaccine-strategy-3", {
-          *     name: "Test model 3",
-          *     description: "Model used for testing EpiAgents",
-          *     width: 400,
-          *     height: 400,
-          *     clusters: [
-          *         {
-          *             name: "A",
-          *             left: 0,
-          *             top: 0,
-          *             right: 240,
-          *             bottom: 240,
-          *             border: true,
-          *             borderColor: "yellow",
-          *             numAgents: 10
-          *         },
-          *         {
-          *             name: "B",
-          *             left: 160,
-          *             top: 160,
-          *             right: 400,
-          *             bottom: 400,
-          *             border: true,
-          *             borderColor: "red",
-          *             numAgents: 20
-          *         },
-          *     ]
-          * });
-          * sim_3.init(); */
-        </script>
+        <!-- <script src="epiagents.js"></script> -->
     </body>
 </html>
