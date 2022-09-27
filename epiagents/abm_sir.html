@@ -106,9 +106,10 @@
         this disease.</p>
 
         <p>
-            Characteristic 3 of our model is what's commonly called $\Re_0$ in
-            epidemiological literature. The real-world use of $\Re_0$ is much
-            more limited than is usually admitted but it's still useful.
+            Characteristic 3 of our model is what's commonly called
+            $\underline{R}_0$ in epidemiological literature. The real-world use
+            of $\underline{R}_0$ is much more limited than is usually admitted
+            but it's still useful.
         </p>
 
         <p>
@@ -126,14 +127,19 @@
             Then we'll set $S$, the number of people in the Susceptible
             compartment to 99 and $I$, the number of people in the Infectious
             compartment to 1. The number of people, $R$, in the Recovered
-            compartment is 0.
+            compartment is 0. (Note we do not underline ${R}$, the number of
+            recovered people, to differentiate it from $\underline{R}_0$, the
+            number of people that each infectious person will infect when the
+            epidemic is still very small. I wish this was a standard adopted
+            throughout infectious disease literature.)
         </p>
 
         <p>
-            We then iteratively update the $S$, $I$ and $R$ compartments with the
-            number of people who have moved between them. In our model each
-            iteration represents a day in our infectious disease world.
-            These equations describe what happens on each iteration:
+            We then iteratively update the $S$, $I$ and $R$
+            compartments with the number of people who have moved between them.
+            In our model each iteration represents a day in our infectious
+            disease world. These equations describe what happens on each
+            iteration:
         </p>
 
         <p>
@@ -160,7 +166,7 @@
 
             where
 
-            \begin{equation} \beta = {\Re_0 \over {ND}} \end{equation}
+            \begin{equation} \beta = {\underline{R} \over {ND}} \end{equation}
 
             where $N$ is the population size and $D$ is the average number of
             days a person is infected (5 in our model).

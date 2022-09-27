@@ -44,6 +44,11 @@ h1, h2, h3, p, ul, li, aside {
   }
 }
 
+
+img {
+  max-width: 100%;
+}
+
 .sir {
   display: flex;
   flex-direction: row;
@@ -52,20 +57,27 @@ h1, h2, h3, p, ul, li, aside {
 }
 
 .sir > div {
-  width: 30%;
+  width: 45%;
 }
 
 @media (max-width: 800px) {
   .sir {
     flex-direction: column;
   }
+  .sir > div {
+    width: 95%;
+  }
 }
 
-.macro-results, .macro-chart, .macro-parameters {
+.macro-results, .macro-chart, .macro-population, .macro-parameters {
   max-height: 356px;
   border: 1px solid black;
   border-radius: 5px;
   padding: 4px;
+}
+
+.macro-population {
+  overflow: scroll;
 }
 
 .macro-results-table-holder {
@@ -73,7 +85,8 @@ h1, h2, h3, p, ul, li, aside {
   max-height: 325px;
 }
 
-.macro-results::before, .macro-parameters::before, .macro-chart::before {
+.macro-results::before, .macro-parameters::before,
+.macro-chart::before, .macro-population::before {
   display: block;
   margin-top: 6px;
   margin-bottom: 12px;
@@ -87,6 +100,11 @@ h1, h2, h3, p, ul, li, aside {
 .macro-chart::before {
   content: "Graph";
 }
+
+.macro-population::before {
+  content: "Population";
+}
+
 
 .macro-parameters::before {
   content: "Parameters";

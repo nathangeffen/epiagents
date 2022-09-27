@@ -90,9 +90,7 @@
 
   EpiMacro.iterateModel = function(model, n) {
     let series = [];
-    series.push(model.compartments);
-    //let updatedModel = deepCopy(model);
-    for (let i = 1; i <= n; i++) {
+    for (let i = 0; i < n; i++) {
       model.compartments = EpiMacro.iterateModelOnce(model);
       series.push(model.compartments);
     }

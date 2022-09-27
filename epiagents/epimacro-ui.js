@@ -22,10 +22,14 @@
 
 (function (EpiMacroUI) {
 
-  function initChart(chartCanvas, options, result_0) {
+  function initChart(chartCanvas, iterations, options, result_0) {
     const colors = options.colors ||  ["red", "green", "blue"];
-    const chartjsOptions = options.chartjsOptions || {};
-    const labels = [0];
+    const chartjsOptions = options.chartjsOptions || {
+      animation: 0
+    };
+    const labels = [];
+    for (let i = 0; i <= iterations; i++)
+      labels.push(i);
     let datasets = [];
     let i = 0;
     for (let key in result_0) {
@@ -53,13 +57,51 @@
     return chart;
   }
 
-  function updateChart(chart, label, result)
+  function updateChart(chart, from, to, series)
   {
-    chart.data.labels.push(label);
-    chart.data.datasets.forEach((dataset) => {
-      dataset.data.push(result[dataset.label]);
-    });
+    for (let result of series) {
+      chart.data.datasets.forEach((dataset) => {
+        dataset.data.push(result[dataset.label]);
+      });
+    }
     chart.update();
+  }
+
+  function drawAgent(ctx, x, y, radius, color)
+  {
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI*2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.closePath();
+  }
+
+  function drawPopulation(populationCanvas, options, compartments) {
+    const ctx = populationCanvas.getContext('2d');
+    const width = populationCanvas.width;
+    const height = populationCanvas.height;
+    const agents = EpiMacro.calcN(compartments);
+    const area = width * height;
+    const radius = Math.sqrt( area / (agents * 4 * Math.PI)  );
+    const gap = 2 * radius;
+    let x = 100000000, y = 0;
+    const colors = options.colors ||  ["red", "green", "blue"];
+    let c = 0;
+    let i = 0;
+    let total = 0;
+    ctx.clearRect(0, 0, populationCanvas.width, populationCanvas.height);
+    for (const compartment in compartments) {
+      total += compartments[compartment];
+      for (; i < total; i++) {
+        x += gap + radius;
+        if (x >= populationCanvas.width - gap) {
+          x = gap;
+          y += gap + radius;
+        }
+        drawAgent(ctx, x, y, radius, colors[c % colors.length]);
+      }
+      c++;
+    }
   }
 
   function printHeader(table, result) {
@@ -78,21 +120,6 @@
     }
   }
 
-  function initResults(resultsElem, options, series_0) {
-    resultsElem.innerHTML = "";
-    const decimals = options.decimals || 2;
-    let div = document.createElement("div");
-    div.classList.add("macro-results-table-holder");
-    let table = document.createElement("table");
-    table.classList.add("macro-results-table");
-    printHeader(table, series_0);
-    let tbody = document.createElement("tbody");
-    table.append(tbody);
-    div.append(table);
-    resultsElem.append(div);
-    return tbody;
-  }
-
   function printResult(tbody, rowNumber, result, decimals=2) {
     let tr = document.createElement("tr");
     tbody.append(tr);
@@ -106,14 +133,34 @@
     }
   }
 
-  function outputResultsChart(result, resultsTbody, chart, currentIteration,
-                              resultsOptions={}, chartOptions={}) {
-    printResult(resultsTbody, currentIteration, result,
-                resultsOptions.decimals || 2);
-    updateChart(chart, currentIteration, result);
+  function initResults(resultsElem, options, series_0) {
+    resultsElem.innerHTML = "";
+    const decimals = options.decimals || 2;
+    let div = document.createElement("div");
+    div.classList.add("macro-results-table-holder");
+    let table = document.createElement("table");
+    table.classList.add("macro-results-table");
+    printHeader(table, series_0);
+    let tbody = document.createElement("tbody");
+    table.append(tbody);
+    div.append(table);
+    resultsElem.append(div);
+    printResult(tbody, 0, series_0, decimals);
+    return tbody;
   }
 
-  function run(model, resultsDiv, chartCanvas, options={}) {
+  function output(series, resultsTbody, chart, populationCanvas, from, to,
+                  resultsOptions={}, chartOptions={},
+                  populationOptions={}) {
+    for (let i = 0; i < series.length; i++) {
+      printResult(resultsTbody, from + i + 1, series[i],
+                  resultsOptions.decimals || 2);
+    }
+    updateChart(chart, from, to, series);
+    drawPopulation(populationCanvas, populationOptions, series[series.length - 1]);
+  }
+
+  function run(model, resultsDiv, chartCanvas, populationCanvas, options={}) {
     const defaultIterations = 1000;
     const defaultInterval = 0;
     const defaultUpdates = 10;
@@ -125,32 +172,32 @@
     const iterationsPerUpdate = totalIterations /
           ( (model.parameters && model.parameters.updates) ||
             defaultUpdates);
+    console.log(iterationsPerUpdate);
 
     const resultsOptions = options.resultsOptions;
     const chartOptions = options.chartOptions;
-
-    let series = [];
-    series.push(model.compartments);
+    const populationOptions = options.populationOptions;
     let currentCompartments = {};
 
-    let resultsTbody = initResults(resultsDiv, options, series[0]);
-    let chart = initChart(chartCanvas, options, series[0]);
+    let resultsTbody = initResults(resultsDiv, options, model.compartments);
+    let chart = initChart(chartCanvas, totalIterations, options,
+                          model.compartments);
+    drawPopulation(populationCanvas, options, model.compartments);
     let updatedModel = EpiMacro.deepCopy(model);
-
     let currentIteration = 0;
     setTimeout(updateLoop, interval);
 
     function updateLoop() {
-      while (currentIteration < totalIterations) {
-        updatedModel.compartments = EpiMacro.iterateModelOnce(updatedModel);
-        series.push(updatedModel.compartments);
-        outputResultsChart(updatedModel.compartments, resultsTbody, chart,
-                           currentIteration, resultsOptions, chartOptions);
-        ++currentIteration;
-        if (currentIteration % iterationsPerUpdate == 0) {
+      const from = currentIteration;
+      const to = Math.min(currentIteration + iterationsPerUpdate,
+                          totalIterations);
+      if (to > from) {
+        const series = EpiMacro.iterateModel(updatedModel, to - from);
+        output(series, resultsTbody, chart, populationCanvas,
+               from, to, resultsOptions, chartOptions, populationOptions);
+        currentIteration = to;
+        if (currentIteration < totalIterations)
           setTimeout(updateLoop, interval);
-          break;
-        }
       }
     }
   }
@@ -163,18 +210,29 @@
     let chartCanvas = document.createElement('canvas');
     chartCanvas.classList.add('macro-chart-canvas');
     chartDiv.append(chartCanvas);
+    let populationDiv = document.createElement('div');
+    populationDiv.classList.add('macro-population');
+    let populationCanvas = document.createElement('canvas');
+    populationCanvas.classList.add('macro-population-canvas');
+    populationDiv.append(populationCanvas);
     let parametersDiv = document.createElement('div');
     parametersDiv.classList.add('macro-parameters');
     div.append(resultsDiv);
-    div.append(chartDiv);
     div.append(parametersDiv);
+    div.append(chartDiv);
+    div.append(populationDiv);
+    populationCanvas.height = options.parameters && options.parameters.height ||
+      populationDiv.clientHeight - 5;
+    populationCanvas.width = options.parameters && options.parameters.width ||
+      populationDiv.clientWidth - 5;
+
     let runButtonDiv = document.createElement('div');
     runButtonDiv.classList.add('macro-run');
     let runButton = document.createElement('button');
     runButton.textContent = "Run";
     div.append(runButtonDiv);
     runButtonDiv.append(runButton);
-    return [resultsDiv, chartDiv, parametersDiv, runButtonDiv];
+    return [resultsDiv, chartDiv, populationDiv, parametersDiv, runButtonDiv];
   }
 
   function setupParameters(div, model, options) {
@@ -216,7 +274,7 @@
 
 
   function create(model, div, options={}) {
-    const [resultsDiv, chartDiv, parametersDiv, runButtonDiv] =
+    const [resultsDiv, chartDiv, populationDiv, parametersDiv, runButtonDiv] =
           createDivs(model, div, options);
     const chartCanvas = chartDiv.querySelector('canvas');
     setupParameters(parametersDiv, model, options);
@@ -224,7 +282,8 @@
     runBtn.addEventListener('click', function() {
       // Reset canvas
       let chartCanvas = chartDiv.querySelector('canvas');
-      run(model,resultsDiv, chartCanvas, options);
+      let populationCanvas = populationDiv.querySelector('canvas');
+      run(model,resultsDiv, chartCanvas, populationCanvas, options);
     });
   }
 
