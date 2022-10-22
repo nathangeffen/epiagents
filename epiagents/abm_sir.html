@@ -30,14 +30,16 @@
         <p>By Nathan Geffen, June to November 2022</p>
 
         <p>
-            This webpage considers two different kinds of models, compartmental
-            and agent-based ones.
+            There are numerous ways of modelling epidemics. We can broadly
+            divide models into two types: macro and micro. Macro models are
+            often also called compartmental or equation-based, while micro
+            models are often called agent-based or individual-based simulations.
         </p>
         <p>
             At the onset of the Covid pandemic, many websites explained how the
-            simplest useful compartmental model, an SIR one (for
+            simplest useful macro model, an SIR one (for
             Susceptible-Infectious-Recovered), worked. We start with that and
-            then try to implement an equivalent agent-based model. We'll then
+            then try to implement an equivalent micro model. We'll then
             discuss the differences between the two models and their
             consequences for understanding real-world epidemics. Then we'll
             implement models of HIV and Covid and then consider short-duration
@@ -60,33 +62,32 @@
             <h1>Terminology</h1>
             <p>
                 Terminology is inconsistent across infectious disease
-                literature. Compartmental models are often called macro,
-                equation-based or deterministic models. Agent-based ones are often
-                called micro or stochastic models. While the former are typically
-                deterministic, they don't have to be. And while I stick to
-                compartmental vs agent-based in the text, in my source code I have
-                usually found it easier to use macro vs micro terminology.
+                literature. Macro, micro, compartmental, SIR, equation-based,
+                deterministic, stochastic: all are used to describe kinds of
+                models. I find the macro vs micro distinction the most useful
+                here, in part because the terms are proper antonyms and using
+                them in the source code makes it easier to read. Also while
+                macro models are usually deterministic, they can be implemented
+                stochastically. And I suppose micro models can be implemented
+                deterministically, though a use-case of that doesn't spring to
+                mind.
             </p>
             <p>
-                Compartmental and agent-based models are broad categories and
-                there are all manner of models that borrow ideas from both.
+                Macro and micro models are broad categories and there are all
+                manner of models that borrow ideas from both.
             </p>
             <p>
-                Compartmental models are also sometimes called SIR models but
-                this seems especially confusing to me because SIR is a type of
-                compartmental model that can also easily be implemented as an
-                agent-based model.
-            </p>
-            <p>
-                Generally, I try to stick to terminology used in <a href="https://anintroductiontoinfectiousdiseasemodelling.com/">An introduction to
-                Infectious Disease Modelling</a> by Emilia Vynnycky and Richard G White.
+                For the most part, I try to stick to terminology used in <a href="https://anintroductiontoinfectiousdiseasemodelling.com/">An introduction to
+                Infectious Disease Modelling</a> by Emilia Vynnycky and Richard
+                G White.
             </p>
         </aside>
 
         <h2>A very simple disease</h2>
 
         <p>
-            We start off with a very simple infectious disease. It has the following characteristics:
+            We start off with a very simple infectious disease. It has the
+            following characteristics:
         </p>
 
         <ol>
@@ -113,39 +114,51 @@
         </p>
 
         <p>
+            We call our description above a model world. We can implement both a
+            macro or a micro model version of it.
+        </p>
+
+        <p>
             In this population we have people who are <b>S</b>usceptible to the
             infection, but not yet infected. There are infected people, and all
             infected people also <b>I</b>nfectious. And we have <b>R</b>ecovered people.
             That's three compartments: Susceptible, Infectious and Recovered, abbreviated as SIR.
         </p>
-
         <p>
-            We initialize the model so that nearly everyone in the population is
+            We initialize our model so that nearly everyone in the population is
             uninfected and has never had the infection. In other words everyone
             is in the Susceptible compartment and a tiny number are in the
-            Infectious compartment. Let's assume the population size is 100.
-            Then we'll set $S$, the number of people in the Susceptible
-            compartment to 99 and $I$, the number of people in the Infectious
-            compartment to 1. The number of people, $R$, in the Recovered
-            compartment is 0. (Note we do not underline ${R}$, the number of
-            recovered people, to differentiate it from $\underline{R}_0$, the
-            number of people that each infectious person will infect when the
-            epidemic is still very small. I wish this was a standard adopted
-            throughout infectious disease literature.)
+            Infectious compartment.
+        </p>
+        <p>
+            Let's assume the population size is 100. Then we'll set $S$, the
+            number of people in the Susceptible compartment to 99 and $I$, the
+            number of people in the Infectious compartment to 1. The number of
+            people, $R$, in the Recovered compartment is 0. (Note we do not
+            underline ${R}$, the number of recovered people, to differentiate it
+            from $\underline{R}_0$, the number of people that each infectious
+            person will infect when the epidemic is still very small. I wish
+            this was a standard adopted throughout infectious disease
+            literature.)
+        </p>
+        <p>
+            All the above is common to both the macro and micro models that we
+            implement. Now let's describe specific details of our macro model:
+        </p>
+
+        <h3>Macro Model: SIR</h3>
+
+        <p>
+            We iteratively update the $S$, $I$ and $R$ compartments with the
+            number of people who have moved between them. In our model each
+            iteration represents a day in our infectious disease world. These
+            equations describe what happens on each iteration:
         </p>
 
         <p>
-            We then iteratively update the $S$, $I$ and $R$
-            compartments with the number of people who have moved between them.
-            In our model each iteration represents a day in our infectious
-            disease world. These equations describe what happens on each
-            iteration:
-        </p>
-
-        <p>
-            Note that the number of people in this model is a continuous real
-            number not discrete. As we'll see soon this is one of the big
-            differences between compartmental and agent-based models.
+            Note that the number of people in our macro model compartments are
+            continuous real numbers, not discrete. This is a big difference
+            between our macro and micro models.
         </p>
 
         <p>
@@ -197,9 +210,20 @@
 
 
         <div id="macroSIR" class="sir"></div>
-        <div id="vaccine-strategy-1" class="epi-simulation"></div>
-        <div id="vaccine-strategy-2" class="epi-simulation"></div>
-        <div id="vaccine-strategy-3" class="epi-simulation"></div>
+        <p>Let's get a bit more complicated. Here there's an exposure
+            compartment before an infectious one.</p>
+        <div id="macroSEIR" class="sir"></div>
+        <!-- -
+             <div id="vaccine-strategy-1" class="epi-simulation"></div>
+             <div id="vaccine-strategy-2" class="epi-simulation"></div>
+             <div id="vaccine-strategy-3" class="epi-simulation"></div>
+        -->
+
+        <p>Here is the highly cited Granich et al. model.</p>
+        <div id="macroGranichEtAl" class="sir"></div>
+
+        <p>Here is a quick and dirty Covid-like-disease model.</p>
+        <div id="macroCovid" class="sir"></div>
 
         <aside>
             <h1>History of the SIR model</h1>

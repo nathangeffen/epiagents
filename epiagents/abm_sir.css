@@ -60,6 +60,12 @@ img {
   width: 45%;
 }
 
+.model-heading {
+  margin: 0;
+  font-weight: bold;
+  width: 100%;
+}
+
 @media (max-width: 800px) {
   .sir {
     flex-direction: column;
@@ -70,27 +76,28 @@ img {
 }
 
 .macro-results, .macro-chart, .macro-population, .macro-parameters {
-  max-height: 356px;
+  height: 280px;
   border: 1px solid black;
   border-radius: 5px;
   padding: 4px;
+  overflow: hidden;
 }
 
-.macro-population {
+.macro-parameters {
   overflow: scroll;
 }
 
 .macro-results-table-holder {
   overflow-y: scroll;
-  max-height: 325px;
+  max-height: 250px;
+  font-size: 80%;
 }
 
 .macro-results::before, .macro-parameters::before,
 .macro-chart::before, .macro-population::before {
   display: block;
   margin-top: 6px;
-  margin-bottom: 12px;
-  margin-left: 3px;
+  margin-bottom: 6px;
   color: #5F9EA0;
 }
 .macro-results::before {
@@ -110,6 +117,27 @@ img {
   content: "Parameters";
 }
 
+.macro-parameter-compartments {
+  border-bottom: 1px solid gray;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+}
+
+.macro-parameter-compartments::before {
+  font-size: small;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 6px;
+  content: "Compartments";
+}
+
+.macro-parameter-parameters {
+  margin-top: 6px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+
 .macro-results table {
   overflow: scroll;
   height: 200px;
@@ -120,7 +148,7 @@ img {
   border-bottom: 1px solid gray;
   opacity: 1.0;
   background-color: white;
-  z-index 1;
+  z-index: 1;
 }
 
 

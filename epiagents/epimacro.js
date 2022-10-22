@@ -37,8 +37,13 @@
 
   EpiMacro.deepCopy = deepCopy;
 
-  EpiMacro.delta_S_I = function(compartments, from, to, beta) {
-    const delta = beta * compartments[to];
+  EpiMacro.delta_S_I = function(compartments, from, to, beta, I=undefined) {
+    if (I === undefined)
+      I = [to];
+    let total = 0.0;
+    for (const i of I)
+      total  += compartments[i];
+    const delta = beta * total;
     const S_I = delta * compartments[from];
     return {
       'from': from,
@@ -72,15 +77,23 @@
   EpiMacro.updateCompartments = function(compartments, deltas) {
     let newCompartments = {};
     for (const [key, value] of Object.entries(compartments))
-      newCompartments[key] = value;
+        newCompartments[key] = value;
     for (let delta of deltas) {
       let from = delta.from;
       let to = delta.to;
       let value = delta.value;
-      newCompartments[from] -= value;
-      newCompartments[to] += value;
+      if (from !== '_')
+        newCompartments[from] -= value;
+      if (to !== '_')
+        newCompartments[to] += value;
     }
     return newCompartments;
+  }
+
+  EpiMacro.initializeModel = function(model) {
+    if ("initialize" in model)
+      for (const func of model.initialize)
+        func(model);
   }
 
   EpiMacro.iterateModelOnce = function(model) {

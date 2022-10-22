@@ -22,8 +22,19 @@
 
 (function (EpiMacroUI) {
 
+  EpiMacroUI.THREE_COLORS = ["green", "red", "blue"];
+  EpiMacroUI.FOUR_COLORS = ["green", "#BE9C9C", "red", "blue"];
+  EpiMacroUI.FIVE_COLORS = ["green", "#BE9C9C", "#CC5B5B", "red", "blue"];
+  EpiMacroUI.SIX_COLORS = ["green", "#BE9C9C", "#CC5B5B", "red",
+                           "#B00707", "blue"];
+  EpiMacroUI.SEVEN_COLORS = ["green", "yellow", "#ffe6e6", "#ff9999", "#ff0000",
+                             "##800000", "blue"];
+  EpiMacroUI.EIGHT_COLORS = ["green", "yellow", "#ffe6e6", "#ff9999", "#ff0000",
+                             "#800000", "blue", "black"];
+
+
   function initChart(chartCanvas, iterations, options, result_0) {
-    const colors = options.colors ||  ["red", "green", "blue"];
+    const colors = options.colors ||  EpiMacroUI.THREE_COLORS;
     const chartjsOptions = options.chartjsOptions || {
       animation: 0
     };
@@ -85,7 +96,7 @@
     const radius = Math.sqrt( area / (agents * 4 * Math.PI)  );
     const gap = 2 * radius;
     let x = 100000000, y = 0;
-    const colors = options.colors ||  ["red", "green", "blue"];
+    const colors = options.colors ||  EpiMacroUI.THREE_COLORS;
     let c = 0;
     let i = 0;
     let total = 0;
@@ -150,17 +161,16 @@
   }
 
   function output(series, resultsTbody, chart, populationCanvas, from, to,
-                  resultsOptions={}, chartOptions={},
-                  populationOptions={}) {
+                  options={}) {
     for (let i = 0; i < series.length; i++) {
       printResult(resultsTbody, from + i + 1, series[i],
-                  resultsOptions.decimals || 2);
+                  options.decimals || 2);
     }
     updateChart(chart, from, to, series);
-    drawPopulation(populationCanvas, populationOptions, series[series.length - 1]);
+    drawPopulation(populationCanvas, options, series[series.length - 1]);
   }
 
-  function run(model, resultsDiv, chartCanvas, populationCanvas, options={}) {
+  function run(model, resultsDiv, chartCanvas, populationCanvas) {
     const defaultIterations = 1000;
     const defaultInterval = 0;
     const defaultUpdates = 10;
@@ -172,11 +182,8 @@
     const iterationsPerUpdate = totalIterations /
           ( (model.parameters && model.parameters.updates) ||
             defaultUpdates);
-    console.log(iterationsPerUpdate);
 
-    const resultsOptions = options.resultsOptions;
-    const chartOptions = options.chartOptions;
-    const populationOptions = options.populationOptions;
+    const options = model.options || {};
     let currentCompartments = {};
 
     let resultsTbody = initResults(resultsDiv, options, model.compartments);
@@ -184,6 +191,7 @@
                           model.compartments);
     drawPopulation(populationCanvas, options, model.compartments);
     let updatedModel = EpiMacro.deepCopy(model);
+    EpiMacro.initializeModel(updatedModel);
     let currentIteration = 0;
     setTimeout(updateLoop, interval);
 
@@ -194,7 +202,7 @@
       if (to > from) {
         const series = EpiMacro.iterateModel(updatedModel, to - from);
         output(series, resultsTbody, chart, populationCanvas,
-               from, to, resultsOptions, chartOptions, populationOptions);
+               from, to, options);
         currentIteration = to;
         if (currentIteration < totalIterations)
           setTimeout(updateLoop, interval);
@@ -202,7 +210,11 @@
     }
   }
 
-  function createDivs(model, div, options) {
+  function createDivs(model, div) {
+    let heading = document.createElement('p');
+    heading.innerHTML = model.name;
+    heading.classList.add('model-heading');
+    div.append(heading);
     let resultsDiv = document.createElement('div');
     resultsDiv.classList.add('macro-results');
     let chartDiv = document.createElement('div');
@@ -221,10 +233,11 @@
     div.append(parametersDiv);
     div.append(chartDiv);
     div.append(populationDiv);
+    const options = model.options || {};
     populationCanvas.height = options.parameters && options.parameters.height ||
-      populationDiv.clientHeight - 5;
+      populationDiv.clientHeight;
     populationCanvas.width = options.parameters && options.parameters.width ||
-      populationDiv.clientWidth - 5;
+      populationDiv.clientWidth - 15;
 
     let runButtonDiv = document.createElement('div');
     runButtonDiv.classList.add('macro-run');
@@ -237,7 +250,7 @@
 
   function setupParameters(div, model, options) {
 
-    function setupSingleParameter(group, key, value) {
+    function setupSingleParameter(parent, group, key, value) {
       let parameter = {};
       parameter.label = key;
       parameter.value = value;
@@ -247,8 +260,12 @@
       let form_group = document.createElement('div');
       form_group.classList.add('form-group');
       let label = document.createElement('label');
-      let input = document.createElement('input');
       label.textContent = parameter.label;
+      if ("names" in model && key in model.names)
+        label.innerHTML = model.names[key];
+      else
+        label.textContent = parameter.label;
+      let input = document.createElement('input');
       const id = "input-" + parameter.label;
       label.htmlFor = id;
       input.id = id;
@@ -259,31 +276,37 @@
       });
       form_group.append(label);
       form_group.append(input);
-      div.append(form_group);
+      parent.append(form_group);
     }
 
     const parametersOptions = options.parametersOptions;
     const include = parametersOptions && parametersOptions.include;
     if (include === undefined || include === "all") {
+      let div_compartments = document.createElement('div');
+      div_compartments.classList.add('macro-parameter-compartments');
+      div.append(div_compartments);
       for (const [key, value] of Object.entries(model.compartments))
-        setupSingleParameter(model.compartments, key, value);
+        setupSingleParameter(div_compartments, model.compartments, key, value);
+      let div_parameters = document.createElement('div');
+      div_parameters.classList.add('macro-parameter-parameters');
+      div.append(div_parameters);
       for (const [key, value] of Object.entries(model.parameters))
-        setupSingleParameter(model.parameters, key, value);
+        setupSingleParameter(div_parameters, model.parameters, key, value);
     }
   }
 
 
-  function create(model, div, options={}) {
+  function create(model, div) {
     const [resultsDiv, chartDiv, populationDiv, parametersDiv, runButtonDiv] =
-          createDivs(model, div, options);
+          createDivs(model, div);
     const chartCanvas = chartDiv.querySelector('canvas');
-    setupParameters(parametersDiv, model, options);
+    setupParameters(parametersDiv, model, model.options || {});
     let runBtn = runButtonDiv.querySelector('button');
     runBtn.addEventListener('click', function() {
       // Reset canvas
       let chartCanvas = chartDiv.querySelector('canvas');
       let populationCanvas = populationDiv.querySelector('canvas');
-      run(model,resultsDiv, chartCanvas, populationCanvas, options);
+      run(model,resultsDiv, chartCanvas, populationCanvas);
     });
   }
 
