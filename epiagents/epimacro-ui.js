@@ -31,7 +31,8 @@
                              "##800000", "blue"];
   EpiMacroUI.EIGHT_COLORS = ["green", "yellow", "#ffe6e6", "#ff9999", "#ff0000",
                              "#800000", "blue", "black"];
-
+  EpiMacroUI.NINE_COLORS = ["green", "yellow", "#ffe6e6", "#ff9999", "#ff0000",
+                             "#800000", "blue", "gold", "black"];
 
   function initChart(chartCanvas, iterations, options, result_0) {
     const colors = options.colors ||  EpiMacroUI.THREE_COLORS;

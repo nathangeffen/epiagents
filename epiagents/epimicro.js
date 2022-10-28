@@ -179,34 +179,3 @@
   }
 
 } (window.EpiMicro = window.EpiMicro || {}));
-
-const sirMicroModel = {
-
-  compartments: {
-    'S': 98,
-    'I': 2,
-    'R': 0,
-  },
-  parameters: {
-    β: 0.5,
-    γ: 0.15,
-    ignoreN: [],
-    iterations: 100,
-  },
-
-  beforeEvents: [
-    EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
-    EpiMicro.eventSetAgentCompartments
-  ],
-
-  duringEvents: [
-    EpiMicro.eventShuffle, EpiMicro.eventStoI,
-    function(model) {
-      EpiMicro.eventFromToRisk(model, 'I', 'R', model.parameters.γ);
-    },
-    EpiMicro.eventTallyCompartments
-  ],
-
-  afterEvents: [],
-
-};

@@ -1,5 +1,7 @@
 "use strict";
 
+/* Macro models */
+
 const macroSIR = {
   name: "Macro model: SIR",
   compartments: {
@@ -304,10 +306,13 @@ const macroCovid = {
     Ih: 0,
     Ii: 0,
     R: 0,
+    V: 0,
     D: 0,
   },
   parameters: {
     c_e: 0.5,
+
+    S_V: 0.05,
 
     E_Ia: 0.5,
 
@@ -323,7 +328,9 @@ const macroCovid = {
     Ii_D: 0.2,
     Ii_R: 0.1,
 
-    R_S: 0.000,
+    V_S: 0.002,
+
+    R_S: 0.002,
 
     Inf_Ia: 0.5,
     Inf_Is: 1.0,
@@ -357,6 +364,13 @@ const macroCovid = {
         'value': change
       };
     },
+
+    // S->V
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'S', 'V',
+                                model.parameters.S_V);
+    },
+
     // E->Ia
     function(model) {
       return EpiMacro.delta_X_Y(model.compartments, 'E', 'Ia',
@@ -413,75 +427,56 @@ const macroCovid = {
                                 model.parameters.R_S);
     },
 
+    // V_S
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'V', 'S',
+                                model.parameters.V_S);
+    },
+
   ],
   options: {
-    colors: EpiMacroUI.EIGHT_COLORS
+    colors: EpiMacroUI.NINE_COLORS
   }
 };
 
 EpiMacroUI.create(macroCovid, document.getElementById('macroCovid'));
 
+/* Micro models */
 
-/* EpiMacroUI.run(exampleMacroModel, document.getElementById('macro-basic'));
+const microSIR = {
+  name: "Micro model: SIR",
 
- * let div = document.getElementById("vaccine-strategy-1");
- * let sim_1 = EpiAgentsUI.create("vaccine-strategy-1", {
- *     name: "Test model",
- *     description: "Model used for testing EpiAgents",
- *     numAgents: 1000,
- *     interval: 10
- * });
- * sim_1.clear();
+  compartments: {
+    'S': 999,
+    'I': 1,
+    'R': 0,
+  },
+  parameters: {
+    R0: 2.0,
+    D: 5.0,
+    iterations: 100,
+    interval: 0,
+    updates: 10,
+  },
+  names: {
+    R0: "<i><u>R</u><sub>0</sub></i>",
+  },
 
- * sim_1.setInitialRatios([
- *     ["SUSCEPTIBLE", 990],
- *     ["INFECTED_EXPOSED", 10]
- * ]);
+  beforeEvents: [
+    EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
+    EpiMicro.eventSetAgentCompartments
+  ],
 
- * sim_1.setInfectiousness("INFECTED_SYMPTOMATIC", 1.0);
+  duringEvents: [
+    EpiMicro.eventShuffle, EpiMicro.eventStoI,
+    function(model) {
+      EpiMicro.eventFromToRisk(model, 'I', 'R', model.parameters.γ);
+    },
+    EpiMicro.eventTallyCompartments
+  ],
 
- * sim_1.setTransitions([
- *     ["INFECTED_EXPOSED", "INFECTED_SYMPTOMATIC", 1.0],
- *     ["INFECTED_SYMPTOMATIC", "RECOVERED", 0.01],
- *     ["RECOVERED", "SUSCEPTIBLE", 0.0]
- * ]);
- * sim_1.init();
- * let sim_2 = EpiAgentsUI.create("vaccine-strategy-2", {
- *     name: "Test model 2",
- *     description: "Model 2 used for testing EpiAgents",
- *     numAgents: 500,
- *     interval: 200,
- *     movementRandomnessMean: 0.1,
- *     elasticCollisions: false
- * });
- * sim_2.init();
+  afterEvents: [],
 
- * let sim_3 = EpiAgentsUI.create("vaccine-strategy-3", {
- *     name: "Test model 3",
- *     description: "Model used for testing EpiAgents",
- *     width: 400,
- *     height: 400,
- *     clusters: [
- *         {
- *             name: "A",
- *             left: 0,
- *             top: 0,
- *             right: 240,
- *             bottom: 240,
- *             border: true,
- *             borderColor: "yellow",
- *             numAgents: 10
- *         },
- *         {
- *             name: "B",
- *             left: 160,
- *             top: 160,
- *             right: 400,
- *             bottom: 400,
- *             border: true,
- *             borderColor: "red",
- *             numAgents: 20
- *         },
- *     ]
- * });
- * sim_3.init(); */
+};
+
+EpiMacroUI.create(microSIR, document.getElementById('microSIR'));
