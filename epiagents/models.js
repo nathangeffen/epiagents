@@ -41,7 +41,7 @@ const macroSIR = {
   ]
 };
 
-EpiMacroUI.create(macroSIR, document.getElementById('macroSIR'));
+EpiUI.create(macroSIR, document.getElementById('macroSIR'));
 
 const macroSEIR = {
   name: "Macro model: SEIR",
@@ -92,12 +92,12 @@ const macroSEIR = {
     }
   ],
   options: {
-    colors: EpiMacroUI.FOUR_COLORS
+    colors: EpiUI.FOUR_COLORS
   }
 };
 
 
-EpiMacroUI.create(macroSEIR, document.getElementById('macroSEIR'));
+EpiUI.create(macroSEIR, document.getElementById('macroSEIR'));
 
 const macroGranichEtAlColors = [
   'green',
@@ -294,7 +294,7 @@ const macroGranichEtAl = {
   }
 };
 
-EpiMacroUI.create(macroGranichEtAl, document.getElementById('macroGranichEtAl'));
+EpiUI.create(macroGranichEtAl, document.getElementById('macroGranichEtAl'));
 
 const macroCovid = {
   name: "Macro: Covid",
@@ -435,17 +435,16 @@ const macroCovid = {
 
   ],
   options: {
-    colors: EpiMacroUI.NINE_COLORS
+    colors: EpiUI.NINE_COLORS
   }
 };
 
-EpiMacroUI.create(macroCovid, document.getElementById('macroCovid'));
+EpiUI.create(macroCovid, document.getElementById('macroCovid'));
 
 /* Micro models */
 
 const microSIR = {
   name: "Micro model: SIR",
-
   compartments: {
     'S': 999,
     'I': 1,
@@ -464,19 +463,30 @@ const microSIR = {
 
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
-    EpiMicro.eventSetAgentCompartments
+    EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
+    EpiMicro.eventSetAgentPositions,
+    function(model) {
+      model.working.beta = model.parameters.R0 /
+        (model.agents.length * model.parameters.D);
+      model.working.r = 1.0 / model.parameters.D;
+    }
   ],
 
   duringEvents: [
-    EpiMicro.eventShuffle, EpiMicro.eventStoI,
+    EpiMicro.eventShuffle,
     function(model) {
-      EpiMicro.eventFromToRisk(model, 'I', 'R', model.parameters.γ);
+      return EpiMicro.eventStoI(model, 'S', 'I', model.working.beta, ['I']);
+    },
+    function(model) {
+      EpiMicro.eventFromToRisk(model, 'I', 'R', model.working.r);
     },
     EpiMicro.eventTallyCompartments
   ],
 
   afterEvents: [],
-
+  options: {
+    colors: EpiUI.THREE_COLORS
+  }
 };
 
-EpiMacroUI.create(microSIR, document.getElementById('microSIR'));
+EpiUI.create(microSIR, document.getElementById('microSIR'));

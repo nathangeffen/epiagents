@@ -51,22 +51,46 @@
   /* Typical before simulation events */
 
   EpiMicro.eventCreateAgents = function(model) {
-    let numAgents = model.numAgents || function() {
-      let total = 0;
-      for (const [compartment, num] of Object.entries(model.compartments))
-        total += num;
-      return total;
-    }();
     model.agents = [];
-    for (let i = 0; i < numAgents; i++)
-      model.agents.push({});
+    for (const [compartment, num] of Object.entries(model.compartments)) {
+      for (let i = 0; i < num; i++) {
+        model.agents.push({
+          'compartment': compartment
+        });
+      }
+    }
   }
 
   EpiMicro.eventSetAgentIds = function(model) {
     let i = 0;
     for (let agent of model.agents) {
       ++i;
-      model.agents['id'] = i;
+      agent.id = i;
+    }
+  }
+
+  EpiMicro.eventSetAgentPositions = function(model) {
+    const radius = (model.options && model.options.radius) ||  4;
+    const gap = (model.options && model.options.gap) || radius;
+    const width = (model.options && model.options.width) ||
+          (Math.sqrt(model.agents.length) + 1) * (radius + gap);
+    const height = width;
+    const area = width * height;
+    model.working.width = width;
+    model.working.height = height;
+    model.working.radius = radius;
+    model.working.gap = gap;
+
+    let x = 0;
+    let y = gap + radius;
+    for (const agent of model.agents) {
+      x += gap + radius;
+      if (x >= width - gap) {
+        x = gap + radius;
+        y += gap + radius;
+      }
+      agent.x = x;
+      agent.y = y;
     }
   }
 
@@ -76,6 +100,16 @@
       let end = i + num;
       for (; i < end; i++)
         model.agents[i]['compartment'] = compartment;
+    }
+  }
+
+  EpiMicro.eventSetCompartmentColors = function(model) {
+    const numColors = model.options.colors.length;
+    let c = 0;
+    model.working.colorMap = {};
+    for (const compartment in model.compartments) {
+      model.working.colorMap[compartment] = model.options.colors[c % numColors];
+      c++;
     }
   }
 
@@ -108,26 +142,23 @@
     return total;
   }
 
-  EpiMicro.eventStoI = function(model) {
-    const N = calcCompartments(model, ['S', 'I', 'R']);
-    const S = calcCompartments(model, ['S']);
-    const I = calcCompartments(model, ['I']);
-    const newInfected = model.parameters.β * S * I / N;
-    const newInfectedRisk = newInfected / S;
+  EpiMicro.eventStoI = function(model, from, to, beta, I=undefined) {
+    if (I === undefined)
+      I = [to];
+    const delta = beta * calcCompartments(model, I);
+    let i = 0;
     for (let agent of model.agents)
       if (agent.compartment == 'S') {
-        if (Math.random() < newInfectedRisk) {
+        if (Math.random() < delta)
           agent.compartment = 'I';
-        }
       }
   }
 
   EpiMicro.eventFromToRisk = function(model, from, to, risk) {
     for (let agent of model.agents)
       if (agent.compartment == from)
-        if (Math.random() < risk) {
+        if (Math.random() < risk)
           agent.compartment = to;
-        }
   }
 
   EpiMicro.eventTallyCompartments = function(model) {
@@ -156,26 +187,14 @@
     runEvents(model, model.afterEvents);
   }
 
-  EpiMicro.iterateModel = function(model) {
-    const defaultIterations = 1000;
-    const defaultTimeBetweenIteration = 0;
-    const iterations = (model.parameters && model.parameters.iterations) ||
-          defaultIterations;
-    const timeBetweenIterations = (model.parameters &&
-                                   model.parameters.timeBetweenIterations) ||
-          defaultTimeBetweenIteration;
-    EpiMicro.runBeforeEvents(model);
-    let i = 0;
-    const timer = setInterval(function() {
-      if (i >= iterations) {
-        clearInterval(timer);
-        EpiMicro.runAfterEvents(model);
-      } else {
-        i++;
-        model.currentIteration = i;
-        EpiMicro.runDuringEvents(model);
-      }
-    }, timeBetweenIterations);
+  EpiMicro.iterateModel = function(model, n) {
+    let series = [];
+    for (let i = 0; i < n; i++) {
+      EpiMicro.runDuringEvents(model);
+      series.push({
+        ...model.compartments
+      });
+    }
+    return series;
   }
-
 } (window.EpiMicro = window.EpiMicro || {}));

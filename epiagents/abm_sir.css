@@ -75,55 +75,55 @@ img {
   }
 }
 
-.macro-results, .macro-chart, .macro-population, .macro-parameters {
+.epi-results, .epi-chart, .epi-population, .epi-parameters {
   height: 280px;
   border: 1px solid black;
   border-radius: 5px;
   padding: 4px;
-  overflow: hidden;
-}
-
-.macro-parameters {
   overflow: scroll;
 }
 
-.macro-results-table-holder {
+.epi-parameters {
+  overflow: scroll;
+}
+
+.epi-results-table-holder {
   overflow-y: scroll;
   max-height: 250px;
   font-size: 80%;
 }
 
-.macro-results::before, .macro-parameters::before,
-.macro-chart::before, .macro-population::before {
+.epi-results::before, .epi-parameters::before,
+.epi-chart::before, .epi-population::before {
   display: block;
   margin-top: 6px;
   margin-bottom: 6px;
   color: #5F9EA0;
 }
-.macro-results::before {
+.epi-results::before {
   content: "Results";
 }
 
-.macro-chart::before {
+.epi-chart::before {
   content: "Graph";
 }
 
-.macro-population::before {
+.epi-population::before {
   content: "Population";
 }
 
 
-.macro-parameters::before {
+.epi-parameters::before {
   content: "Parameters";
 }
 
-.macro-parameter-compartments {
+.epi-parameter-compartments {
   border-bottom: 1px solid gray;
   margin-bottom: 6px;
   padding-bottom: 6px;
 }
 
-.macro-parameter-compartments::before {
+.epi-parameter-compartments::before {
   font-size: small;
   font-weight: bold;
   display: block;
@@ -131,19 +131,19 @@ img {
   content: "Compartments";
 }
 
-.macro-parameter-parameters {
+.epi-parameter-parameters {
   margin-top: 6px;
   padding-top: 6px;
   padding-bottom: 6px;
   margin-bottom: 6px;
 }
 
-.macro-results table {
+.epi-results table {
   overflow: scroll;
   height: 200px;
 }
 
-.macro-results thead tr th {
+.epi-results thead tr th {
   position: sticky;
   border-bottom: 1px solid gray;
   opacity: 1.0;
@@ -152,24 +152,24 @@ img {
 }
 
 
-.macro-results td {
+.epi-results td {
   padding: 3px;
 }
 
-.macro-parameters .form-group label {
+.epi-parameters .form-group label {
   display: inline-block;
   width: 100px;
   font-size: 80%
 }
 
-.macro-parameters .form-group input {
+.epi-parameters .form-group input {
   display: inline-block;
   margin-bottom: 6px;
   font-size: 80%;
   width: 60px;
 }
 
-.macro-recalc button {
+.epi-recalc button {
 	background-color:#44c767;
 	border-radius: 3px;
 	border: 1px solid #18ab29;
