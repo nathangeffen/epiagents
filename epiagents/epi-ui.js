@@ -162,7 +162,7 @@
     const type = modelType(model);
     const colors = options.colors ||  EpiUI.THREE_COLORS;
     ctx.clearRect(0, 0, populationCanvas.width, populationCanvas.height);
-    if (type == MACRO) {
+    if (type === MACRO) {
       drawMacroPopulation(ctx, populationCanvas, model, colors);
     } else {
       drawMicroPopulation(ctx, populationCanvas, model, colors);
@@ -226,7 +226,7 @@
 
   function run(model, resultsDiv, chartCanvas, populationCanvas) {
     const type = modelType(model);
-    if (type == MICRO) {
+    if (type === MICRO) {
       EpiMicro.runBeforeEvents(model);
       function _handler(event) {
         showAgentInfo(event, model);
@@ -261,12 +261,11 @@
                           model.compartments);
 
     let compartments;
-    if (modelType(model) == MACRO)
+    if (modelType(model) === MACRO)
       compartments = model.compartments
     else
       compartments = undefined;
     drawPopulation(populationCanvas, model, compartments);
-
 
     EpiMacro.initializeModel(model);
     let currentIteration = 0;
@@ -276,20 +275,22 @@
       const from = currentIteration;
       const to = Math.min(currentIteration + iterationsPerUpdate,
                           totalIterations);
-      if (to > from) {
-        let series;
-        if (type == MACRO) {
-          series = EpiMacro.iterateModel(model, to - from);
-        } else {
-          series = EpiMicro.iterateModel(model, to - from);
-        }
-        output(model, series, resultsTbody, chart, populationCanvas,
-               from, to, options);
-        currentIteration = to;
-        if (currentIteration < totalIterations)
-          setTimeout(updateLoop, interval);
+      let series;
+      if (type === MACRO) {
+        series = EpiMacro.iterateModel(model, to - from);
       } else {
-        if (type == MICRO) {
+        series = EpiMicro.iterateModel(model, to - from);
+      }
+      output(model, series, resultsTbody, chart, populationCanvas,
+             from, to, options);
+      currentIteration = to;
+      if (currentIteration < totalIterations &&
+          model.working.runStatus === "running") {
+        setTimeout(updateLoop, interval);
+      } else {
+        model.working.runStatus = "stopped"
+        model.working.runBtn.textContent = "Run";
+        if (type === MICRO) {
           EpiMicro.runAfterEvents(model);
         }
       }
@@ -384,19 +385,28 @@
 
 
   function create(model, div) {
-
     const [resultsDiv, chartDiv, populationDiv, parametersDiv, runButtonDiv] =
           createDivs(model, div);
     const chartCanvas = chartDiv.querySelector('canvas');
     setupParameters(parametersDiv, model, model.options || {});
     let runBtn = runButtonDiv.querySelector('button');
+    let workingModel;
     runBtn.addEventListener('click', function() {
       // Reset canvas
-      let chartCanvas = chartDiv.querySelector('canvas');
-      let populationCanvas = populationDiv.querySelector('canvas');
-      let workingModel = EpiMacro.deepCopy(model);
-      workingModel.working = workingModel.working || {};
-      run(workingModel,resultsDiv, chartCanvas, populationCanvas);
+      if (workingModel && workingModel.hasOwnProperty("working") &&
+          workingModel.working.runStatus === "running") {
+        workingModel.working.runStatus = "stopped";
+        runBtn.textContent = "Run";
+      } else {
+        let chartCanvas = chartDiv.querySelector('canvas');
+        let populationCanvas = populationDiv.querySelector('canvas');
+        workingModel = EpiMacro.deepCopy(model);
+        workingModel.working = workingModel.working || {};
+        workingModel.working.runStatus = "running";
+        workingModel.working.runBtn = runBtn;
+        runBtn.textContent = "Stop";
+        run(workingModel,resultsDiv, chartCanvas, populationCanvas);
+      }
     });
   }
 

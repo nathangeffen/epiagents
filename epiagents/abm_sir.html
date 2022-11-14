@@ -38,31 +38,33 @@
             At the onset of the Covid pandemic, many websites explained how the
             simplest useful macro model, an SIR one (for
             Susceptible-Infectious-Recovered), worked. We start with that and
-            then try to implement an equivalent micro model. We'll then
-            discuss the differences between the two models and their
-            consequences for understanding real-world epidemics. Then we'll
-            implement models of HIV and Covid and then consider short-duration
-            (as in a short period of infectiousness) infectious diseases more
-            generally.
+            then try to implement an equivalent micro model. We then discuss the
+            differences between the two models and their consequences for
+            understanding real-world epidemics. Then we implement models of HIV
+            and Covid and consider what we can learn about these and other
+            infectious diseases from macro and micro models.
         </p>
         <aside>
             <h1>Using the resources on this webpage</h1>
-        <p>
-            This webpage uses only open-source software. The text on this page
-            is available for republication under <a href="https://creativecommons.org/licenses/by-sa/4.0/"> this Creative Commons license</a>.
-            The Javascript and CSS files that I've written for it are available
-            under one the <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU Affero General Public License</a>. My C and C++ code is available under the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License</a>. It's
-            all on <a href="">Github</a>. So please feel free to download, adapt, improve and
-            publish as you see fit, but please stick to the terms of the
-            licenses.
-        </p>
+            <p>
+                This webpage uses only open-source software. The text on this page
+                is available for republication under <a href="https://creativecommons.org/licenses/by-sa/4.0/">this
+                Creative Commons license</a>.
+                The Javascript and CSS files that I've written for it are available
+                under one the <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU
+                Affero General Public License</a>. My C and C++ code is available
+                under the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License</a>. It's
+                all on <a href="https://github.com/nathangeffen/understandingepi">Github</a>.
+                So please feel free to download, adapt, improve and publish as you
+                see fit, but please stick to the terms of the licenses.
+            </p>
         </aside>
         <aside>
             <h1>Terminology</h1>
             <p>
                 Terminology is inconsistent across infectious disease
                 literature. Macro, micro, compartmental, SIR, equation-based,
-                deterministic, stochastic: all are used to describe kinds of
+                deterministic, stochastic: all are used to describe types of
                 models. I find the macro vs micro distinction the most useful
                 here, in part because the terms are proper antonyms and using
                 them in the source code makes it easier to read. Also while
@@ -76,8 +78,8 @@
                 manner of models that borrow ideas from both.
             </p>
             <p>
-                For the most part, I try to stick to terminology used in <a href="https://anintroductiontoinfectiousdiseasemodelling.com/">An introduction to
-                Infectious Disease Modelling</a> by Emilia Vynnycky and Richard
+                For the most part, I try to stick to terminology used in <a href="https://anintroductiontoinfectiousdiseasemodelling.com/">An
+                introduction to Infectious Disease Modelling</a> by Emilia Vynnycky and Richard
                 G White.
             </p>
         </aside>
@@ -218,12 +220,23 @@
             compartment before an infectious one.</p>
         <div id="macroSEIR" class="sir"></div>
 
+        <p>Here's the micro model version of SEIR.</p>
+        <div id="microSEIR" class="sir"></div>
+
 
         <p>Here is the highly cited Granich et al. model.</p>
         <div id="macroGranichEtAl" class="sir"></div>
 
+
+        <p>We can quite easily implement a microsimulation version of this.</p>
+        <div id="microGranichEtAl" class="sir"></div>
+
+
         <p>Here is a quick and dirty Covid-like-disease model.</p>
         <div id="macroCovid" class="sir"></div>
+
+        <p>Here is the equivalent micro model.</p>
+        <div id="microCovid" class="sir"></div>
 
         <aside>
             <h1>History of the SIR model</h1>
@@ -245,30 +258,38 @@
             </p>
             <p>Were they useful?</p>
             <p>
-                At the outset of the pandemic, a model by XX warned of XX million
-                deaths worldwide in XX months. It was an impetus for many countries
-                to take swift action against Covid, ironically less so the British
-                governent. While that model was widely &mdash; in my view unfairly
-                &mdash; castigated for exaggerating the scale of the pandemic, it
-                turned out that even with lockdowns, physical distancing, masks,
-                vaccines, improved intensive care management that between 16 and 26
-                million people had died of the disease by June 2022, according to
+                At the outset of the pandemic, a <a href="https://www.imperial.ac.uk/media/imperial-college/medicine/mrc-gida/2020-03-16-COVID19-Report-9.pdf">micro
+                model by Neil Ferguson and his team at Imperial College</a> in
+                the UK was widely reported in the media. The <a href="https://www.imperial.ac.uk/news/196234/covid-19-imperial-researchers-model-likely-impact/">simplified for
+                public consumption description</a> of the model did not contain
+
+                XX warned of XX
+                million deaths worldwide in XX months. It was an impetus for
+                many countries to take swift action against Covid, ironically
+                less so the British governent. While that model was widely
+                &mdash; in my view unfairly &mdash; castigated for exaggerating
+                the scale of the pandemic, it turned out that even with
+                lockdowns, physical distancing, masks, vaccines, improved
+                intensive care management that between 16 and 26 million people
+                had died of the disease by June 2022, according to
                 <a href="https://www.economist.com/graphic-detail/coronavirus-excess-deaths-estimates">The Economist</a>.
                 Vaccines are estimated to have saved between 14 and 20 million
                 lives, according to a study in
                 <a href="https://www.thelancet.com/journals/laninf/article/PIIS1473-3099(22)00320-6/fulltext">The Lancet</a>.
             </p>
             <p>
-                These estimates were all determined by models. Without reasonably
-                sophisticated models you can't really draw any strong conclusions
-                about an epidemic. So, yes, models can be necessary and useful
+                These estimates were all determined by models instantiated with
+                data, such as the number of recorded deaths in various
+                countries. Without reasonably sophisticated models you can't
+                really draw any strong conclusions about an epidemic. So, yes,
+                models can be necessary and useful.
             </p>
         </aside>
 
-        <script src="utils.js?v=20221103"></script>
-        <script src="epimacro.js?v=20221103"></script>
-        <script src="epimacro-ui.js?v=20221103"></script>
-        <script src="epimicro.js?v=20221103"></script>
+        <script src="utils.js?v=20221111"></script>
+        <script src="epimacro.js?v=20221111"></script>
+        <script src="epimacro-ui.js?v=20221111"></script>
+        <script src="epimicro.js?v=20221111"></script>
         <script src="epi-ui.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>

@@ -150,7 +150,7 @@
     for (let agent of model.agents)
       if (agent.compartment == 'S') {
         if (Math.random() < delta)
-          agent.compartment = 'I';
+          agent.compartment = to;
       }
   }
 
@@ -171,8 +171,9 @@
   /*************/
 
   const runEvents = function(model, events) {
-    for (let event of events)
-      event(model);
+    if (events)
+      for (let event of events)
+        event(model);
   }
 
   EpiMicro.runBeforeEvents = function(model) {
