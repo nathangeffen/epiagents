@@ -1,0 +1,253 @@
+body {
+    margin: auto;
+    padding: 9px;
+    font-size: 18px;
+    font-family:sans-serif;
+}
+
+h1, h2, h3, p, ul, li, aside {
+    max-width: 600px;
+}
+
+
+@media screen and (min-width: 992px) {
+  body {
+    max-width: 992px;
+    margin: auto;
+    font-size: 16px;
+  }
+  h1 {
+    text-align: center;
+  }
+  .sir, .epi-simulation {
+    padding: 4px;
+    border: 1px dashed #6495ED;
+    border-radius: 5px;
+    padding: 16px;
+    margin: 24px auto 24px auto;
+  }
+}
+
+@media screen and (max-width: 991px) {
+  .sir, .epi-simulation {
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #6495ED;
+  }
+}
+
+pre {
+  border: 1px solid lightgray;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+img {
+  max-width: 100%;
+}
+
+.sir {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sir > div {
+  width: 40%;
+}
+
+.model-heading {
+  margin: 0;
+  font-weight: bold;
+  width: 100%;
+}
+
+@media (max-width: 800px) {
+  .sir {
+    flex-direction: column;
+  }
+  .sir > div {
+    width: 95%;
+  }
+}
+
+.epi-results, .epi-chart, .epi-population, .epi-parameters {
+  height: 230px;
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 4px;
+  /* overflow: scroll;*/
+}
+
+.epi-results-table-holder, .epi-parameters-holder {
+  overflow-y: scroll;
+  max-height: 197px;
+  font-size: 80%;
+}
+
+.epi-results::before, .epi-parameters::before,
+.epi-chart::before, .epi-population::before {
+  display: block;
+  margin-top: 6px;
+  margin-bottom: 6px;
+  color: #5F9EA0;
+}
+
+.epi-parameters {
+  position: relative;
+}
+.epi-reset {
+  display: block;
+  position: absolute;
+  top: 40px;
+  right: 40px;
+}
+
+.epi-speed-label {
+  margin-right: 3px;
+  font-size: 80%;
+}
+
+.epi-speed::before {
+  content: "fast";
+}
+
+.epi-speed::after {
+  content: "slow";
+}
+
+.epi-speed {
+  vertical-align: -6px;
+}
+
+.epi-run-btn {
+  margin-left: 6px;
+}
+
+.epi-results::before {
+  content: "Results";
+}
+
+.epi-chart::before {
+  content: "Graph";
+}
+
+.epi-population::before {
+  content: "Population";
+}
+
+
+.epi-parameters::before {
+  content: "Parameters";
+}
+
+.epi-parameter-compartments {
+  border-bottom: 1px solid gray;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+}
+
+.epi-parameter-compartments::before {
+  font-size: small;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 6px;
+  content: "Compartments";
+}
+
+.epi-parameter-parameters {
+  margin-top: 6px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+
+.epi-results table {
+  overflow: scroll;
+  height: 180px;
+}
+
+.epi-results thead tr th {
+  position: sticky;
+  border-bottom: 1px solid gray;
+  opacity: 1.0;
+  background-color: white;
+  z-index: 1;
+}
+
+
+.epi-results td {
+  padding: 3px;
+}
+
+.epi-parameters .form-group label {
+  display: inline-block;
+  width: 100px;
+  font-size: 80%
+}
+
+.epi-parameters .form-group input {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 80%;
+  width: 60px;
+}
+
+.epi-recalc button {
+	background-color:#44c767;
+	border-radius: 3px;
+	border: 1px solid #18ab29;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+        width: 80px;
+	font-family:Arial;
+	font-size: 16px;
+	font-weight:bold;
+	padding:12px;
+	text-decoration:none;
+	text-shadow:0px 1px 2px #2f6627;
+        margin: 3px;
+}
+
+
+aside {
+    background-color: #F6F6E6;
+    padding: 6px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    font-size: 95%;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+aside > button {
+  width: 100%;
+  font-size: 20px;
+  background-color: darkgreen;
+  border: none;
+  border-radius: 14px;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  /* display: inline-block;*/
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+aside > button:hover {
+  background: green;
+}
+
+.hide {
+    max-height: 0;
+    transition: max-height 0.4s ease-out;
+    overflow: hidden;
+}
+
+.show {
+    max-height: 1500px;
+    transition: max-height 0.4s ease-in;
+    overflow: hidden;
+}

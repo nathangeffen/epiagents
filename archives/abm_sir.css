@@ -1,12 +1,14 @@
 body {
     margin: auto;
     padding: 9px;
-    font-size: 16px;
+    font-size: 18px;
+    font-family:sans-serif;
 }
 
 h1, h2, h3, p, ul, li, aside {
     max-width: 600px;
 }
+
 
 @media screen and (min-width: 992px) {
   body {
@@ -18,24 +20,6 @@ h1, h2, h3, p, ul, li, aside {
     text-align: center;
   }
   .sir, .epi-simulation {
-    padding: 4px;
-    border: 1px dashed #6495ED;
-    border-radius: 5px;
-    padding: 16px;
-    margin: 24px auto 24px auto;
-  }
-}
-
-@media screen and (min-width: 992px) {
-  body {
-    max-width: 992px;
-    margin: auto;
-    font-size: 16px;
-  }
-  h1 {
-    text-align: center;
-  }
-  .epi-simulation {
     padding: 4px;
     border: 1px dashed #6495ED;
     border-radius: 5px;
@@ -192,7 +176,9 @@ aside {
     padding: 6px;
     margin-top: 12px;
     margin-bottom: 12px;
-    font-size: 80%;
+    font-size: 95%;
+    border: 1px solid black;
+    border-radius: 5px;
 }
 
 aside:before {
