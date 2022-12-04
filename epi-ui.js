@@ -225,6 +225,9 @@
   }
 
   function run(model, resultsDiv, chartCanvas, populationCanvas, speedInput) {
+    function getSpeed(value) {
+      return (100 - value) * 10;
+    }
     const type = modelType(model);
     if (type === MICRO) {
       EpiMicro.runBeforeEvents(model);
@@ -265,7 +268,7 @@
 
     EpiMacro.initializeModel(model);
     let currentIteration = 0;
-    setTimeout(updateLoop, (speedInput.value / 100) * 1000 );
+    setTimeout(updateLoop, getSpeed(speedInput.value));
 
     function updateLoop() {
       const from = currentIteration;
@@ -282,7 +285,7 @@
       currentIteration = to;
       if (currentIteration < totalIterations &&
           model.working.runStatus === "running") {
-        setTimeout(updateLoop, (speedInput.value / 100) * 1000);
+        setTimeout(updateLoop, getSpeed(speedInput.value));
       } else {
         model.working.runStatus = "stopped"
         model.working.runBtn.textContent = "Run";
