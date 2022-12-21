@@ -1,5 +1,26 @@
 "use strict";
 
+const HELP = {
+  'S': 'Susceptible',
+  'E': 'Exposed (infected) but not yet infectious',
+  'I': 'Infectious',
+  'R': 'Recovered',
+  'R0': `Average number of people infected by a single infectious individual in
+  naive population`,
+  'D': 'Average number of days that an individual is infectious',
+  'iterations': 'Number of times the model executes',
+  'updates': 'Number of iterations that are executed before the GUI is updated',
+};
+
+const NAMES = {
+  R0: "<i><u>R</u><sub>0</sub></i>",
+  E_I: "days exposed",
+  I_R: "days infectious",
+  updates: 'Updates',
+  iterations: 'Iterations',
+
+};
+
 /* Macro models */
 
 const macroSIR = {
@@ -15,9 +36,8 @@ const macroSIR = {
     iterations: 100,
     updates: 10,
   },
-  names: {
-    R0: "<i><u>R</u><sub>0</sub></i>",
-  },
+  names: NAMES,
+  help: HELP,
   initialize: [
     function(model) {
       model.working.beta = model.parameters.R0 /
@@ -56,11 +76,8 @@ const macroSEIR = {
     iterations: 100,
     updates: 10,
   },
-  names: {
-    E_I: "days exposed",
-    I_R: "days infectious",
-    R0: "<i><u>R</u><sub>0</sub></i>",
-  },
+  names: NAMES,
+  help: HELP,
   initialize: [
     function(model) {
       model.working.beta = model.parameters.R0 /
@@ -448,10 +465,7 @@ const microSIR = {
     iterations: 100,
     updates: 10,
   },
-  names: {
-    R0: "<i><u>R</u><sub>0</sub></i>",
-  },
-
+  names: NAMES,
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
@@ -498,11 +512,7 @@ const microSEIR = {
     iterations: 100,
     updates: 10,
   },
-  names: {
-    E_I: "days exposed",
-    I_R: "days infectious",
-    R0: "<i><u>R</u><sub>0</sub></i>",
-  },
+  names: NAMES,
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,

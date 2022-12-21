@@ -373,14 +373,21 @@
       input.addEventListener('change', function(e) {
         parameter.onChange(group, e.target);
       });
+      let help_text = document.createElement('p');
+      help_text.classList.add('epi-help-text');
+      if ("help" in model && key in model.help) {
+        help_text.innerHTML = model.help[key];
+      }
       form_group.append(label);
       form_group.append(input);
+      form_group.append(help_text);
       parent.append(form_group);
     }
 
     let form = document.createElement("form");
     form.classList.add('epi-parameters-holder');
     parametersDiv.append(form);
+    parametersDiv.classList.add('epi-hide-help');
 
     const parametersOptions = options.parametersOptions;
     const include = parametersOptions && parametersOptions.include;
@@ -403,6 +410,11 @@
     reset.type = 'reset';
     reset.textContent = "Reset";
     form.append(reset);
+    let help = document.createElement('button');
+    help.classList.add('epi-help');
+    help.type = 'button';
+    help.textContent = "Help";
+    form.append(help);
   }
 
 
@@ -429,6 +441,14 @@
         workingModel.working.runBtn = runBtn;
         runBtn.textContent = "Stop";
         run(workingModel,resultsDiv, chartCanvas, populationCanvas, speedInput);
+      }
+    });
+    let helpBtn = parametersDiv.querySelector('.epi-help');
+    helpBtn.addEventListener('click', function() {
+      if (parametersDiv.classList.contains('epi-hide-help')) {
+        parametersDiv.classList.remove('epi-hide-help');
+      } else {
+        parametersDiv.classList.add('epi-hide-help');
       }
     });
   }

@@ -198,4 +198,59 @@
     }
     return series;
   }
+  EpiMicro.runSimulation = function(model) {
+    model.working = model.working || {};
+    EpiMicro.runBeforeEvents(model);
+    let series = EpiMicro.iterateModel(model, model.parameters.iterations);
+    EpiMicro.runAfterEvents(model);
+    return series;
+  }
+
+  EpiMicro.runSimulations = function(model, n) {
+    let simulationSeries = [];
+    for (let i = 0; i < n; i++) {
+      let m = deepCopy(model);
+      simulationSeries.push(EpiMicro.runSimulation(m));
+    }
+    return simulationSeries;
+  }
+
+  EpiMicro.mean = function(arr) {
+    let total = 0.0;
+    for (const n of arr) {
+      total += n;
+    }
+    return total / arr.length;
+  }
+
+  EpiMicro.max = function(arr) {
+    let m = Number.MIN_VALUE;
+    for (const n of arr)
+      if (n > m)
+        m = n;
+    return m;
+  }
+
+  EpiMicro.min = function(arr) {
+    let m = Number.MAX_VALUE;
+    for (const n of arr)
+      if (n < m)
+        m = n;
+    return m;
+  }
+
+  EpiMicro.stat = function(simulationSeries, index, compartment, func) {
+    let result = [];
+    for (const series of simulationSeries) {
+      let n;
+      if (index >= 0) {
+        n = index;
+      } else {
+        n = series.length + index;
+      }
+      result.push(series[n][compartment]);
+    }
+    return func(result);
+  }
+
 } (window.EpiMicro = window.EpiMicro || {}));
