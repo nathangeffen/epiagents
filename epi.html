@@ -1,0 +1,415 @@
+<!--
+     Example and test html for using EpiAgents code
+     Copyright (C) 2021  Nathan Geffen
+
+     This program is free software: you can redistribute it and/or modify
+     it under the terms of the GNU Affero General Public License as
+     published by the Free Software Foundation, either version 3 of the
+     License, or (at your option) any later version.
+
+     This program is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     GNU Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name=viewport content="width=device-width, initial-scale=1">
+        <title>Two types of infectious disease models</title>
+        <link rel="stylesheet" href="epi.css?v=3">
+    </head>
+    <body>
+
+        <!--# include file="contents.html" -->
+
+        <h1>Two ways to model infectious diseases - and what they tell us about epidemics</h1>
+
+        <p>By Nathan Geffen, June to November 2022</p>
+
+        <p>
+            There are many ways to model epidemics, but we can broadly divide
+            models into two types: macro and micro. The former typically use a
+            set of difference equations to calculate changes in a population,
+            while the latter consist of numerous agents, each representing a
+            person with their own specific behaviour. Macro models are often
+            also called compartmental or equation-based, while micro models are
+            often called agent-based or individual-based simulations.
+        </p>
+        <p>
+            At the onset of the Covid pandemic, many websites explained how the
+            simplest useful macro model, an SIR one (for
+            Susceptible-Infectious-Recovered), worked. We'll start with that and
+            then try to implement an equivalent micro model. We'll then discuss
+            the differences between the two models and their consequences for
+            understanding real-world epidemics. Then we'll implement models of
+            HIV and Covid and consider what we can learn about these and other
+            infectious diseases from macro and micro models.
+        </p>
+        <p><i>This page has little asides that you may find useful. They are in
+            a gray box. Click the button at the top of the box to expand and read
+            an aside.</i>
+        </p>
+        <aside>
+            <button type="button">Using the resources on this webpage</button>
+            <div>
+                <p>
+                    This webpage uses only open-source software. The text on
+                    this page is available for republication under <a href="https://creativecommons.org/licenses/by-sa/4.0/">this
+                    Creative Commons license</a>.
+                    The Javascript and CSS files that I've written for it are available
+                    under one the <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU
+                    Affero General Public License</a>. My C and C++ code is available
+                    under the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License</a>. It's
+                    all on <a href="https://github.com/nathangeffen/understandingepi">Github</a>.
+                    So please feel free to download, adapt, improve and publish as you
+                    see fit, but please stick to the terms of the licenses.
+                </p>
+            </div>
+        </aside>
+        <aside>
+            <button type="button">Terminology</button>
+            <div>
+                <p>
+                    Terminology is inconsistent across infectious disease
+                    literature. Macro, micro, compartmental, SIR,
+                    equation-based, deterministic, stochastic: all are used to
+                    describe types of models. I find the macro vs micro
+                    distinction the most useful here, in part because the terms
+                    are proper antonyms and using them in the source code makes
+                    it easier to read. Also while macro models are usually
+                    deterministic, they can be implemented stochastically. And,
+                    I suppose, micro models can be implemented
+                    deterministically, though a use-case of that doesn't spring
+                    to mind.
+                </p>
+                <p>
+                    Macro and micro models are broad categories and there are all
+                    manner of models that borrow ideas from both.
+                </p>
+                <p>
+                    For the most part, I try to stick to terminology used in <a href="https://anintroductiontoinfectiousdiseasemodelling.com/">An
+                    introduction to Infectious Disease Modelling</a> by Emilia Vynnycky and Richard
+                    G White.
+                </p>
+            </div>
+        </aside>
+
+        <h2>A very simple disease</h2>
+
+        <p>
+            We start off with a very simple infectious disease. It has the
+            following characteristics:
+        </p>
+
+        <ol>
+            <li>A population of at least 100 people starts off with a tiny
+                number of infected people, maybe even just one person.</li>
+            <li>People in this population randomly (homogenously) mix with each
+                other.</li>
+            <lI>When there are a tiny number of infected people in the
+                population, they will on average infect two other people before
+                they recover.</li>
+            <li>Infected people on average take 5 days to recover.</li>
+            <li>Once recovered, a person has immunity. They can't become
+                infected again and they can't transmit the infection to anyone else.</li>
+        </ol>
+
+        <p>No-one dies and there are no births or migration into or out of this
+            population, at least for the time period that we model.</p>
+
+        <p>
+            Characteristic 3 of our model is what's commonly called
+            $\underline{R}_0$ in epidemiological literature. The real-world use
+            of $\underline{R}_0$ is much more limited than is usually admitted
+            but it's still useful.
+        </p>
+
+        <p>
+            We call our description above a model world. We can implement both a
+            macro or a micro model version of it.
+        </p>
+
+        <p>
+            In this population we have people who are <b>S</b>usceptible to the
+            infection, but not yet infected. There are infected people, and all
+            infected people also <b>I</b>nfectious. And we have <b>R</b>ecovered people.
+            That's three compartments: Susceptible, Infectious and Recovered, abbreviated as SIR.
+        </p>
+        <p>
+            We initialize our model so that nearly everyone in the population is
+            uninfected and has never had the infection. In other words everyone
+            is in the Susceptible compartment and a tiny number are in the
+            Infectious compartment.
+        </p>
+        <p>
+            Let's assume the population size is 100. Then we'll set $S$, the
+            number of people in the Susceptible compartment to 99 and $I$, the
+            number of people in the Infectious compartment to 1. The number of
+            people, $R$, in the Recovered compartment is 0. (Note we do not
+            underline ${R}$, the number of recovered people, to differentiate it
+            from $\underline{R}_0$, the number of people that each infectious
+            person will infect when the epidemic is still very small. I wish
+            this was a standard adopted throughout infectious disease
+            literature.)
+        </p>
+        <p>
+            All the above is common to both the macro and micro models that we
+            implement. Now let's describe specific details of our macro model:
+        </p>
+
+        <h3>SIR Macro model</h3>
+
+        <p>
+            We iteratively update the $S$, $I$ and $R$ compartments with the
+            number of people who have moved between them. In our model each
+            iteration represents a day in our infectious disease world. These
+            equations describe what happens on each iteration:
+        </p>
+
+        <p>
+            Note that the number of people in our macro model compartments are
+            continuous real numbers, not discrete. This is a big difference
+            between our macro and micro models.
+        </p>
+
+        <p>
+            The number of people who become infected on each iteration, or day,
+            of our model is a function of S, I and the risk of infection $\lambda$.
+            Since all three of these variables change with time, we subscript them.
+            This equation describes the flow from $S$ to $I$:
+
+            \begin{equation}
+            S_{t+1}=S_t - \lambda_t S_t
+            \end{equation}
+        </p>
+
+        <p>
+            Since people mix homogenously, we have:
+
+            \begin{equation} \lambda_t = \beta I_t \end{equation}
+
+            where
+
+            \begin{equation} \beta = {\underline{R} \over {ND}} \end{equation}
+
+            where $N$ is the population size and $D$ is the average number of
+            days a person is infected (5 in our model).
+        </p>
+
+        <p>
+            The other equations in the model are simple:
+        </p>
+        <p>
+            \begin{equation}
+            I_{t+1}=I_t + \lambda_t S_t - rI_t
+            \end{equation}
+
+            \begin{equation}
+            R_{t+1}=R_t + rI_t
+            \end{equation}
+
+            where $r$ is the rate of recovery per day, or $1/5$ in our model.
+        </p>
+
+        <p>
+            We can depict what happens on each time step (or day) graphically:
+        </p>
+
+        <p>
+            <img src="sir.svg" alt="Basic SIR graph">
+        </p>
+
+
+        <div id="macroSIR" class="sir"></div>
+
+        <p>There are four boxes shown in each model:
+        </p>
+        <dl>
+            <dt>Results</dt>
+            <dd>This shows the population size of each compartment after each
+                iteration of a model.</dd>
+
+            <dt>Parameters</dt>
+            <dd>You can change the parameters before running a model. Press the <em>Reset</em> button to set the parameters to their original values. </dd>
+
+            <dt>Graph</dt>
+            <dd>This shows how the compartment population sizes change over
+                time.</dd>
+
+            <dt>Population</dt>
+            <dd>This shows the status of the individuals in the population. This
+                makes much more sense for micro models. In macro models you usually
+                have fractions of individuals, so we round off. Also our macro
+                models are deterministics so all the individuals ina particular
+                compartment are grouped together. </dd>
+        </dl>
+
+        <p>Adjust the speed slider to make the model run faster or slower.</p>
+
+        <p>Click the <em>Run</em> button to run a model. It changes to a <em>Stop</em> button
+            while the model is running so that you can interrupt the model. This
+            is useful if it's taking too long.</p>
+
+        <h3>SIR micro model</h3>
+
+        <p>Now let's implement a micro model that approximates the above macro model.</p>
+
+        <p>
+            A micro model consists of agents and events. An agent typically
+            represents a single person in a population. An event typically is
+            executed on a subset of agents.
+        </p>
+
+        <p>
+            There are three stages to executing a micro model: <em>before</em> events,
+            <em>during</em> events and <em>after</em> events.
+        </p>
+        <p>
+            First execute the
+            <em>before</em> events. These typically would create and initialise
+            the agents, write a report of the initial state of the population
+            and perhaps calculate some working variables that won't change once
+            the simulation starts. </p>
+        <p>
+            Then repeatedly execute the <em>during</em> events until some stop
+            condition is met. A simple stop condition is simply to execute the
+            during events $n$ times, where $n$ is a user-defined constant. Typical
+            during events would shuffle the agents (to generate more
+            stochasticity), infect some susceptibe agents, vaccinate some
+            agents, recover some infected agents, or kill some ill agents.</p>
+        <p>
+            Finally execute the after events which would typically be writing a
+            report or creating a CSV file of the results.
+        </p>
+
+        <p>Here is the structure of the micro models I tend to implement</p>
+
+        <pre>
+Execute before events
+# Simulation loop:
+Loop n times:
+   for each during event, e:
+       For each agent, a:
+           If e should be applied to a:
+              e(a)
+Execute after events
+        </pre>
+
+        <p>Here is a micro model for SIR</p>
+
+        <div id="microSIR" class="sir"></div>
+
+        <p>Try running the above two models multiple times. What do you notice?</p>
+
+        <p>Even with these two models of our simple model world, there are
+            already interesting observations we can make:
+        </p>
+
+        <ul>
+            <li>
+                The macro model obviously gives the same results every time.
+                It's entirely deterministic.
+            </li>
+            <li>
+                With the parameters used here, the infectious disease in the
+                micro model often fails to take off; no one besides the
+                originally infected agent becomes infected. In fact in this
+                particular model it seems to happen a bit more than half the time.
+            </li>
+            <li>
+                The macro model epidemic ends with about 191 people still
+                suspectible (never infected). The micro model epidemic plays out
+                differently each time, but it very seldom if ever has as many
+                infections as the macro model.
+            </li>
+        </ul>
+
+        <p>
+            I ran the micro model 100 times. The mean number of infections was
+            299. The most number of infections in a single simulation was 768,
+            considerably fewer infections than the macro model's 809.
+        </p>
+        <p>
+            I pushed the number of initial infections up to 100 (and
+            susceptibles down to 900), to dampen the effect of an epidemic
+            failing to take off. Even then, the mean infections were 741 and the
+            most number of infections in a single simulation were 811. Doing the
+            same thing to the macro model results in 842 infections.
+        </p>
+
+
+
+        <aside>
+            <button type="button">What programming language to use for micro models?</button>
+            <div>
+                <p>
+                    There is far more debate on the Internet about which are the
+                    best programming languages than the topic deserves. In fact,
+                    there are many good programming languages and all of them
+                    are flawed. Write your first simulations in a programming
+                    language you feel comfortable with. If it's a prototype it
+                    doesn't matter if it's Python, R, Ruby, Basic or whatever
+                    your favourite algebra for expressing algorithms is.
+                </p>
+                <p>
+                    If you need your simulation to execute many thousands of
+                    times and you are finding it too slow, changing to a
+                    compiled language like C, C++, Go, Fortran, Rust, Java or
+                    even a lisp-type language, may be necessary. But often the
+                    cause of execution being too slow isn't the language but an
+                    algorithm you might be using. Perhaps consider optimising or
+                    improving an algorithm before going to the effort of
+                    learning a new programming language.
+                </p>
+                <p>For what it's worth I tend to implement my micro models in Python
+                    when I'm just prototyping and then C or C++ if I truly need a
+                    lot more speed. But the models on this webpage are of course all
+                    implemented in Javascript, because that is the main programming
+                    language that all the large web browsers support.
+                </p>
+            </div>
+        </aside>
+
+
+        <p>Let's get a bit more complicated. Here there's an exposure
+            compartment before an infectious one.</p>
+        <div id="macroSEIR" class="sir"></div>
+
+        <p>Here's the micro model version of SEIR.</p>
+        <div id="microSEIR" class="sir"></div>
+
+
+        <p>Here is the highly cited Granich et al. model.</p>
+        <div id="macroGranichEtAl" class="sir"></div>
+
+
+        <p>We can quite easily implement a microsimulation version of this.</p>
+        <div id="microGranichEtAl" class="sir"></div>
+
+
+        <p>Here is a quick and dirty Covid-like-disease model.</p>
+        <div id="macroCovid" class="sir"></div>
+
+        <p>Here is the equivalent micro model.</p>
+        <div id="microCovid" class="sir"></div>
+
+
+        <script src="utils.js?v=20221111"></script>
+        <script src="epimacro.js?v=20221111"></script>
+        <script src="epimicro.js?v=20221111"></script>
+        <script src="epi-ui.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script id="MathJax-script" async
+                src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+        </script>
+        <script src="models.js"></script>
+
+    </body>
+</html>
