@@ -37,6 +37,8 @@
   const MICRO = 1;
   const MACRO = 2;
 
+  EpiUI.modelRegister = {};
+
   function modelType(model) {
     if ("duringEvents" in model) return MICRO;
     return MACRO;
@@ -326,7 +328,7 @@
     div.append(runButtonDiv);
     let speedLabel = document.createElement("label");
     speedLabel.classList.add('epi-speed-label');
-    speedLabel.textContent = "Speed";
+    speedLabel.textContent = "Slow";
     runButtonDiv.append(speedLabel);
     let speed = document.createElement("input");
     speed.type = "range";
@@ -335,6 +337,10 @@
     speed.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
     speedLabel.setAttribute("for", speed.id);
     runButtonDiv.append(speed);
+    let fast = document.createElement("span")
+    fast.classList.add('epi-speed-label');
+    fast.textContent = "Fast";
+    runButtonDiv.append(fast);
     let runButton = document.createElement('button');
     runButton.textContent = "Run";
     runButton.classList.add('epi-run-btn');
@@ -451,8 +457,8 @@
         parametersDiv.classList.add('epi-hide-help');
       }
     });
+    EpiUI.modelRegister[div.id] = model.name;
   }
-
   // Exports
   EpiUI.create = create;
 

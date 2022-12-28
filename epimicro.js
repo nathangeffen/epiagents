@@ -55,7 +55,8 @@
     for (const [compartment, num] of Object.entries(model.compartments)) {
       for (let i = 0; i < num; i++) {
         model.agents.push({
-          'compartment': compartment
+          'compartment': compartment,
+          'changed': false
         });
       }
     }
@@ -134,7 +135,7 @@
     return N;
   }
 
-  const calcCompartments = function(model, compartments) {
+  const calcCompartmentsOld = function(model, compartments) {
     let total = 0;
     for (let agent of model.agents)
       if (compartments.includes(agent.compartment))
@@ -142,23 +143,45 @@
     return total;
   }
 
+  const calcCompartments = function(model, compartments) {
+    let total = 0;
+    for (const [compartment, num] of Object.entries(model.compartments)) {
+      if (compartments.includes(compartment)) {
+        total += num;
+      }
+    }
+    return total;
+  }
+
+  EpiMicro.infections = 0;
   EpiMicro.eventStoI = function(model, from, to, beta, I=undefined) {
     if (I === undefined)
       I = [to];
     const delta = beta * calcCompartments(model, I);
     let i = 0;
-    for (let agent of model.agents)
-      if (agent.compartment == 'S') {
-        if (Math.random() < delta)
+    for (let agent of model.agents) {
+      if (agent.compartment == 'S' && agent.changed == false) {
+        if (Math.random() < delta) {
           agent.compartment = to;
+          agent.changed = true;
+          ++EpiMicro.infections;
+        }
       }
+    }
   }
 
   EpiMicro.eventFromToRisk = function(model, from, to, risk) {
     for (let agent of model.agents)
-      if (agent.compartment == from)
-        if (Math.random() < risk)
+      if (agent.compartment == from && agent.changed == false)
+        if (Math.random() < risk) {
           agent.compartment = to;
+          agent.changed = true;
+        }
+  }
+
+  EpiMicro.eventResetChanged = function(model) {
+    for (let agent of model.agents)
+      agent.changed = false;
   }
 
   EpiMicro.eventTallyCompartments = function(model) {
@@ -199,6 +222,7 @@
     return series;
   }
   EpiMicro.runSimulation = function(model) {
+    EpiMicro.infections = 0;
     model.working = model.working || {};
     EpiMicro.runBeforeEvents(model);
     let series = EpiMicro.iterateModel(model, model.parameters.iterations);

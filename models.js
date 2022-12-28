@@ -61,6 +61,12 @@ const macroSIR = {
 
 EpiUI.create(macroSIR, document.getElementById('macroSIR'));
 
+let macroSIR100 = EpiMicro.deepCopy(macroSIR);
+macroSIR100.compartments.S = 900;
+macroSIR100.compartments.I = 100;
+macroSIR100.name = "Macro model: SIR with 100 initial infections";
+EpiUI.create(macroSIR100, document.getElementById('macroSIR100'));
+
 const macroSEIR = {
   name: "Macro model: SEIR",
   compartments: {
@@ -485,6 +491,7 @@ const microSIR = {
     function(model) {
       EpiMicro.eventFromToRisk(model, 'I', 'R', model.working.r);
     },
+    EpiMicro.eventResetChanged,
     EpiMicro.eventTallyCompartments
   ],
 
@@ -496,6 +503,11 @@ const microSIR = {
 
 EpiUI.create(microSIR, document.getElementById('microSIR'));
 
+let microSIR100 = EpiMicro.deepCopy(microSIR);
+microSIR100.compartments.S = 900;
+microSIR100.compartments.I = 100;
+microSIR100.name = "Micro model: SIR with 100 initial infections";
+EpiUI.create(microSIR100, document.getElementById('microSIR100'));
 
 const microSEIR = {
   name: "Micro model: SEIR",

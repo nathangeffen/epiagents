@@ -314,36 +314,75 @@ Execute after events
         <ul>
             <li>
                 The macro model obviously gives the same results every time.
-                It's entirely deterministic.
+                It's entirely deterministic. The micro model seldom repeats
+                exactly the same results.
             </li>
             <li>
                 With the parameters used here, the infectious disease in the
                 micro model often fails to take off; no one besides the
-                originally infected agent becomes infected. In fact in this
-                particular model it seems to happen a bit more than half the time.
+                originally infected agent becomes infected.
             </li>
             <li>
-                The macro model epidemic ends with about 191 people still
-                suspectible (never infected). The micro model epidemic plays out
-                differently each time, but it very seldom if ever has as many
-                infections as the macro model.
+                The macro model epidemic ends with about 809 people in the
+                recovery compartment, meaning this many people were infected.
+                The micro model epidemic on average has far fewer infections.
+                This is because with just one initial infection it often fails
+                to "take off".
             </li>
         </ul>
 
         <p>
-            I ran the micro model 100 times. The mean number of infections was
-            299. The most number of infections in a single simulation was 768,
-            considerably fewer infections than the macro model's 809.
-        </p>
-        <p>
-            I pushed the number of initial infections up to 100 (and
-            susceptibles down to 900), to dampen the effect of an epidemic
-            failing to take off. Even then, the mean infections were 741 and the
-            most number of infections in a single simulation were 811. Doing the
-            same thing to the macro model results in 842 infections.
+            I ran the micro model 100 times. In some runs, there are no new
+            infections. In the worst epidemic there were 856 infections, higher
+            than the macro model. But on average the number of infections was 472.
         </p>
 
+        <p>Here are the two models again but with one difference: the number of
+        infections in the initial population is 100 instead of 1.</p>
 
+        <p>First the macro model: </p>
+        <div id="macroSIR100" class="sir"></div>
+        <p>Now the micro model: </p>
+        <div id="microSIR100" class="sir"></div>
+
+        <aside>
+            <button type="button">How to run the micro models many times</button>
+            <div>
+                <p>
+                    You could press the Run button on a micro model 100 times
+                    and tabulate the results each time, but there's a much
+                    easier way.
+                </p>
+                <ol>
+                    <li>Open an interactive Javascript console in your browser.
+                    On Firefox or Chromium I press CTRL-SHIFT-C and then click
+                    on the console tab.
+                    </li>
+                    <li>
+                        Then execute this code:
+                        <pre>
+series = EpiMicro.runSimulations(microSIR100, 100)
+EpiMicro.stat(series, -1, 'R', EpiMicro.min)
+EpiMicro.stat(series, -1, 'R', EpiMicro.max)
+EpiMicro.stat(series, -1, 'R', EpiMicro.mean)
+                        </pre>
+                        The first line runs the microSIR100 model 100 times.
+                        The next three lines get the min, max and mean of the final value of the recoveries in the model.
+                    </li>
+                </ol>
+                <p>
+                    You can do the above with any of the models. All the model
+                    names and their descriptions are stored in the
+                    EpiUI.modelRegister variable. Obviously the macro models
+                    give the same min, max and mean every time you run them.
+                </p>
+            </div>
+        </aside>
+
+        <p>Now running the micro model 100 times yields a mean of 840 infection
+            per simulation &mdash; you may get a slightly different answer each time
+            you run it &mdash; about the same as the macro model's 842.
+        </p>
 
         <aside>
             <button type="button">What programming language to use for micro models?</button>

@@ -125,20 +125,12 @@ img {
   font-size: 80%;
 }
 
-.epi-speed::before {
-  content: "fast";
-}
-
-.epi-speed::after {
-  content: "slow";
-}
-
 .epi-speed {
   vertical-align: -6px;
 }
 
 .epi-run-btn {
-  margin-left: 6px;
+  margin-left: 8px;
 }
 
 .epi-results::before {
