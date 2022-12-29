@@ -26,21 +26,6 @@
   EpiMicro.FEMALE = 0;
   EpiMicro.MALE = 1;
 
-  const deepCopy = function(aObject) {
-    if (!aObject) return aObject;
-    if (typeof aObject === "string" || typeof aObject === "number")
-      return aObject;
-    let v;
-    let bObject = Array.isArray(aObject) ? [] : {};
-    for (const k in aObject) {
-      v = aObject[k];
-      bObject[k] = (typeof v === "object") ? deepCopy(v) : v;
-    }
-    return bObject;
-  }
-
-  EpiMicro.deepCopy = deepCopy;
-
   function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));

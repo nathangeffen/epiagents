@@ -246,7 +246,7 @@
             <dd>This shows the status of the individuals in the population. This
                 makes much more sense for micro models. In macro models you usually
                 have fractions of individuals, so we round off. Also our macro
-                models are deterministics so all the individuals ina particular
+                models are deterministics so all the individuals in a particular
                 compartment are grouped together. </dd>
         </dl>
 
@@ -332,13 +332,21 @@ Execute after events
         </ul>
 
         <p>
-            I ran the micro model 100 times. In some runs, there are no new
-            infections. In the worst epidemic there were 856 infections, higher
-            than the macro model. But on average the number of infections was 472.
+            I ran the micro model 100 times. In some simulations, there are no
+            new infections. The most number of infections in a simulation was
+            856 infections, higher than the macro model. But the mean number of
+            total infections across the simulations was only 472, compared to
+            804 in the macro model. One thing of real-world consequence that
+            this suggests is that if and when an infectious diseases explodes
+            into an epidemic in a particular community or neighbourhood is, to
+            a great extent, a result of chance, even if an infected person enters
+            the community.
         </p>
 
-        <p>Here are the two models again but with one difference: the number of
-        infections in the initial population is 100 instead of 1.</p>
+        <p>
+            Here are the two models again but with one difference: the number of
+            infections in the initial population is 100 instead of 1.
+        </p>
 
         <p>First the macro model: </p>
         <div id="macroSIR100" class="sir"></div>
@@ -361,13 +369,14 @@ Execute after events
                     <li>
                         Then execute this code:
                         <pre>
-series = EpiMicro.runSimulations(microSIR100, 100)
-EpiMicro.stat(series, -1, 'R', EpiMicro.min)
-EpiMicro.stat(series, -1, 'R', EpiMicro.max)
-EpiMicro.stat(series, -1, 'R', EpiMicro.mean)
+series = EpiMicro.runSimulations(microSIR100, 100);
+EpiMicro.stat(series, -1, 'R', EpiMicro.min);
+EpiMicro.stat(series, -1, 'R', EpiMicro.max);
+EpiMicro.stat(series, -1, 'R', EpiMicro.mean);
                         </pre>
-                        The first line runs the microSIR100 model 100 times.
-                        The next three lines get the min, max and mean of the final value of the recoveries in the model.
+                        The first line runs the microSIR100 model 100 times. The
+                        next three lines get the min, max and mean of the final
+                        value of the recoveries in the model.
                     </li>
                 </ol>
                 <p>
@@ -379,9 +388,13 @@ EpiMicro.stat(series, -1, 'R', EpiMicro.mean)
             </div>
         </aside>
 
-        <p>Now running the micro model 100 times yields a mean of 840 infection
-            per simulation &mdash; you may get a slightly different answer each time
-            you run it &mdash; about the same as the macro model's 842.
+        <p>
+            Now running the micro model 100 times yields a mean of 843
+            infections per simulation &mdash; you may get a slightly different
+            answer each time you run it &mdash; about the same as the macro
+            model's 842. The minimum number of infections in these 100
+            simulations was 767 and the maximum was 892. Again, your results
+            will likely differ a little.
         </p>
 
         <aside>
@@ -410,17 +423,22 @@ EpiMicro.stat(series, -1, 'R', EpiMicro.mean)
                     when I'm just prototyping and then C or C++ if I truly need a
                     lot more speed. But the models on this webpage are of course all
                     implemented in Javascript, because that is the main programming
-                    language that all the large web browsers support.
+                    language that the most popular web browsers support.
                 </p>
             </div>
         </aside>
 
 
-        <p>Let's get a bit more complicated. Here there's an exposure
-            compartment before an infectious one.</p>
+        <p>
+            Let's get a bit more complicated. We change our model world so that
+            Here there's an exposure compartment before an infectious one. When
+            exposed a person is infected, but not infectious.
+        </p>
         <div id="macroSEIR" class="sir"></div>
 
-        <p>Here's the micro model version of SEIR.</p>
+        <p>
+            Here's the micro model version of SEIR.
+        </p>
         <div id="microSEIR" class="sir"></div>
 
 

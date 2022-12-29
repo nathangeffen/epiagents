@@ -61,7 +61,7 @@ const macroSIR = {
 
 EpiUI.create(macroSIR, document.getElementById('macroSIR'));
 
-let macroSIR100 = EpiMicro.deepCopy(macroSIR);
+let macroSIR100 = EpiMacro.deepCopy(macroSIR);
 macroSIR100.compartments.S = 900;
 macroSIR100.compartments.I = 100;
 macroSIR100.name = "Macro model: SIR with 100 initial infections";
@@ -503,7 +503,7 @@ const microSIR = {
 
 EpiUI.create(microSIR, document.getElementById('microSIR'));
 
-let microSIR100 = EpiMicro.deepCopy(microSIR);
+let microSIR100 = EpiMacro.deepCopy(microSIR);
 microSIR100.compartments.S = 900;
 microSIR100.compartments.I = 100;
 microSIR100.name = "Micro model: SIR with 100 initial infections";
