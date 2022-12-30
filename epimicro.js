@@ -1,7 +1,8 @@
 /*
-  EpiMacro: Agent-based models for infectious disease epidemics.
+  Epidemiological modelling demonstration: Macro and micro models for
+  infectious disease epidemics.
 
-  Copyright (C) 2022  Nathan Geffen
+  Copyright (C) 2023  Nathan Geffen
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as
@@ -218,7 +219,7 @@
   EpiMicro.runSimulations = function(model, n) {
     let simulationSeries = [];
     for (let i = 0; i < n; i++) {
-      let m = deepCopy(model);
+      let m = EpiMacro.deepCopy(model);
       simulationSeries.push(EpiMicro.runSimulation(m));
     }
     return simulationSeries;

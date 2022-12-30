@@ -1,7 +1,8 @@
 /*
-  EpiMacro: Compartment models for infectious disease epidemics.
+  Epidemiological modelling demonstration: Macro and micro models for
+  infectious disease epidemics.
 
-  Copyright (C) 2022  Nathan Geffen
+  Copyright (C) 2023  Nathan Geffen
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU Affero General Public License as
@@ -22,6 +23,7 @@
 
 (function (EpiMacro) {
 
+  /* Taken from Stack Overflow answer on deep copying. */
   const deepCopy = function(aObject) {
     if (!aObject) return aObject;
     if (typeof aObject === "string" || typeof aObject === "number")

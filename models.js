@@ -1,3 +1,24 @@
+/*
+  Epidemiological modelling demonstration: Macro and micro models for
+  infectious disease epidemics.
+
+  Copyright (C) 2023  Nathan Geffen
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
 "use strict";
 
 const HELP = {
@@ -537,7 +558,6 @@ const microSEIR = {
     }
   ],
 
-
   duringEvents: [
     EpiMicro.eventShuffle,
     function(model) {
@@ -549,6 +569,7 @@ const microSEIR = {
     function(model) {
       EpiMicro.eventFromToRisk(model, 'I', 'R', model.working.r);
     },
+    EpiMicro.eventResetChanged,
     EpiMicro.eventTallyCompartments
   ],
 

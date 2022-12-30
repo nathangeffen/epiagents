@@ -1,6 +1,8 @@
 <!--
-     Example and test html for using EpiAgents code
-     Copyright (C) 2021  Nathan Geffen
+     Epidemiological modelling demonstration: Macro and micro models for
+     infectious disease epidemics.
+
+     Copyright (C) 2023  Nathan Geffen
 
      This program is free software: you can redistribute it and/or modify
      it under the terms of the GNU Affero General Public License as
@@ -14,6 +16,9 @@
 
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+     The source code for this project is available here:
+     https://github.com/nathangeffen/understandingepi
 -->
 
 <!DOCTYPE html>
@@ -30,7 +35,7 @@
 
         <h1>Two ways to model infectious diseases - and what they tell us about epidemics</h1>
 
-        <p>By Nathan Geffen, June to December 2022</p>
+        <p>By Nathan Geffen, January 2023</p>
 
         <p>
             There are many ways to model epidemics, but we can broadly divide
@@ -196,7 +201,7 @@
 
             where
 
-            \begin{equation} \beta = {\underline{R} \over {ND}} \end{equation}
+            \begin{equation} \beta = {\underline{R}_0 \over {ND}} \end{equation}
 
             where $N$ is the population size and $D$ is the average number of
             days a person is infected (5 in our model).
@@ -231,12 +236,14 @@
         <p>There are four boxes shown in each model:
         </p>
         <dl>
-            <dt>Results</dt>
+            <dt>Outputs</dt>
             <dd>This shows the population size of each compartment after each
                 iteration of a model.</dd>
 
             <dt>Parameters</dt>
-            <dd>You can change the parameters before running a model. Press the <em>Reset</em> button to set the parameters to their original values. </dd>
+            <dd>
+                You can change the parameters before running a model. Press the <em>Reset</em> button to set the parameters to their original values.
+            </dd>
 
             <dt>Graph</dt>
             <dd>This shows how the compartment population sizes change over
@@ -285,7 +292,7 @@
             agents, recover some infected agents, or kill some ill agents.</p>
         <p>
             Finally execute the after events which would typically be writing a
-            report or creating a CSV file of the results.
+            report or creating a CSV file of the outputs.
         </p>
 
         <p>Here is the structure of the micro models I tend to implement</p>
@@ -307,15 +314,16 @@ Execute after events
 
         <p>Try running the above two models multiple times. What do you notice?</p>
 
-        <p>Even with these two models of our simple model world, there are
+        <p>
+            Even with these two models of our simple model world, there are
             already interesting observations we can make:
         </p>
 
         <ul>
             <li>
-                The macro model obviously gives the same results every time.
+                The macro model obviously gives the same outputs every time.
                 It's entirely deterministic. The micro model seldom repeats
-                exactly the same results.
+                exactly the same outputs.
             </li>
             <li>
                 With the parameters used here, the infectious disease in the
@@ -358,7 +366,7 @@ Execute after events
             <div>
                 <p>
                     You could press the Run button on a micro model 100 times
-                    and tabulate the results each time, but there's a much
+                    and tabulate the outputs each time, but there's a much
                     easier way.
                 </p>
                 <ol>
@@ -378,6 +386,23 @@ EpiMicro.stat(series, -1, 'R', EpiMicro.mean);
                         next three lines get the min, max and mean of the final
                         value of the recoveries in the model.
                     </li>
+                    <li>
+                        To change the initial values of the model's
+                        compartments, you can do something like this:
+                        <pre>
+// Change the number of initial susceptible agents to 990
+microSIR100.compartments.S = 990;
+// Change the number of initial infected agents to 10
+microSIR100.compartments.I = 10;
+                        </pre>
+                    </li>
+                    <li>
+                        To change the model's parameters, you can first view them like so:
+                        <pre>
+microSIR.parameters;
+                        </pre>
+                        And then modify them as appropriate.
+                    </li>
                 </ol>
                 <p>
                     You can do the above with any of the models. All the model
@@ -393,8 +418,13 @@ EpiMicro.stat(series, -1, 'R', EpiMicro.mean);
             infections per simulation &mdash; you may get a slightly different
             answer each time you run it &mdash; about the same as the macro
             model's 842. The minimum number of infections in these 100
-            simulations was 767 and the maximum was 892. Again, your results
+            simulations was 767 and the maximum was 892. Again, your outputs
             will likely differ a little.
+        </p>
+
+        <p>
+            Play around with the other parameters, $\underline{R}_0$ and $D$, to
+            see how changing these changes the models' outputs.
         </p>
 
         <aside>
@@ -431,11 +461,18 @@ EpiMicro.stat(series, -1, 'R', EpiMicro.mean);
 
         <p>
             Let's get a bit more complicated. We change our model world so that
-            Here there's an exposure compartment before an infectious one. When
-            exposed a person is infected, but not infectious.
+            there's an exposure compartment before an infectious one. When
+            exposed a person is infected, but not infectious. In our model world
+            the average exposure period is two days. This is an SEIR model.
+        </p>
+        <p>
+            <img src="seir.svg" alt="SEIR graph">
+        </p>
+
+        <p>
+            Here's the macro model version of SEIR:
         </p>
         <div id="macroSEIR" class="sir"></div>
-
         <p>
             Here's the micro model version of SEIR.
         </p>
