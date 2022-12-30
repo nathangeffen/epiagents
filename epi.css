@@ -34,6 +34,10 @@ h1, h2, h3 {
   margin-bottom: 8px;
 }
 
+p, ul, ol, dl, li {
+  margin-top: 12px;
+}
+
 @media screen and (min-width: 992px) {
   body {
     max-width: 992px;
@@ -70,6 +74,7 @@ dt {
 
 pre {
   border: 1px solid lightgray;
+  background-color: white;
   border-radius: 5px;
   padding: 10px;
   overflow-x: scroll;
