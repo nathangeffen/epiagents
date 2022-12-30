@@ -26,6 +26,9 @@
     <head>
         <meta charset="utf-8" />
         <meta name=viewport content="width=device-width, initial-scale=1">
+        <meta name="author" content="Nathan Geffen">
+        <meta name="description" content="Epidemiology: Macro and micro models for infectious disease epidemics">
+        <meta name="keywords" content="Epidemiology,models,micro models,macro models,agent-based models,simulation,infectious disease">
         <title>Two types of infectious disease models</title>
         <link rel="stylesheet" href="epi.css?v=3">
     </head>
@@ -465,6 +468,7 @@ microSIR.parameters;
             exposed a person is infected, but not infectious. In our model world
             the average exposure period is two days. This is an SEIR model.
         </p>
+
         <p>
             <img src="seir.svg" alt="SEIR graph">
         </p>
@@ -478,6 +482,42 @@ microSIR.parameters;
         </p>
         <div id="microSEIR" class="sir"></div>
 
+        <table>
+            <tr>
+                <th>
+                    Initial exposed agents
+                </th>
+                <th>
+                    Macro model
+                </th>
+                <th>
+                    Micro model (1000 simulations)
+                </th>
+
+            </tr>
+            <tr>
+                <td>
+                    1
+                </td>
+                <td>
+                    796
+                </td>
+                <td>
+                    mean: 382 min: 1 max: 856
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    100
+                </td>
+                <td>
+                    838
+                </td>
+                <td>
+                    mean: 837 min: 736 max: 915
+                </td>
+            </tr>
+        </table>
 
         <p>Here is the highly cited Granich et al. model.</p>
         <div id="macroGranichEtAl" class="sir"></div>
@@ -493,6 +533,17 @@ microSIR.parameters;
         <p>Here is the equivalent micro model.</p>
         <div id="microCovid" class="sir"></div>
 
+        <footer>
+            <nav>
+                <a href="COPYING">License</a>
+                <a href="https://github.com/nathangeffen/understandingepi">Source code</a>
+                <a href="https://www.simhub.online">Simhub</a>
+            </nav>
+            <p>
+                <a href="https://www.gnu.org/licenses/agpl-3.0.html">Copyright</a>
+                &copy; 2023 Nathan Geffen
+            </p>
+        </footer>
 
         <script src="utils.js?v=20221111"></script>
         <script src="epimacro.js?v=20221111"></script>

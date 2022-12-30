@@ -229,7 +229,7 @@ img {
 }
 
 .sir button {
-  background-color:#22c767;
+  background-color:#04AA6D;
   border-radius: 3px;
   border: 1px solid #18ab29;
   display:inline-block;
@@ -259,10 +259,11 @@ aside {
 aside > button {
   width: 100%;
   font-size: 20px;
-  background-color: darkgreen;
+  background-color: #04AA6D;
   border: none;
   border-radius: 14px;
   color: white;
+  font-weight: bold;
   padding: 15px 32px;
   text-align: center;
   text-decoration: none;
@@ -296,4 +297,38 @@ div p.epi-help-text {
 
 div.epi-hide-help p.epi-help-text {
   display: none;
+}
+
+table {
+  border-collapse: collapse;
+  max-width: 100%;
+  overflow-x: scroll;
+}
+
+td, th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+tr:nth-child(even){background-color: #f2f2f2;}
+
+tr:hover {background-color: #ddd;}
+
+th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #04AA6D;
+  color: white;
+}
+
+footer {
+  border-top: 1px solid lightgray;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  padding-top: 12px;
+}
+
+nav a {
+  margin-right: 12px;
 }
