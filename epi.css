@@ -177,7 +177,8 @@ img {
 }
 
 .epi-parameter-compartments {
-  border-bottom: 1px solid gray;
+  border-bottom: 1px dotted gray;
+  width: 60%;
   margin-bottom: 6px;
   padding-bottom: 6px;
 }
@@ -206,8 +207,6 @@ img {
   position: sticky;
   border-bottom: 1px solid gray;
   opacity: 1.0;
-  background-color: white;
-  z-index: 1;
 }
 
 
@@ -300,7 +299,6 @@ div.epi-hide-help p.epi-help-text {
 }
 
 table {
-  border-collapse: collapse;
   max-width: 100%;
   overflow-x: scroll;
 }
