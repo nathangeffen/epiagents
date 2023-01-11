@@ -18,8 +18,8 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 "use strict";
+
 
 const HELP = {
   'S': 'Susceptible',
@@ -82,6 +82,18 @@ const macroSIR = {
 
 EpiUI.create(macroSIR, document.getElementById('macroSIR'));
 
+let macroSIROde = EpiMacro.deepCopy(macroSIR);
+macroSIROde.name = "Macro model: SIR using differential equation"
+macroSIROde.ode = function(model) {
+  return function(t, y) {
+    return [-model.working.beta * y[0] * y[1],
+            (model.working.beta * y[0] - model.working.r) * y[1],
+            model.working.r * y[1]];
+  };
+}
+
+EpiUI.create(macroSIROde, document.getElementById('macroSIROde'));
+
 let macroSIR100 = EpiMacro.deepCopy(macroSIR);
 macroSIR100.compartments.S = 900;
 macroSIR100.compartments.I = 100;
@@ -136,14 +148,31 @@ const macroSEIR = {
   }
 };
 
+
+
 EpiUI.create(macroSEIR, document.getElementById('macroSEIR'));
 
 const macroGranichEtAlColors = [
   'green',
   '#FF0000', '#EE0000', '#DD0000', '#CC0000',
   '#0000FF', '#0000EE', '#0000DD', '#0000CC',
-  '#000000'
+  '#000000', "darkred"
 ];
+
+// Tally infections for UI purposes only
+function tallyInfections(model) {
+  const value = model.compartments.I1 + model.compartments.I2 +
+        model.compartments.I3 + model.compartments.I4 +
+        model.compartments.A1 + model.compartments.A2 +
+        model.compartments.A3 + model.compartments.A4 -
+        model.compartments.I;
+  return {
+    "from": "_",
+    "to": "I",
+    "value": value
+  }
+}
+
 const macroGranichEtAl = {
   name: "Macro model: Granich et al.",
   compartments: {
@@ -156,20 +185,21 @@ const macroGranichEtAl = {
     A2: 0,
     A3: 0,
     A4: 0,
-    D: 0
+    D: 0,
+    I: 100
   },
   parameters: {
     β: 0.009,
     μ: 0.0045,
     ρ: 0.12,
-    τ: 0.10,
+    τ: 0.20,
     φ: 0.005,
     σ: 0.006,
     λ0: 0.08,
     α: 1.0,
     n: 1.0,
     ε: 0.0001,
-    iterations: 100,
+    iterations: 50,
     updates: 10
   },
   transitions: [
@@ -260,7 +290,7 @@ const macroGranichEtAl = {
     // I4->D
     function(model) {
       return EpiMacro.delta_X_Y(model.compartments, 'I4', 'D',
-                                model.parameters.μ);
+                                model.parameters.ρ);
     },
     // I4->A4
     function(model) {
@@ -319,13 +349,14 @@ const macroGranichEtAl = {
     // A4->D
     function(model) {
       return EpiMacro.delta_X_Y(model.compartments, 'A4', 'D',
-                                model.parameters.μ);
+                                model.parameters.σ);
     },
     // A4->I4
     function(model) {
       return EpiMacro.delta_X_Y(model.compartments, 'A4', 'I4',
                                 model.parameters.φ);
     },
+    tallyInfections
   ],
   options: {
     colors: macroGranichEtAlColors
@@ -584,32 +615,8 @@ EpiUI.create(microSEIR, document.getElementById('microSEIR'));
 
 const microGranichEtAl = {
   name: "Micro model: Granich et al.",
-  compartments: {
-    S: 900,
-    I1: 25,
-    I2: 25,
-    I3: 25,
-    I4: 25,
-    A1: 0,
-    A2: 0,
-    A3: 0,
-    A4: 0,
-    D: 0
-  },
-  parameters: {
-    β: 0.009,
-    μ: 0.0045,
-    ρ: 0.12,
-    τ: 0.10,
-    φ: 0.005,
-    σ: 0.006,
-    λ0: 0.08,
-    α: 1.0,
-    n: 1.0,
-    ε: 0.0001,
-    iterations: 100,
-    updates: 10
-  },
+  compartments: EpiMacro.deepCopy(macroGranichEtAl.compartments),
+  parameters: EpiMacro.deepCopy(macroGranichEtAl.parameters),
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
@@ -619,13 +626,13 @@ const microGranichEtAl = {
     EpiMicro.eventShuffle,
     // _->S
     function(model) {
-      let risk = model.parameters.β;
       let n = model.agents.length;
       for (let i = 0; i < n; i++) {
         if (model.agents[i].compartment !== 'D') {
-          if (Math.random() < risk) {
+          if (Math.random() < model.parameters.β) {
             model.agents.push({
-              'compartment': 'S'
+              'compartment': 'S',
+              'changed': true
             });
           }
         }
@@ -637,7 +644,6 @@ const microGranichEtAl = {
     },
     // S->I1
     function(model) {
-      EpiMicro.eventTallyCompartments(model);
       const I =
             model.compartments.I1 +
             model.compartments.I2 +
@@ -703,7 +709,7 @@ const microGranichEtAl = {
     // I4->D
     function(model) {
       return EpiMicro.eventFromToRisk(model, 'I4', 'D',
-                                model.parameters.μ);
+                                model.parameters.ρ);
     },
     // I4->A4
     function(model) {
@@ -762,19 +768,35 @@ const microGranichEtAl = {
     // A4->D
     function(model) {
       return EpiMicro.eventFromToRisk(model, 'A4', 'D',
-                                model.parameters.μ);
+                                model.parameters.σ);
     },
     // A4->I4
     function(model) {
       return EpiMicro.eventFromToRisk(model, 'A4', 'I4',
                                       model.parameters.φ);
     },
+    EpiMicro.eventResetChanged,
     EpiMicro.eventTallyCompartments,
+    function(model) {
+      model.compartments.I =
+        model.compartments.I1 + model.compartments.I2 +
+        model.compartments.I3 + model.compartments.I4 +
+        model.compartments.A1 + model.compartments.A2 +
+        model.compartments.A3 + model.compartments.A4;
+    }
   ],
   options: {
     colors: macroGranichEtAlColors
   }
 };
+
+// let tmp_parms = microGranichEtAl.parameters;
+// for (let p in tmp_parms) {
+//   tmp_parms[p] = 0.0;
+// }
+// tmp_parms.iterations = 100;
+// tmp_parms.updates = 10;
+// microGranichEtAl.parameters = tmp_parms;
 
 EpiUI.create(microGranichEtAl, document.getElementById('microGranichEtAl'));
 
@@ -922,3 +944,14 @@ const microCovid = {
 };
 
 EpiUI.create(microCovid, document.getElementById('microCovid'));
+
+// rungeKutta test
+// Setup parameters for the transmission speed (T)
+// and the recovery rate R (R).
+// R0 = ~ T/R.
+// const T = 2, R = 1;
+// Define the set of ordinary differential equations.
+// const dSIR = (t, y) => [-T * y[0] * y[1], (T * y[0] - R) * y[1], R * y[1]];
+
+// Solve the system and log the result (reduced to the infection count).
+//console.log(rungeKutta(dSIR, [1, .01, 0], [0, 100], 1));

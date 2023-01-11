@@ -103,11 +103,39 @@
                                        EpiMacro.calcTransitions(model));
   }
 
+  EpiMacro.odeMethod = function(model, n) {
+    let compartments = deepCopy(model.compartments);
+    let y_vals = [];
+    let c_names = [];
+    for (let compartment in compartments) {
+      y_vals.push(compartments[compartment]);
+      c_names.push(compartment);
+    }
+    let diffFunc = model.ode(model);
+    let ode_series = rungeKutta(diffFunc, y_vals, [0, n], 1);
+    let series = [];
+    for (let i = 1; i < ode_series.length; i++) {
+      let normalized_entry = {};
+      let j = 0;
+      for (let name of c_names) {
+        normalized_entry[name] = ode_series[i][j];
+        j++;
+      }
+      series.push(normalized_entry);
+    }
+    return series;
+  }
+
   EpiMacro.iterateModel = function(model, n) {
     let series = [];
-    for (let i = 0; i < n; i++) {
-      model.compartments = EpiMacro.iterateModelOnce(model);
-      series.push(model.compartments);
+    if ('ode' in model) {
+      series = EpiMacro.odeMethod(model, n);
+      model.compartments = series[series.length - 1];
+    } else {
+      for (let i = 0; i < n; i++) {
+        model.compartments = EpiMacro.iterateModelOnce(model);
+        series.push(model.compartments);
+      }
     }
     return series;
   }

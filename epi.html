@@ -461,6 +461,39 @@ microSIR.parameters;
             </div>
         </aside>
 
+        <h3>Using differential equations</h3>
+
+        <p>
+            Instead of implementing a macro model as a series of
+            <em>difference</em>
+            equations, we could instead use <em>differential</em> equations.
+            There are advantages to this approach:
+        </p>
+        <ul>
+            <li>Adv 1</li>
+            <li>Adv 2</li>
+        </ul>
+
+        <p>Recasting our difference equations as differential equations, we get:
+
+            \begin{equation}
+            \frac{dS}{dt} = -\beta I(t) S(t)
+            \end{equation},
+
+            \begin{equation}
+            \frac{dI}{dt} = \beta I(t) S(t) - r I(t)
+            \end{equation}
+
+            and
+
+            \begin{equation}
+            \frac{dR}{dt} =  r I(t)
+            \end{equation}
+
+        </p>
+
+        <div id="macroSIROde" class="sir"></div>
+
         <h3>Adding an exposure compartment</h3>
 
         <p>
@@ -483,18 +516,42 @@ microSIR.parameters;
         </p>
         <div id="microSEIR" class="sir"></div>
 
+        <p>
+            I ran the macro model once and the micro model 1000 times with the
+            number of initial exposures set to 1, 10, 50 and 100, and the
+            initial susceptibles equal to 999, 990 950 and 900 respectively.
+        </p>
+        <p>
+            Below are the results. As usual, because the micro model is
+            stochastic, your results will probably differ a little.
+        </p>
         <table>
             <tr>
                 <th>
-                    Initial exposed agents
                 </th>
                 <th>
                     Macro model
                 </th>
-                <th>
+                <th colspan="3">
                     Micro model (1000 simulations)
                 </th>
-
+            </tr>
+            <tr>
+                <th>
+                    Exposed at start
+                </th>
+                <th>
+                    Infections
+                </th>
+                <th>
+                    Mean
+                </th>
+                <th>
+                    Min
+                </th>
+                <th>
+                    Max
+                </th>
             </tr>
             <tr>
                 <td>
@@ -504,7 +561,47 @@ microSIR.parameters;
                     796
                 </td>
                 <td>
-                    mean: 382 min: 1 max: 856
+                    382
+                </td>
+                <td>
+                    1
+                </td>
+                <td>
+                    856
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    10
+                </td>
+                <td>
+                    808
+                </td>
+                <td>
+                    803
+                </td>
+                <td>
+                    28
+                </td>
+                <td>
+                    879
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    50
+                </td>
+                <td>
+                    822
+                </td>
+                <td>
+                    819
+                </td>
+                <td>
+                    729
+                </td>
+                <td>
+                    891
                 </td>
             </tr>
             <tr>
@@ -515,14 +612,74 @@ microSIR.parameters;
                     838
                 </td>
                 <td>
-                    mean: 837 min: 736 max: 915
+                    837
+                </td>
+                <td>
+                    736
+                </td>
+                <td>
+                    915
                 </td>
             </tr>
         </table>
 
-        <p>Here is the highly cited Granich et al. model.</p>
-        <div id="macroGranichEtAl" class="sir"></div>
+        <p>
+            The results are consistent with what we see for the SIR models.
+        </p>
 
+        <h2>
+            Modelling when to start HIV treatment
+        </h2>
+        <p>
+            In the late 2000s there was a feisty discussion about when was the
+            best time for people with HIV to start antiretroviral treatment.
+            Antiretroviral pills taken daily for life reduced the number of HIV
+            virions in the blood of infected people, usually to undetectable
+            levels. This brought two potential advantages: (1) it extended the
+            life-expectancy to almost normal and (2) it reduced the risk of
+            transmitting the virus to others.
+        </p>
+        <p>
+            But the ideal time to start treatment wasn't clear. Three concerns
+            affecting this were (1) the side effects of the drugs, (2) eventual
+            drug resistance and (3) the cost of the drugs. By the mid 20-teens
+            large well-conducted clinical trials had shown the benefit of
+            starting treatment as soon as a person was diagnosed were
+            substantial. Moreover drug resistance and serious side effects with
+            newer antiretroviral regimens have become minor problems.
+        </p>
+        <p>
+            Nevertheless in the late 2000s all of this was unclear. World Health
+            Organisation researchers (Granich et al. 2009) published models in <a href="https://www.sciencedirect.com/science/article/abs/pii/S0140673608616979">The Lancet</a> that
+            showed that a policy of actively testing and immediately treating
+            people with HIV in South Africa, the state with the most number of
+            people with this virus in the world, would reduce the country's HIV
+            prevalence to a negligible level in 50 years.
+        </p>
+        <p>
+            The paper certainly made a splash, evoking voiceferous discussion.
+            According to Google Scholar it has been cited over 2,300 times. I
+            suspect that until the Covid-19 pandemic it was the most highly
+            cited infectious disease model ever.
+        </p>
+        <p>
+            The graphic with its accompanying caption below, copied from the
+            Granich paper in The Lancet, describes one of their models.
+        </p>
+
+        <figure>
+            <img src="GranichEtAlModel.png" />
+            <figcaption>From <a href="https://www.sciencedirect.com/science/article/abs/pii/S0140673608616979">Granich et al. 2009</a></figcaption>
+        </figure>
+
+        <p>
+            This models a world much more complex than our previous models. It
+            accounts for population growth and deaths. The model specification
+            has 10 compartments and another 10 parameters. Here is my
+            implementation of the Granich model.
+        </p>
+
+        <div id="macroGranichEtAl" class="sir"></div>
 
         <p>We can quite easily implement a microsimulation version of this.</p>
         <div id="microGranichEtAl" class="sir"></div>
@@ -547,6 +704,7 @@ microSIR.parameters;
         </footer>
 
         <script src="utils.js?v=20221111"></script>
+        <script src="rk.js?v=20230101"></script>
         <script src="epimacro.js?v=20221111"></script>
         <script src="epimicro.js?v=20221111"></script>
         <script src="epi-ui.js"></script>

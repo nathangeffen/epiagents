@@ -45,6 +45,8 @@
     return MACRO;
   }
 
+  EpiUI.modelType = modelType;
+
   function initChart(chartCanvas, iterations, options, result_0) {
     const colors = options.colors ||  EpiUI.THREE_COLORS;
     const chartjsOptions = options.chartjsOptions || {
@@ -203,7 +205,7 @@
 
   function initResults(resultsElem, options, series_0) {
     resultsElem.innerHTML = "";
-    const decimals = options.decimals || 2;
+    const decimals = options.decimals;
     let div = document.createElement("div");
     div.classList.add("epi-results-table-holder");
     let table = document.createElement("table");
@@ -220,8 +222,7 @@
   function output(model, series, resultsTbody, chart, populationCanvas, from, to,
                   options={}) {
     for (let i = 0; i < series.length; i++) {
-      printResult(resultsTbody, from + i + 1, series[i],
-                  options.decimals || 2);
+      printResult(resultsTbody, from + i + 1, series[i], options.decimals);
     }
     updateChart(chart, from, to, series);
     drawPopulation(populationCanvas, model, series[series.length - 1]);
@@ -258,6 +259,7 @@
     const options = model.options || {};
     let currentCompartments = {};
 
+    options.decimals = options.decimals || (modelType(model) == MICRO ? 0 : 2);
     let resultsTbody = initResults(resultsDiv, options, model.compartments);
     let chart = initChart(chartCanvas, totalIterations, options,
                           model.compartments);
@@ -355,14 +357,15 @@
   }
 
   function initParameters(parametersDiv, model, options) {
+    let resetTable = [];
+    function changeParameter(parameters, key, input) {
+      parameters[key] = Number(input.value);
+    }
 
     function initSingleParameter(parent, group, key, value) {
       let parameter = {};
       parameter.label = key;
       parameter.value = value;
-      parameter.onChange = function(obj, elem) {
-        obj[key] = Number(elem.value);
-      }
       let form_group = document.createElement('div');
       form_group.classList.add('form-group');
       let label = document.createElement('label');
@@ -378,8 +381,9 @@
       input.setAttribute('value', parameter.value);
       input.type = "number";
       input.addEventListener('change', function(e) {
-        parameter.onChange(group, e.target);
+        changeParameter(group, key, e.target);
       });
+      resetTable.push({group: group, key: key, input: input});
       let help_text = document.createElement('p');
       help_text.classList.add('epi-help-text');
       if ("help" in model && key in model.help) {
@@ -417,6 +421,11 @@
     reset.type = 'reset';
     reset.textContent = "Reset";
     form.append(reset);
+    form.addEventListener("reset", function() {
+      for (const item of resetTable) {
+        changeParameter(item.group, item.key, item.input);
+      }
+    });
     let help = document.createElement('button');
     help.classList.add('epi-help');
     help.type = 'button';

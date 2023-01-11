@@ -325,6 +325,17 @@ th {
   color: white;
 }
 
+figure img {
+  border: 1px solid gray;
+  border-radius: 5px;
+  padding: 6px;
+}
+
+figcaption {
+  font-style: italic;
+  margin-top: 3px;
+}
+
 footer {
   border-top: 1px solid lightgray;
   margin-top: 12px;
