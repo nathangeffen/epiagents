@@ -77,7 +77,9 @@
                     <a href="https://www.chartjs.org/docs/latest/">Chart.js</a> is
                     used to generate the charts (MIT license), and <a href="https://github.com/giannotr/runge-kutta-js">Ruben
                         Giannotti</a> wrote the differential equation solver (also MIT
-                    license). My C++ code is available under the
+                    license).
+                    The <a href="">MathJax</a> library generates the equations
+                    (Apache license). My C++ code is available under the
                     <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License</a>.
                 </p>
                 <p>
@@ -413,7 +415,8 @@
                     in Javascript, to solve</a>
                     the differential equations. A more sophisticated
                     implementation could <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Adaptive_Runge%E2%80%93Kutta_methods">adapt</a> the
-                    step size.
+                    step size, and support much greater values of
+                    $\underline{R}_0$.
                 </p>
             </div>
         </aside>
@@ -490,7 +493,7 @@ Execute after events
                 originally infected agent becomes infected.
             </li>
             <li>
-                The macro model epidemics ends with about 80% of people in the
+                The macro models end with about 80% of people in the
                 recovery compartment. The micro model epidemic on average has
                 far fewer infections. This is because with just one initial
                 infection it often fails to "take off".
@@ -519,9 +522,10 @@ Execute after events
         </p>
 
         <p>
-            Here are the difference equation SIR macro model and the SIR micro
-            model again but with one difference: the number of infections in the
-            initial population is 100 instead of 1.
+            Here are the difference equation SIR macro model (difference
+            equations) and the SIR micro model again but with one difference:
+            the number of infections in the initial population is 100 instead of
+            1.
         </p>
 
         <p>First the macro model: </p>
@@ -591,13 +595,26 @@ microSIR.parameters;
         </p>
 
         <p>
-            Play around with the other parameters, $\underline{R}_0$ and $D$, to
-            see how changing these changes the models' outputs.
+            Tinker with the other parameters, $\underline{R}_0$ and $D$, to see
+            how changing these changes the models' outputs.
         </p>
 
         <aside>
-            <button type="button">What programming language to use for micro models?</button>
+            <button type="button">Micro model implementation</button>
             <div>
+                <h2>Matching the difference equation macro models</h2>
+                <p>
+                    I've tried to implement the micro models to match as closely
+                    as possible the macro models that use difference equations.
+                    The code makes certain compromises to do this. For example,
+                    the $\lambda_t$ is calculated using the number of infections
+                    at the end of the previous time step, not the current number
+                    of infections which may have changed as the infection event
+                    iterates over agents. Other than for the purpose of trying
+                    to match the models as closely as possible, I see no reason
+                    to do this.
+                </p>
+                <h2>What programming language to use for micro models?</h2>
                 <p>
                     There is far more debate on the Internet about which are the
                     best programming languages than the topic deserves. In fact,
@@ -617,11 +634,12 @@ microSIR.parameters;
                     improving an algorithm before going to the effort of
                     learning a new programming language.
                 </p>
-                <p>For what it's worth I tend to implement my micro models in Python
-                    when I'm just prototyping and then C or C++ if I truly need a
-                    lot more speed. But the models on this webpage are of course all
-                    implemented in Javascript, because that is the main programming
-                    language that the most popular web browsers support.
+                <p>For what it's worth I tend to implement my micro models in
+                    Python when I'm just prototyping and then C or C++ if I
+                    truly need a lot more speed. But the models on this webpage
+                    are of course all implemented in Javascript, because that is
+                    the main programming language that the most popular web
+                    browsers support.
                 </p>
             </div>
         </aside>
@@ -641,9 +659,17 @@ microSIR.parameters;
         </p>
 
         <p>
-            Here's the macro model version of SEIR:
+            Here's the macro model version of SEIR using difference equations:
         </p>
+
         <div id="macroSEIR" class="sir"></div>
+
+        <p>
+            Here's the macro model version of SEIR using differential equations:
+        </p>
+
+        <div id="macroSEIROde" class="sir"></div>
+
         <p>
             Here's the micro model version of SEIR.
         </p>

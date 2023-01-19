@@ -148,9 +148,20 @@ const macroSEIR = {
   }
 };
 
-
-
 EpiUI.create(macroSEIR, document.getElementById('macroSEIR'));
+
+let macroSEIROde = EpiMacro.deepCopy(macroSEIR);
+macroSEIROde.name = "Macro model: SEIR using differential equation"
+macroSEIROde.ode = function(model) {
+  return function(t, y) {
+    return [-model.working.beta * y[0] * y[2],
+            model.working.beta * y[0] * y[2] - model.working.f * y[1],
+            model.working.f * y[1] - model.working.r * y[2],
+            model.working.r * y[2]];
+  };
+}
+
+EpiUI.create(macroSEIROde, document.getElementById('macroSEIROde'));
 
 const macroGranichEtAlColors = [
   'green',
