@@ -38,6 +38,8 @@
   const MICRO = 1;
   const MACRO = 2;
 
+  const MAX_POP = 5000;
+
   EpiUI.modelRegister = {};
 
   function modelType(model) {
@@ -115,7 +117,6 @@
   }
 
   function drawMacroPopulation(ctx, populationCanvas, model, colors) {
-
     const numAgents = EpiMacro.calcN(model.compartments);
     const width = populationCanvas.width;
     const height = populationCanvas.height;
@@ -128,6 +129,17 @@
     let total = 0;
 
     for (const compartment in model.compartments) {
+      let comp_size = model.compartments[compartment];
+      if (comp_size < 0) {
+        ctx.fillText("Compartment " + compartment + " below zero.", 15, 15);
+        model.working.broken = true;
+        return;
+      }
+      if (comp_size > MAX_POP) {
+        ctx.fillText("Compartment " + compartment + " too large.", 15, 15);
+        model.working.broken = true;
+        return;
+      }
       total += model.compartments[compartment];
       for (; i < total; i++) {
         x += gap + radius;
@@ -166,11 +178,15 @@
     const ctx = populationCanvas.getContext('2d');
     const type = modelType(model);
     const colors = options.colors ||  EpiUI.THREE_COLORS;
-    ctx.clearRect(0, 0, populationCanvas.width, populationCanvas.height);
-    if (type === MACRO) {
-      drawMacroPopulation(ctx, populationCanvas, model, colors);
+    if ("broken" in model.working && model.working.broken === true) {
+      ;
     } else {
-      drawMicroPopulation(ctx, populationCanvas, model, colors);
+      ctx.clearRect(0, 0, populationCanvas.width, populationCanvas.height);
+      if (type === MACRO) {
+        drawMacroPopulation(ctx, populationCanvas, model, colors);
+      } else {
+        drawMicroPopulation(ctx, populationCanvas, model, colors);
+      }
     }
   }
 
@@ -356,11 +372,15 @@
     return [resultsDiv, chartDiv, populationDiv, parametersDiv, runButtonDiv];
   }
 
-  function initParameters(parametersDiv, model, options) {
-    let resetTable = [];
-    function changeParameter(parameters, key, input) {
-      parameters[key] = Number(input.value);
+  function setParametersFromForm(model) {
+    for (const parm of model.working.parameterTable) {
+      const input = document.getElementById(parm.id);
+      model[parm.group][parm.key] = parseFloat(input.value);
     }
+  }
+
+  function initParameters(parametersDiv, model, options) {
+    let parameterTable = [];
 
     function initSingleParameter(parent, group, key, value) {
       let parameter = {};
@@ -375,15 +395,13 @@
       else
         label.textContent = parameter.label;
       let input = document.createElement('input');
-      const id = "input-" + parameter.label;
+      const id = "epi-input-" + parameter.label +
+            Math.random().toString(16).slice(2);
       label.htmlFor = id;
       input.id = id;
       input.setAttribute('value', parameter.value);
       input.type = "number";
-      input.addEventListener('change', function(e) {
-        changeParameter(group, key, e.target);
-      });
-      resetTable.push({group: group, key: key, input: input});
+      parameterTable.push({group: group, key: key, id: id});
       let help_text = document.createElement('p');
       help_text.classList.add('epi-help-text');
       if ("help" in model && key in model.help) {
@@ -407,13 +425,13 @@
       div_compartments.classList.add('epi-parameter-compartments');
       form.append(div_compartments);
       for (const [key, value] of Object.entries(model.compartments))
-        initSingleParameter(div_compartments, model.compartments, key, value);
+        initSingleParameter(div_compartments, "compartments", key, value);
       let div_parameters = document.createElement('div');
       div_parameters.classList.add('epi-parameter-parameters');
       form.append(div_parameters);
       for (const [key, value] of Object.entries(model.parameters)) {
         if (key !== "interval")
-          initSingleParameter(div_parameters, model.parameters, key, value);
+          initSingleParameter(div_parameters, "parameters", key, value);
       }
     }
     let reset = document.createElement('button');
@@ -421,16 +439,12 @@
     reset.type = 'reset';
     reset.textContent = "Reset";
     form.append(reset);
-    form.addEventListener("reset", function() {
-      for (const item of resetTable) {
-        changeParameter(item.group, item.key, item.input);
-      }
-    });
     let help = document.createElement('button');
     help.classList.add('epi-help');
     help.type = 'button';
     help.textContent = "Help";
     form.append(help);
+    model.working.parameterTable = parameterTable;
   }
 
 
@@ -438,6 +452,8 @@
     const [resultsDiv, chartDiv, populationDiv, parametersDiv, runButtonDiv] =
           createDivs(model, div);
     const chartCanvas = chartDiv.querySelector('canvas');
+    if (model.hasOwnProperty("working") === false)
+      model.working = {};
     initParameters(parametersDiv, model, model.options || {});
     let runBtn = runButtonDiv.querySelector('button');
     let speedInput = runButtonDiv.querySelector('input.epi-speed');
@@ -452,10 +468,10 @@
         let chartCanvas = chartDiv.querySelector('canvas');
         let populationCanvas = populationDiv.querySelector('canvas');
         workingModel = EpiMacro.deepCopy(model);
-        workingModel.working = workingModel.working || {};
         workingModel.working.runStatus = "running";
         workingModel.working.runBtn = runBtn;
         runBtn.textContent = "Stop";
+        setParametersFromForm(workingModel);
         run(workingModel,resultsDiv, chartCanvas, populationCanvas, speedInput);
       }
     });

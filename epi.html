@@ -43,25 +43,26 @@
         <p>
             There are many ways to model epidemics, but we can broadly divide
             models into two types: macro and micro. The former typically use a
-            set of difference equations to calculate changes in a population,
-            while the latter consist of numerous agents, each representing a
-            person with their own specific behaviour. Macro models are often
-            also called compartmental or equation-based, while micro models are
-            often called agent-based or individual-based simulations.
+            set of equations &mdash; either difference or differential ones
+            &mdash; to calculate changes in a population, while the latter
+            consist of numerous agents, each representing a person with their
+            own specific behaviour. Macro models are often also called
+            compartmental or equation-based, while micro models are often called
+            agent-based or individual-based simulations.
         </p>
         <p>
             At the onset of the Covid pandemic, many websites explained how the
             simplest useful macro model, an SIR one (for
             Susceptible-Infectious-Recovered), worked. We'll start with that and
             then try to implement an equivalent micro model. We'll then discuss
-            the differences between the two models and their consequences for
-            understanding real-world epidemics. Then we'll implement models of
-            HIV and Covid and consider what we can learn about these and other
-            infectious diseases from macro and micro models.
+            the differences between the two types of models and their
+            consequences for understanding real-world epidemics. Then we'll
+            implement models of HIV and Covid and consider what we can learn
+            about these and other infectious diseases from macro and micro
+            models.
         </p>
-        <p><i>This page has little asides that you may find useful. They are in
-            a gray box. Click the button at the top of the box to expand and read
-            an aside.</i>
+        <p><i>This page has little asides that you may find useful.
+            Click the big green buttons to open and read them.</i>
         </p>
         <aside>
             <button type="button">Using the resources on this webpage</button>
@@ -72,11 +73,22 @@
                     Creative Commons license</a>.
                     The Javascript and CSS files that I've written for it are available
                     under one the <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU
-                    Affero General Public License</a>. My C and C++ code is available
-                    under the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License</a>. It's
-                    all on <a href="https://github.com/nathangeffen/understandingepi">Github</a>.
-                    So please feel free to download, adapt, improve and publish as you
-                    see fit, but please stick to the terms of the licenses.
+                    Affero General Public License</a>.
+                    <a href="https://www.chartjs.org/docs/latest/">Chart.js</a> is
+                    used to generate the charts (MIT license), and <a href="https://github.com/giannotr/runge-kutta-js">Ruben
+                        Giannotti</a> wrote the differential equation solver (also MIT
+                    license). My C++ code is available under the
+                    <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License</a>.
+                </p>
+                <p>
+                    I chose the GNU licenses to encourage anyone who uses and
+                    modifies my code to make it publicly available. This is the
+                    best way to do scientific programming.
+                </p>
+                <p>
+                    It's all on <a href="https://github.com/nathangeffen/understandingepi">Github</a>.
+                    So download, adapt, improve and the code as you see fit, but
+                    please stick to the terms of the licenses.
                 </p>
             </div>
         </aside>
@@ -85,25 +97,25 @@
             <div>
                 <p>
                     Terminology is inconsistent across infectious disease
-                    literature. Macro, micro, compartmental, SIR,
+                    literature. For example, Macro, micro, compartmental, SIR,
                     equation-based, deterministic, stochastic: all are used to
                     describe types of models. I find the macro vs micro
                     distinction the most useful here, in part because the terms
-                    are proper antonyms and using them in the source code makes
+                    are antonyms and using them in the source code makes
                     it easier to read. Also while macro models are usually
-                    deterministic, they can be implemented stochastically. And,
-                    I suppose, micro models can be implemented
-                    deterministically, though a use-case of that doesn't spring
-                    to mind.
+                    deterministic, they can be implemented stochastically. Micro
+                    models can also be implemented deterministically, though a
+                    use-case doesn't spring to mind.
                 </p>
                 <p>
-                    Macro and micro models are broad categories and there are all
-                    manner of models that borrow ideas from both.
+                    Macro and micro models are broad categories and there are
+                    all manner of models that borrow ideas from both.
                 </p>
                 <p>
                     For the most part, I try to stick to terminology used in <a href="https://anintroductiontoinfectiousdiseasemodelling.com/">An
-                    introduction to Infectious Disease Modelling</a> by Emilia Vynnycky and Richard
-                    G White.
+                    introduction to Infectious Disease Modelling</a> by Emilia
+                    Vynnycky and Richard G White. This is my reference book for
+                    modelling.
                 </p>
             </div>
         </aside>
@@ -116,26 +128,47 @@
         </p>
 
         <ol>
-            <li>A population of at least 100 people starts off with a tiny
-                number of infected people, maybe even just one person.</li>
-            <li>People in this population randomly (homogenously) mix with each
-                other.</li>
+            <li>
+                A population of at 1,000 people starts off with one infected
+                person.
+            </li>
+            <li>
+                Every person in the population is equally likely to be in
+                contact with any one else in the population. We call this
+                homogenous mixing. (Changing to heterogeneous mixing makes
+                things much more complicated.)
+            </li>
             <lI>When there are a tiny number of infected people in the
                 population, they will on average infect two other people before
-                they recover.</li>
-            <li>Infected people on average take 5 days to recover.</li>
-            <li>Once recovered, a person has immunity. They can't become
-                infected again and they can't transmit the infection to anyone else.</li>
+                they recover.
+            </li>
+            <li>
+                Infected people on average take 5 days to recover.
+            </li>
+            <li>
+                Once recovered, a person has immunity. They can't become
+                infected again and they can't transmit the infection to anyone
+                else.
+            </li>
         </ol>
 
-        <p>No-one dies and there are no births or migration into or out of this
-            population, at least for the time period that we model.</p>
+        <p>
+            No-one dies and there are no births or migration into or out of this
+            population, at least for the time period that we model.
+        </p>
 
         <p>
             Characteristic 3 of our model is what's commonly called
-            $\underline{R}_0$ in epidemiological literature. The real-world use
-            of $\underline{R}_0$ is much more limited than is usually admitted
-            but it's still useful.
+            $\underline{R}_0$, or the <em>basic reproduction number</em> in
+            epidemiological literature. <a href="https://anintroductiontoinfectiousdiseasemodelling.com/">Vynnycky and
+            White</a> write: "$\underline{R}_0$ is defined as the average number
+            of secondary infectious persons resulting from a typical infectious
+            person following their introduction into a totally susceptible
+            population".
+        </p>
+
+        <p>The real-world use of $\underline{R}_0$ is much more limited than is
+            usually admitted but it's still useful.
         </p>
 
         <p>
@@ -146,7 +179,7 @@
         <p>
             In this population we have people who are <b>S</b>usceptible to the
             infection, but not yet infected. There are infected people, and all
-            infected people also <b>I</b>nfectious. And we have <b>R</b>ecovered people.
+            infected people are also <b>I</b>nfectious. We also have <b>R</b>ecovered people.
             That's three compartments: Susceptible, Infectious and Recovered, abbreviated as SIR.
         </p>
         <p>
@@ -156,8 +189,8 @@
             Infectious compartment.
         </p>
         <p>
-            Let's assume the population size is 100. Then we'll set $S$, the
-            number of people in the Susceptible compartment to 99 and $I$, the
+            Let's assume the population size is 1000. Then we'll set $S$, the
+            number of people in the Susceptible compartment to 999 and $I$, the
             number of people in the Infectious compartment to 1. The number of
             people, $R$, in the Recovered compartment is 0. (Note we do not
             underline ${R}$, the number of recovered people, to differentiate it
@@ -166,12 +199,13 @@
             this was a standard adopted throughout infectious disease
             literature.)
         </p>
+
         <p>
             All the above is common to both the macro and micro models that we
             implement. Now let's describe specific details of our macro model:
         </p>
 
-        <h3>SIR Macro model</h3>
+        <h3>SIR Macro model using difference equations</h3>
 
         <p>
             We iteratively update the $S$, $I$ and $R$ compartments with the
@@ -187,14 +221,29 @@
         </p>
 
         <p>
-            The number of people who become infected on each iteration, or day,
-            of our model is a function of S, I and the risk of infection $\lambda$.
-            Since all three of these variables change with time, we subscript them.
-            This equation describes the flow from $S$ to $I$:
+            Consider two scenarios: (1) There are very few infected people in a
+            population &mdash; nearly everyone is susceptible &mdash; versus (2)
+            nearly everyone is infected &mdash; there are few susceptible
+            people. In the former scenario, the infected people are much more
+            likely to come into contact with susceptible people, infecting some
+            of them. In the latter, since there are few susceptible people, the
+            average infected person is less likely to come into contact with
+            them.
+        </p>
 
-            \begin{equation}
-            S_{t+1}=S_t - \lambda_t S_t
-            \end{equation}
+        <p>
+            It's quite straightforward to capture this as an equation. The number
+            of people who become infected on each iteration, or day, of our
+            model is a function of S, I and the risk of infection $\lambda$.
+            Since all three of these variables change with time, we subscript
+            them. This equation describes the flow from $S$ to $I$:
+
+            \begin{equation} S_{t+1}=S_t - \lambda_t S_t \end{equation}
+        </p>
+
+        <p>
+            So if 10 people are susceptible and 2 of them become infected on an
+            iteration, $\lambda$ on that particular iteration is 0.2. But how do we update $\lambda$ on each iteration?
         </p>
 
         <p>
@@ -226,7 +275,7 @@
         </p>
 
         <p>
-            We can depict what happens on each time step (or day) graphically:
+            Here is an implementation of this model:
         </p>
 
         <p>
@@ -236,16 +285,21 @@
 
         <div id="macroSIR" class="sir"></div>
 
-        <p>There are four boxes shown in each model:
+        <p>
+            There are four boxes shown in each model:
         </p>
+
         <dl>
             <dt>Outputs</dt>
-            <dd>This shows the population size of each compartment after each
-                iteration of a model.</dd>
+            <dd>
+                This shows the population size of each compartment after each
+                iteration of a model.
+            </dd>
 
             <dt>Parameters</dt>
             <dd>
-                You can change the parameters before running a model. Press the <em>Reset</em> button to set the parameters to their original values.
+                You can change the parameters before running a model. Press the <em>Reset</em> button
+                to set the parameters to their original values. So for example, try increasing or
             </dd>
 
             <dt>Graph</dt>
@@ -260,25 +314,124 @@
                 compartment are grouped together. </dd>
         </dl>
 
-        <p>Adjust the speed slider to make the model run faster or slower.</p>
+        <p>
+            Adjust the speed slider to make the model run faster or slower.
+        </p>
 
         <p>Click the <em>Run</em> button to run a model. It changes to a <em>Stop</em> button
             while the model is running so that you can interrupt the model. This
             is useful if it's taking too long.</p>
 
+
+        <h3>Using differential equations</h3>
+
+        <p>
+            Modelling using difference equations is often adequate. But there is
+            a problem. Let's change our model world so that our disease is
+            highly infectious. Let's set $\underline{R}_0$ to 20. Now run the
+            model. It goes horribly wrong. By day 5 the number of susceptible
+            agents is negative, an impossible situation.
+        </p>
+
+        <p>
+            The reason this has happened is because infections are happening so
+            quickly that our timestep of 1 day is now too large. By day 5
+            $\lambda$ becomes greater than 1, resulting in more infections
+            occurring than the size of the suceptible population, which is
+            absurd.
+        </p>
+        <p>
+            There are two ways to fix such a problem. One would be to have each
+            iteration represent a much smaller time unit. You'd have to change
+            the value of $D$ appropriately. So if your timestep is 1/10th of a
+            day, then $D$ is then set to 50 to represent our new model world.
+        </p>
+        <p>
+            An alternative is to instead use differential equations. Difference
+            equations calculate changes to compartments across discrete time
+            steps, while a differential equation is continuous.
+        </p>
+
+        <p>
+            Differential equations express the what the rates of change in
+            compartments converge to as the time steps becomes tinier and
+            tinier, getting closer and closer to zero. (A rudimentary calculus
+            book can explain this better and in more depth. Also, the
+            explanation in
+            <a href="https://anintroductiontoinfectiousdiseasemodelling.com/">Vynnycky and
+                White</a> is excellent.) Instead of using the subscript $t$
+            in our notation, our equations are now functions of time.
+        </p>
+
+        <p>Recasting our difference equations as differential equations, we have:</p>
+
+        <p>
+            \begin{equation}
+            \frac{dS}{dt} = -\beta I(t) S(t)
+            \end{equation}
+
+
+            \begin{equation}
+            \frac{dI}{dt} = \beta I(t) S(t) - r I(t)
+            \end{equation}
+
+            and
+
+            \begin{equation}
+            \frac{dR}{dt} =  r I(t)
+            \end{equation}
+
+        </p>
+
+        <p>Here is an implementation of the model using differential equations.</p>
+
+        <div id="macroSIROde" class="sir"></div>
+
+        <p>If you run this as is, you end up with almost the same epidemic as
+            with our difference equations. The differential equation model model
+            converges on just under 80% of the population getting infected,
+            while the difference equation version converged on just over 80%
+            getting infected. If you were modelling a real world epidemic, it's
+            unlikely you'd be bothered by this difference in results because the
+            margins of error in the data and parameters are far greater than
+            this.
+        </p>
+        <p>But setting $\underline{R}_0$ to 20, now obtains sensible results.</p>
+
+        <p>Nevertheless, even here there are limitations. Our differential
+            equations are being solved using discrete computer hardware and must
+            approximate solutions of continuous functions. The simple algorithm
+            we use to solve our differential equations also breaks down if we
+            set $\underline{R}_0$ to 32 or higher without reducing the time
+            step.
+        <aside>
+            <button type="button">A better differential equation solver</button>
+            <div>
+                <p>
+                    We are using the <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">Runge Kutta</a>
+                    algorithm, nicely <a href="https://github.com/giannotr/runge-kutta-js">implemented by Ruben Giannotti</a>
+                    in Javascript, to solve</a>
+                    the differential equations. A more sophisticated
+                    implementation could <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Adaptive_Runge%E2%80%93Kutta_methods">adapt</a> the
+                    step size.
+                </p>
+            </div>
+        </aside>
+
         <h3>SIR micro model</h3>
 
-        <p>Now let's implement a micro model that approximates the above macro model.</p>
+        <p>Now let's implement a micro model that approximates the above macro
+        model.</p>
 
         <p>
             A micro model consists of agents and events. An agent typically
             represents a single person in a population. An event typically is
-            executed on a subset of agents.
+            executed on a subset of agents. There are different ways to implement
+            micro models. The methodology described here is simple and fast.
         </p>
 
-        <p>
-            There are three stages to executing a micro model: <em>before</em> events,
-            <em>during</em> events and <em>after</em> events.
+        <p> There are three stages to executing our micro models: <em>before</em>
+            events, <em>during</em> events and <em>after</em> events.
         </p>
         <p>
             First execute the
@@ -287,18 +440,20 @@
             and perhaps calculate some working variables that won't change once
             the simulation starts. </p>
         <p>
-            Then repeatedly execute the <em>during</em> events until some stop
-            condition is met. A simple stop condition is simply to execute the
-            during events $n$ times, where $n$ is a user-defined constant. Typical
-            during events would shuffle the agents (to generate more
-            stochasticity), infect some susceptibe agents, vaccinate some
-            agents, recover some infected agents, or kill some ill agents.</p>
+            Then iteratively execute the <em>during</em> events until some stop
+            condition is met. As with our difference equation macro model, each
+            iteration corresponds to our time step. A simple stop condition is
+            simply to execute the during events $n$ times, where $n$ is a
+            user-defined constant. Typical during events would shuffle the
+            agents (to generate more stochasticity), infect some susceptibe
+            agents, vaccinate some agents, recover some infected agents, or kill
+            some ill agents.</p>
         <p>
             Finally execute the after events which would typically be writing a
             report or creating a CSV file of the outputs.
         </p>
 
-        <p>Here is the structure of the micro models I tend to implement</p>
+        <p>Here is the structure of our micro models:</p>
 
         <pre>
 Execute before events
@@ -311,21 +466,22 @@ Loop n times:
 Execute after events
         </pre>
 
-        <p>Here is a micro model for SIR</p>
+        <p>Here is a micro model for our simple model world.</p>
 
         <div id="microSIR" class="sir"></div>
 
-        <p>Try running the above two models multiple times. What do you notice?</p>
+        <p>Run the two SIR macro models and then run the micro model multiple
+        times. What do you notice?</p>
 
         <p>
-            Even with these two models of our simple model world, there are
-            already interesting observations we can make:
+            Even with these simple models of our highly idealised model world,
+            there are already interesting observations we can make:
         </p>
 
         <ul>
             <li>
-                The macro model obviously gives the same outputs every time.
-                It's entirely deterministic. The micro model seldom repeats
+                The macro models obviously gives the same outputs every time.
+                They're entirely deterministic. The micro model seldom repeats
                 exactly the same outputs.
             </li>
             <li>
@@ -334,29 +490,38 @@ Execute after events
                 originally infected agent becomes infected.
             </li>
             <li>
-                The macro model epidemic ends with about 809 people in the
-                recovery compartment, meaning this many people were infected.
-                The micro model epidemic on average has far fewer infections.
-                This is because with just one initial infection it often fails
-                to "take off".
+                The macro model epidemics ends with about 80% of people in the
+                recovery compartment. The micro model epidemic on average has
+                far fewer infections. This is because with just one initial
+                infection it often fails to "take off".
             </li>
         </ul>
 
         <p>
             I ran the micro model 100 times. In some simulations, there are no
             new infections. The most number of infections in a simulation was
-            856 infections, higher than the macro model. But the mean number of
-            total infections across the simulations was only 472, compared to
-            804 in the macro model. One thing of real-world consequence that
-            this suggests is that if and when an infectious diseases explodes
-            into an epidemic in a particular community or neighbourhood is, to
-            a great extent, a result of chance, even if an infected person enters
-            the community.
+            856 infections, higher than the macro models. But the mean number of
+            total infections across the simulations was only about 47%, much
+            lower than the macro models. One thing of real-world consequence
+            that this suggests is when an infected person enters a community of
+            otherwise entirely uninfected people, there is a great deal of
+            chance as to whether an epidemic will occur in that community.
         </p>
 
         <p>
-            Here are the two models again but with one difference: the number of
-            infections in the initial population is 100 instead of 1.
+            During Covid, there were many reports comparing why many people
+            became infected in one geographic location versus another. Such
+            speculation can be useful. The severity of an epidemic can be
+            mitigated by timely rational action. But we should realise the role
+            of chance; sometimes whether an epidemic explodes in one community
+            and dissipates without much consequence in another is a matter of
+            nature playing dice.
+        </p>
+
+        <p>
+            Here are the difference equation SIR macro model and the SIR micro
+            model again but with one difference: the number of infections in the
+            initial population is 100 instead of 1.
         </p>
 
         <p>First the macro model: </p>
@@ -461,38 +626,6 @@ microSIR.parameters;
             </div>
         </aside>
 
-        <h3>Using differential equations</h3>
-
-        <p>
-            Instead of implementing a macro model as a series of
-            <em>difference</em>
-            equations, we could instead use <em>differential</em> equations.
-            There are advantages to this approach:
-        </p>
-        <ul>
-            <li>Adv 1</li>
-            <li>Adv 2</li>
-        </ul>
-
-        <p>Recasting our difference equations as differential equations, we get:
-
-            \begin{equation}
-            \frac{dS}{dt} = -\beta I(t) S(t)
-            \end{equation},
-
-            \begin{equation}
-            \frac{dI}{dt} = \beta I(t) S(t) - r I(t)
-            \end{equation}
-
-            and
-
-            \begin{equation}
-            \frac{dR}{dt} =  r I(t)
-            \end{equation}
-
-        </p>
-
-        <div id="macroSIROde" class="sir"></div>
 
         <h3>Adding an exposure compartment</h3>
 
