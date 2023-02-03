@@ -38,7 +38,10 @@
 
         <h1>Two ways to model infectious diseases - and what they tell us about epidemics</h1>
 
-        <p>By Nathan Geffen, January 2023</p>
+        <p class="date-heading">
+            Published: <time datetime="2023-02-01">1 February 2023</time>.
+            Last updated: <time datetime="2023-02-01">1 February 2023</time>
+        </p>
 
         <p>
             There are many ways to model epidemics, but we can broadly divide
@@ -404,19 +407,19 @@
             equations are being solved using discrete computer hardware and must
             approximate solutions of continuous functions. The simple algorithm
             we use to solve our differential equations also breaks down if we
-            set $\underline{R}_0$ to 32 or higher without reducing the time
-            step.
+            set $\underline{R}_0$ to close to 3000 without reducing the time
+            step. Of course such a high $\underline{R}_0$ is of no practical
+            concern.
         <aside>
-            <button type="button">A better differential equation solver</button>
+            <button type="button">Differential equation solver</button>
             <div>
                 <p>
                     We are using the <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">Runge Kutta</a>
                     algorithm, nicely <a href="https://github.com/giannotr/runge-kutta-js">implemented by Ruben Giannotti</a>
                     in Javascript, to solve</a>
-                    the differential equations. A more sophisticated
-                    implementation could <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Adaptive_Runge%E2%80%93Kutta_methods">adapt</a> the
-                    step size, and support much greater values of
-                    $\underline{R}_0$.
+                    the differential equations. I have set the step size to
+                    0.01. A more sophisticated implementation could <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Adaptive_Runge%E2%80%93Kutta_methods">adapt</a> the
+                    step size, but this seems unneccessary for our purposes.
                 </p>
             </div>
         </aside>
@@ -659,10 +662,46 @@ microSIR.parameters;
         </p>
 
         <p>
+            Here are the difference equations:
+        </p>
+
+        <p>
+            \begin{equation} S_{t+1} = S_t - \beta I_t S_t \end{equation}
+
+            \begin{equation} E_{t+1} = E_t + \beta I_t S_t - f I_t \end{equation}
+
+            \begin{equation} I_{t+1} = I_t + f I_t - r I_t \end{equation}
+
+            \begin{equation} R_{t+1} = R_t + r R_t \end{equation}
+        </p>
+
+        <p>
             Here's the macro model version of SEIR using difference equations:
         </p>
 
         <div id="macroSEIR" class="sir"></div>
+
+        <p>
+            Here are the differential equations for the SEIR model:
+        </p>
+
+        <p>
+            \begin{equation}
+            \frac{dS}{dt} = -\beta I(t) S(t)
+            \end{equation}
+
+            \begin{equation}
+            \frac{dE}{dt} = \beta I(t) S(t) - f I(t)
+            \end{equation}
+
+            \begin{equation}
+            \frac{dI}{dt} = (f - r) I(t)
+            \end{equation}
+
+            \begin{equation}
+            \frac{dR}{dt} = r I(t)
+            \end{equation}
+        </p>
 
         <p>
             Here's the macro model version of SEIR using differential equations:
@@ -671,14 +710,16 @@ microSIR.parameters;
         <div id="macroSEIROde" class="sir"></div>
 
         <p>
-            Here's the micro model version of SEIR.
+            Here's the micro model version of SEIR which attempts to match the
+            difference equation macro model as closely as possible.
         </p>
         <div id="microSEIR" class="sir"></div>
 
         <p>
-            I ran the macro model once and the micro model 1000 times with the
-            number of initial exposures set to 1, 10, 50 and 100, and the
-            initial susceptibles equal to 999, 990 950 and 900 respectively.
+            I ran the difference equation macro model once and the micro model
+            1,000 times with the number of initial exposures set to 1, 10, 50 and
+            100, and the initial susceptibles equal to 999, 990 950 and 900
+            respectively.
         </p>
         <p>
             Below are the results. As usual, because the micro model is
@@ -689,10 +730,10 @@ microSIR.parameters;
                 <th>
                 </th>
                 <th>
-                    Macro model
+                    Macro model<br/>(difference eq)
                 </th>
                 <th colspan="3">
-                    Micro model (1000 simulations)
+                    Micro model<br/>(1000 simulations)
                 </th>
             </tr>
             <tr>
@@ -786,29 +827,104 @@ microSIR.parameters;
             The results are consistent with what we see for the SIR models.
         </p>
 
+        <h2>Measles</h2>
+
+        <p>Measles is an interesting but frustrating infectious disease to
+        model.</p>
+
+        <p>
+            This graph shows the oscillating nature of measles in England and
+            Wales from 1950 to 1979. It is copied from
+            <a href="https://pubmed.ncbi.nlm.nih.gov/7085179/">Fine and Clarkson, 1982</a> (<a href="https://sci-hub.st/https://pubmed.ncbi.nlm.nih.gov/7085179/">full paper on Sci-hub</a>).
+            Note how the epidemic returns approximately every two years. The
+            arrow shows when the national measles vaccination programme was
+            introduced, resulting in much smaller epidemics in subsequent years.
+        </p>
+
+        <p>
+            <img src="MeaslesEnglandAndWales.png" />
+        </p>
+
+        <p>
+            As Fine and Clarkson explained, there were two theories to try and
+            explain this. One was that the measles virus mutated over time, with
+            a consequent decline in immunity and resurrection of the epidemic.
+            The other, now more accepted theory &mdash; but not without
+            controversy because the data doesn't fit either theory as well as
+            epidemiologists would like &mdash; is that never-before infected
+            children entering schools provide a new susceptible population for
+            the epidemic to spike. In between spikes, there are still measles
+            cases, but in such low numbers that they largely go undetected.
+        </p>
+
+        <p>Fine and Clarkson presented a set of difference equations, very
+            similar to the SIR model. (Brian Williams has published useful <a href="http://www.ici3d.org/DAIDD2016/Materials/Brian%20Williams%20What%20is%20Science.pdf">slides</a>
+            explaining various models, including this model.) I've implemented
+            a model only superficially different to theirs.
+        </p>
+
+        <p>
+            There are just three compartments: S, I and R. The infectious period
+            is about 7 days. But this differs from the SIR model in that we
+            increment S by the population growth rate, $\beta$ multipled by the
+            population size, $N$. To keep our model stable and to take into
+            account that school children mainly mix with each other, we reduce
+            the number in the R compartment by the same amount. (We set the
+            population growth rate to approximately 2% per year.)
+        </p>
+
+        <p>Here are the difference equations:
+
+            \begin{equation}
+            S_{t+1} = S_t - I_{t+1} + \beta N
+            \end{equation}
+
+            \begin{equation}
+            I_{t+1} = \underline{R}_0 I_t {S_t \over N}
+            \end{equation}
+
+            \begin{equation}
+            R_t = R_t + I_t - \beta N
+            \end{equation}
+        </p>
+
+        <div id="macroMeasles" class="sir"></div>
+
+        <p>Notice the oscillations in measles cases every two or so years
+            generated by the model. Adjust the value of $\beta$ and rerun the
+            model to see how the oscillation period changes, &mdash; the 0.00704
+            default is approximately 2% per annum adjusted to our two week time
+            step. (It may be easier to view this graph by clicking on S and R in
+            the graph legend, thus switching them off.)
+        </p>
         <h2>
             Modelling when to start HIV treatment
         </h2>
         <p>
-            In the late 2000s there was a feisty discussion about when was the
-            best time for people with HIV to start antiretroviral treatment.
-            Antiretroviral pills taken daily for life reduced the number of HIV
+            In the late 2000s there was a feisty discussion about when people
+            with HIV should optimally start antiretroviral treatment.
+            Antiretroviral pills taken daily for life reduce the number of HIV
             virions in the blood of infected people, usually to undetectable
-            levels. This brought two potential advantages: (1) it extended the
-            life-expectancy to almost normal and (2) it reduced the risk of
-            transmitting the virus to others.
+            levels. This brings two advantages: (1) it extends life-expectancy
+            to almost normal and (2) it reduces the risk of transmitting the
+            virus to others, though this was not known with much confidence
+            until a large clinical trial confirmed it in 2011.
         </p>
         <p>
-            But the ideal time to start treatment wasn't clear. Three concerns
-            affecting this were (1) the side effects of the drugs, (2) eventual
-            drug resistance and (3) the cost of the drugs. By the mid 20-teens
-            large well-conducted clinical trials had shown the benefit of
-            starting treatment as soon as a person was diagnosed were
-            substantial. Moreover drug resistance and serious side effects with
-            newer antiretroviral regimens have become minor problems.
+            The ideal time to start treatment wasn't clear because of three
+            concerns: (1) the side effects of the drugs, (2) if drug resistance
+            developed quickly a person would lose the benefit of the drug
+            regimen, so starting later might extend the period of drug
+            efficacy longer, and (3) the cost of the drugs.
         </p>
         <p>
-            Nevertheless in the late 2000s all of this was unclear. World Health
+            By the mid 20-teens large well-conducted clinical trials had shown
+            the benefit of starting treatment as soon as a person was diagnosed
+            were substantial. Moreover drug resistance and serious side effects
+            with newer antiretroviral regimens have become minor problems.
+        </p>
+
+        <p> Nevertheless in the late 2000s all of this was unclear. World Health
             Organisation researchers (Granich et al. 2009) published models in <a href="https://www.sciencedirect.com/science/article/abs/pii/S0140673608616979">The Lancet</a> that
             showed that a policy of actively testing and immediately treating
             people with HIV in South Africa, the state with the most number of
@@ -832,17 +948,140 @@ microSIR.parameters;
         </figure>
 
         <p>
-            This models a world much more complex than our previous models. It
+            This is a much more complex model than our SEIR or measles ones. It
             accounts for population growth and deaths. The model specification
-            has 10 compartments and another 10 parameters. Here is my
-            implementation of the Granich model.
+            has 10 compartments and another 10 parameters. Here is a macro model
+            (using difference equations) implementation of Granich et al.
         </p>
 
         <div id="macroGranichEtAl" class="sir"></div>
 
+        <p>
+            In the results table, the total number of infections (the sum of
+            compartments I1 through I4 and A1 through A4) is tracked in the
+            column with the heading I. Try adjusting the parameters and
+            rerunning the model to see how the course of the epidemic changes,
+            particularly the S (susceptibles), D (deaths) and I (infections) columns.
+        </p>
+
         <p>We can quite easily implement a microsimulation version of this.</p>
         <div id="microGranichEtAl" class="sir"></div>
 
+        <table>
+            <tr>
+                <th>
+                    &nbsp;
+                </th>
+                <th colspan="3">
+                    Macro
+                </th>
+                <th colspan="3">
+                    Micro
+                </th>
+            </tr>
+            <tr>
+                <th>
+                    τ
+                </th>
+                <th>
+                    Susc.
+                </th>
+                <th>
+                    Inf.
+                </th>
+                <th>
+                    Dead
+                </th>
+                <th>
+                    Susc.
+                </th>
+                <th>
+                    Inf.
+                </th>
+                <th>
+                    Dead
+                </th>
+            </tr>
+            <tr>
+                <td>
+                    0
+                </td>
+                <td>
+                    724
+                </td>
+                <td>
+                    477
+                </td>
+                <td>
+                    374
+                </td>
+                <td>
+                    681
+                </td>
+                <td>
+                    365
+                </td>
+                <td>
+                    470
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    0.15
+                </td>
+                <td>
+                    1165
+                </td>
+                <td>
+                    279
+                </td>
+                <td>
+                    116
+                </td>
+                <td>
+                    1145
+                </td>
+                <td>
+                    122
+                </td>
+                <td>
+                    281
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    0.3
+                </td>
+                <td>
+                    1194
+                </td>
+                <td>
+                    268
+                </td>
+                <td>
+                    94
+                </td>
+                <td>
+                    1188
+                </td>
+                <td>
+                    96
+                </td>
+                <td>
+                    269
+                </td>
+            </tr>
+        </table>
+
+        <p>
+            While I have done my best to match the two models, the course of the
+            epidemic is now highly non-linear and near-perfect matching like in
+            the SIR and SEIR models doesn't seem possible. Nevertheless, in
+            infectious disease modelling we are seldom, if ever, interested in
+            precise predictions; we merely hope for plausible approximations. So
+            the differences between the outputs of the two models appear to be
+            inconsequential.
+        </p>
 
         <p>Here is a quick and dirty Covid-like-disease model.</p>
         <div id="macroCovid" class="sir"></div>
@@ -856,17 +1095,17 @@ microSIR.parameters;
                 <a href="https://github.com/nathangeffen/understandingepi">Source code</a>
                 <a href="https://www.simhub.online">Simhub</a>
             </nav>
-            <p>
+           <p>
                 <a href="https://www.gnu.org/licenses/agpl-3.0.html">Copyright</a>
                 &copy; 2023 Nathan Geffen
             </p>
         </footer>
 
-        <script src="utils.js?v=20221111"></script>
+        <script src="utils.js?v=20230129"></script>
         <script src="rk.js?v=20230101"></script>
         <script src="epimacro.js?v=20221111"></script>
         <script src="epimicro.js?v=20221111"></script>
-        <script src="epi-ui.js"></script>
+        <script src="epi-ui.js?v=20230129"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
         <script id="MathJax-script" async

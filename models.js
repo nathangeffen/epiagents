@@ -45,7 +45,7 @@ const NAMES = {
 /* Macro models */
 
 const macroSIR = {
-  name: "Macro model: SIR",
+  name: "SIR macro model using difference equations",
   compartments: {
     'S': 999,
     'I': 1,
@@ -83,7 +83,7 @@ const macroSIR = {
 EpiUI.create(macroSIR, document.getElementById('macroSIR'));
 
 let macroSIROde = EpiMacro.deepCopy(macroSIR);
-macroSIROde.name = "Macro model: SIR using differential equation"
+macroSIROde.name = "SIR macro model using differential equation"
 macroSIROde.ode = function(model) {
   return function(t, y) {
     return [-model.working.beta * y[0] * y[1],
@@ -101,7 +101,7 @@ macroSIR100.name = "Macro model: SIR with 100 initial infections";
 EpiUI.create(macroSIR100, document.getElementById('macroSIR100'));
 
 const macroSEIR = {
-  name: "Macro model: SEIR",
+  name: "SEIR macro model using difference equations",
   compartments: {
     'S': 999,
     'E': 1,
@@ -151,7 +151,7 @@ const macroSEIR = {
 EpiUI.create(macroSEIR, document.getElementById('macroSEIR'));
 
 let macroSEIROde = EpiMacro.deepCopy(macroSEIR);
-macroSEIROde.name = "Macro model: SEIR using differential equation"
+macroSEIROde.name = "SEIR macro model using differential equation"
 macroSEIROde.ode = function(model) {
   return function(t, y) {
     return [-model.working.beta * y[0] * y[2],
@@ -162,6 +162,68 @@ macroSEIROde.ode = function(model) {
 }
 
 EpiUI.create(macroSEIROde, document.getElementById('macroSEIROde'));
+
+// Based on slides by Brian Williams at
+// http://www.ici3d.org/DAIDD2016/Materials/Brian%20Williams%20What%20is%20Science.pdf
+// (see p. 36), which is based on Fine, P. and Clarkson, J.A. (1982)
+// Here the timestep is two weeks
+const macroMeasles = {
+  name: "Measles macro model using difference equations",
+  compartments: {
+    'S': 990,
+    'I': 10,
+    'R': 0,
+  },
+  parameters: {
+    R0: 2.0,
+    β: 0.00704,
+    iterations: 415,
+    updates: 5,
+  },
+  names: NAMES,
+  help: HELP,
+  initialize: [
+    function(model) {
+      model.working.N = model.compartments.S + model.compartments.I +
+        model.compartments.R;
+    }
+  ],
+  transitions: [
+    // I
+    function(model) {
+      model.working.I = model.parameters.R0 * model.compartments.I *
+        (model.compartments.S / model.working.N);
+      return {
+        'from': '*',
+        'to': 'I',
+        'value': model.working.I
+      };
+    },
+    // S
+    function(model) {
+      const S =  -model.working.I + model.parameters.β * model.working.N;
+      return {
+        'from': '_',
+        'to': 'S',
+        'value': S
+      };
+    },
+    // R
+    function(model) {
+      const R = model.compartments.I - model.parameters.β * model.working.N;
+      return {
+        'from': '_',
+        'to': 'R',
+        'value': R
+      };
+    }
+  ],
+  options: {
+    colors: EpiUI.THREE_COLORS
+  }
+};
+
+EpiUI.create(macroMeasles, document.getElementById('macroMeasles'));
 
 const macroGranichEtAlColors = [
   'green',
@@ -185,7 +247,7 @@ function tallyInfections(model) {
 }
 
 const macroGranichEtAl = {
-  name: "Macro model: Granich et al.",
+  name: "Macro model implementation of Granich et al.",
   compartments: {
     S: 900,
     I1: 25,
@@ -203,7 +265,7 @@ const macroGranichEtAl = {
     β: 0.009,
     μ: 0.0045,
     ρ: 0.12,
-    τ: 0.20,
+    τ: 0.3,
     φ: 0.005,
     σ: 0.006,
     λ0: 0.08,
@@ -377,7 +439,7 @@ const macroGranichEtAl = {
 EpiUI.create(macroGranichEtAl, document.getElementById('macroGranichEtAl'));
 
 const macroCovid = {
-  name: "Macro: Covid",
+  name: "Covid macro model",
   compartments: {
     S: 999,
     E: 1,
@@ -522,7 +584,7 @@ EpiUI.create(macroCovid, document.getElementById('macroCovid'));
 /* Micro models */
 
 const microSIR = {
-  name: "Micro model: SIR",
+  name: "SIR micro model",
   compartments: {
     'S': 999,
     'I': 1,
@@ -569,11 +631,11 @@ EpiUI.create(microSIR, document.getElementById('microSIR'));
 let microSIR100 = EpiMacro.deepCopy(microSIR);
 microSIR100.compartments.S = 900;
 microSIR100.compartments.I = 100;
-microSIR100.name = "Micro model: SIR with 100 initial infections";
+microSIR100.name = "SIR micro model with 100 initial infections";
 EpiUI.create(microSIR100, document.getElementById('microSIR100'));
 
 const microSEIR = {
-  name: "Micro model: SEIR",
+  name: "SEIR micro model",
   compartments: {
     'S': 999,
     'E': 1,
@@ -624,8 +686,70 @@ const microSEIR = {
 
 EpiUI.create(microSEIR, document.getElementById('microSEIR'));
 
+
+const microMeasles = {
+  name: "Measles micro model",
+  compartments: {
+    'S': 990,
+    'I': 10,
+    'R': 0
+  },
+  parameters: {
+    R0: 2.0,
+    β: 0.00704,
+    iterations: 415,
+    updates: 5,
+  },
+  names: NAMES,
+  beforeEvents: [
+    EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
+    EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
+    EpiMicro.eventSetAgentPositions,
+    function(model) {
+      model.working.N = model.compartments.S + model.compartments.I +
+        model.compartments.R;
+    }
+  ],
+
+  duringEvents: [
+    EpiMicro.eventShuffle,
+    // I
+    function(model) {
+      let risk = model.parameters.R0 * model.compartments.I *
+        (model.compartments.S / model.working.N) / model.working.N;
+      EpiMicro.eventFromToRisk(model, 'S', 'I', risk);
+      let total = 0;
+      for (const agent of model.agents) {
+        if (model.agent.compartment == "I")
+          ++total;
+      }
+      model.working.I = total;
+    },
+    // S
+    function(model) {
+      for (;;) {
+      }
+    },
+    function(model) {
+      EpiMicro.eventFromToRisk(model, 'I', 'R', model.working.r);
+    },
+    EpiMicro.eventResetChanged,
+    EpiMicro.eventTallyCompartments
+  ],
+
+  afterEvents: [],
+
+  options: {
+    colors: EpiUI.THREE_COLORS
+  }
+};
+
+// EpiUI.create(microMeasles, document.getElementById('microMeasles'));
+
+
+
 const microGranichEtAl = {
-  name: "Micro model: Granich et al.",
+  name: "Micro model implementation of Granich et al.",
   compartments: EpiMacro.deepCopy(macroGranichEtAl.compartments),
   parameters: EpiMacro.deepCopy(macroGranichEtAl.parameters),
   beforeEvents: [
@@ -801,18 +925,10 @@ const microGranichEtAl = {
   }
 };
 
-// let tmp_parms = microGranichEtAl.parameters;
-// for (let p in tmp_parms) {
-//   tmp_parms[p] = 0.0;
-// }
-// tmp_parms.iterations = 100;
-// tmp_parms.updates = 10;
-// microGranichEtAl.parameters = tmp_parms;
-
 EpiUI.create(microGranichEtAl, document.getElementById('microGranichEtAl'));
 
 const microCovid = {
-  name: "Micro: Covid",
+  name: "Covid micro model",
   compartments: {
     S: 999,
     E: 1,

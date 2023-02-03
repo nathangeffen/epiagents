@@ -84,10 +84,18 @@
       let from = delta.from;
       let to = delta.to;
       let value = delta.value;
-      if (from !== '_')
-        newCompartments[from] -= value;
-      if (to !== '_')
-        newCompartments[to] += value;
+      if (from !== '_' && from !== '*') {
+        if (to === "*")
+          newCompartments[from] = value;
+        else
+          newCompartments[from] -= value;
+      }
+      if (to !== '_' && to !== '*') {
+        if (from === '*')
+          newCompartments[to] = value;
+        else
+          newCompartments[to] += value;
+      }
     }
     return newCompartments;
   }
@@ -112,22 +120,28 @@
       c_names.push(compartment);
     }
     let diffFunc = model.ode(model);
-    let ode_series = rungeKutta(diffFunc, y_vals, [0, n], 1);
+    let ode_series = rungeKutta(diffFunc, y_vals, [0, n], 0.01);
     let series = [];
     for (let i = 1; i < ode_series.length; i++) {
-      let normalized_entry = {};
-      let j = 0;
-      for (let name of c_names) {
-        normalized_entry[name] = ode_series[i][j];
-        j++;
+      if (i % 100 == 0) {
+        let normalized_entry = {};
+        let j = 0;
+        for (let name of c_names) {
+          normalized_entry[name] = ode_series[i][j];
+          j++;
+        }
+        series.push(normalized_entry);
       }
-      series.push(normalized_entry);
     }
     return series;
   }
 
   EpiMacro.iterateModel = function(model, n) {
     let series = [];
+    // Default that model uses delta method for changing compartments
+    if (! 'delta' in model) {
+      model.delta = true;
+    }
     if ('ode' in model) {
       series = EpiMacro.odeMethod(model, n);
       model.compartments = series[series.length - 1];

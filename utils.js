@@ -27,4 +27,8 @@ window.MathJax = {
     tags: 'ams',
     inlineMath: [['$', '$'], ['\\(', '\\)']]
   },
+  chtml: {
+    displayAlign: "left",
+    displayIndent: '32px'
+  }
 };

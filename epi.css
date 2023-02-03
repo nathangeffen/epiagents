@@ -38,6 +38,12 @@ p, ul, ol, dl, li {
   margin-top: 12px;
 }
 
+.date-heading {
+  font-style: italic;
+  font-size: 85%;
+}
+
+
 @media screen and (min-width: 992px) {
   body {
     max-width: 992px;
