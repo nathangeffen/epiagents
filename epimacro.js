@@ -107,6 +107,7 @@
   }
 
   EpiMacro.iterateModelOnce = function(model) {
+    ++model.currentIteration;
     return EpiMacro.updateCompartments(model.compartments,
                                        EpiMacro.calcTransitions(model));
   }
@@ -138,6 +139,9 @@
 
   EpiMacro.iterateModel = function(model, n) {
     let series = [];
+    if (! ("currentIteration" in model)) {
+      model.currentIteration = 0;
+    }
     // Default that model uses delta method for changing compartments
     if (! 'delta' in model) {
       model.delta = true;

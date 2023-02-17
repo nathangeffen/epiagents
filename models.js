@@ -31,15 +31,16 @@ const HELP = {
   'D': 'Average number of days that an individual is infectious',
   'iterations': 'Number of times the model executes',
   'updates': 'Number of iterations that are executed before the GUI is updated',
+  'r': 'Specifies probability of infectious agent being spontaneously created'
 };
 
 const NAMES = {
   R0: "<i><u>R</u><sub>0</sub></i>",
   E_I: "days exposed",
   I_R: "days infectious",
+  r: "Random infection",
   updates: 'Updates',
   iterations: 'Iterations',
-
 };
 
 /* Macro models */
@@ -175,8 +176,8 @@ const macroMeasles = {
     'R': 0,
   },
   parameters: {
-    R0: 2.0,
-    β: 0.00704,
+    R0: 2.2,
+    β: 0.009,
     iterations: 415,
     updates: 5,
   },
@@ -186,6 +187,7 @@ const macroMeasles = {
     function(model) {
       model.working.N = model.compartments.S + model.compartments.I +
         model.compartments.R;
+      model.working.growth = model.parameters.β * model.working.N;
     }
   ],
   transitions: [
@@ -193,30 +195,39 @@ const macroMeasles = {
     function(model) {
       model.working.I = model.parameters.R0 * model.compartments.I *
         (model.compartments.S / model.working.N);
+      if (model.compartments.S + model.working.growth - model.working.I  < 0)
+        model.working.I = model.compartments.S;
       return {
         'from': '*',
         'to': 'I',
         'value': model.working.I
       };
     },
-    // S
-    function(model) {
-      const S =  -model.working.I + model.parameters.β * model.working.N;
-      return {
-        'from': '_',
-        'to': 'S',
-        'value': S
-      };
-    },
     // R
     function(model) {
-      const R = model.compartments.I - model.parameters.β * model.working.N;
+      model.working.iterationGrowth = model.working.growth;
+      if ( (-(model.compartments.I - model.working.growth)) >
+           model.compartments.R) {
+        model.working.iterationGrowth = model.compartments.R +
+          model.compartments.I;
+      }
+      const R = model.compartments.I - model.working.iterationGrowth;
       return {
         'from': '_',
         'to': 'R',
         'value': R
       };
+    },
+    // S
+    function(model) {
+      const S =  -model.working.I + model.working.iterationGrowth;
+      return {
+        'from': '_',
+        'to': 'S',
+        'value': S
+      };
     }
+
   ],
   options: {
     colors: EpiUI.THREE_COLORS
@@ -224,6 +235,7 @@ const macroMeasles = {
 };
 
 EpiUI.create(macroMeasles, document.getElementById('macroMeasles'));
+
 
 const macroGranichEtAlColors = [
   'green',
@@ -695,8 +707,9 @@ const microMeasles = {
     'R': 0
   },
   parameters: {
-    R0: 2.0,
-    β: 0.00704,
+    R0: 2.2,
+    β: 0.009,
+    r: 0.0,
     iterations: 415,
     updates: 5,
   },
@@ -708,30 +721,50 @@ const microMeasles = {
     function(model) {
       model.working.N = model.compartments.S + model.compartments.I +
         model.compartments.R;
+      model.working.growth = Math.round(model.parameters.β * model.working.N);
     }
   ],
 
   duringEvents: [
     EpiMicro.eventShuffle,
+    // If no I set first agent to I. This is random because of shuffle.
+    function(model) {
+      if (model.compartments.I == 0) {
+        if (Math.random() < model.parameters.r)
+          model.agents[0].compartment = "I";
+      }
+    },
     // I
     function(model) {
       let risk = model.parameters.R0 * model.compartments.I *
         (model.compartments.S / model.working.N) / model.working.N;
       EpiMicro.eventFromToRisk(model, 'S', 'I', risk);
-      let total = 0;
-      for (const agent of model.agents) {
-        if (model.agent.compartment == "I")
-          ++total;
+    },
+    // R
+    function(model) {
+      let i = 0;
+      console.log("I", model.compartments.I);
+      for (let agent of model.agents) {
+        if (i >= model.compartments.I) break;
+        if (agent.compartment === "I") {
+          agent.compartment = "R";
+          i++;
+          console.log("R!");
+        }
       }
-      model.working.I = total;
     },
     // S
     function(model) {
-      for (;;) {
+      let i = 0;
+      console.log("G", model.working.growth);
+      for (let agent of model.agents) {
+        if (i >= model.working.growth) break;
+        if (agent.compartment === "R") {
+          agent.compartment = "S";
+          i++;
+          console.log("S");
+        }
       }
-    },
-    function(model) {
-      EpiMicro.eventFromToRisk(model, 'I', 'R', model.working.r);
     },
     EpiMicro.eventResetChanged,
     EpiMicro.eventTallyCompartments
@@ -744,7 +777,7 @@ const microMeasles = {
   }
 };
 
-// EpiUI.create(microMeasles, document.getElementById('microMeasles'));
+EpiUI.create(microMeasles, document.getElementById('microMeasles'));
 
 
 
