@@ -39,10 +39,14 @@
         <h1>Two ways to model infectious diseases - and what they tell us about epidemics</h1>
 
         <p class="date-heading">
-            Published: <time datetime="2023-02-01">1 February 2023</time>.
-            Last updated: <time datetime="2023-02-01">1 February 2023</time>
+            Published: <time datetime="2023-02-01">18 February 2023</time>.
+            Last updated: <time datetime="2023-02-01">18 February 2023</time>
         </p>
 
+        <div class="toc">
+            <h5>Contents</h5>
+        </div>
+        <h2>Cows and the origins of epidemiological modelling</h2>
         <p>
             In late 1865 cows began dying in large numbers in England. This
             cattle plague was probably caused by the Rinderpest virus. Beef had
@@ -67,63 +71,198 @@
             He wrote a <a href="https://www.jstor.org/stable/25314501">letter</a> to the <a href="https://en.wikipedia.org/wiki/The_Daily_News_(UK)">Daily News</a>,
             a newspaper started 20 years earlier by Charles Dickens, explaining
             why things were not quite as awful as Lowe thought. He presented the
-            recorded number of cases since the epidemic started:
+            recorded number of new cases for every four weeks since the epidemic
+            started:
         </p>
         <table>
-            <tr>
-                <th>
-                    Date
-                </th>
-                <th>
-                    Total Cases
-                </th>
-                <th>
-                    New cases
-                </th>
-            </tr>
-            <tr>
-                <td>
-                    7 October
-                </td>
-                <td>
-                    11,300
-                </td>
-                <td>
-                    -
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    7 October
-                </td>
-                <td>
-                    20,897
-                </td>
-                <td>
-                    -
-                </td>
-            </tr>
+            <caption>
+                Cattle plague infections 1865-66 (<a href="https://www.jstor.org/stable/25314501">Brownlee, BMJ, 14 Aug 1915, p. 251</a>)
+            </caption>
+            <thead>
+                <tr>
+                    <th>
+                        Date
+                    </th>
+                    <th>
+                        Total Cases
+                    </th>
+                    <th>
+                        New cases
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        7 October
+                    </td>
+                    <td>
+                        11,300
+                    </td>
+                    <td>
+                        -
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        4 November
+                    </td>
+                    <td>
+                        20,897
+                    </td>
+                    <td>
+                        9,597
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        2 December
+                    </td>
+                    <td>
+                        39,714
+                    </td>
+                    <td>
+                        18,817
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        30 December
+                    </td>
+                    <td>
+                        73,549
+                    </td>
+                    <td>
+                        33,835
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        27 January
+                    </td>
+                    <td>
+                        120,740
+                    </td>
+                    <td>
+                        47,191
+                    </td>
+                </tr>
+            </tbody>
         </table>
         <p>
-            There are many ways to model epidemics, but we can broadly divide
-            models into two types: macro and micro. The former typically use a
-            set of equations &mdash; either difference or differential ones
-            &mdash; to calculate changes in a population, while the latter
-            consist of numerous agents, each representing a person with their
-            own specific behaviour. Macro models are often also called
-            compartmental or equation-based, while micro models are often called
-            agent-based or individual-based simulations.
+            What Farr noticed is that although the number of new cases was
+            rising alarmingly, the rate at which they were increasing was
+            dropping rapidly: 96% increase from 4 November 1865 to 2 December,
+            80% from 2 December to 30 December and only 39% from 30 December to
+            27 January 1866. Farr used this to estimate new cases in the
+            coming months. The following table gives Farr's predictions alongside
+            the actual recorded cases. As Brownlee points out the epidemic ended
+            about two weeks later than Farr predicted. But this is nevertheless
+            an impressively close match.
+        </p>
+
+        <table>
+            <caption>
+                Farr explained his method: "To obtain the series, multiply the
+                first number (9,597) by 1.9607, the product by 1.7981, and the
+                second product by 1.3947. It will be observed that these rates
+                decrease ; the second is obtained from the first by multiplying
+                by .9171, and the third from the second by multiplying by .7757.
+                Again, .7757 is obtained by multiplying .9171 by .8458. The
+                progress is simplified by employing logarithms, and the series
+                is continued by taking log. .9597, which equals 3.9821355; and
+                the three orders of differences of the logarithms of the numbers
+                derived from direct observation." <br/>
+                Cattle plague infections 1865-66 (<a href="https://www.jstor.org/stable/25314501">Brownlee, BMJ, 14 Aug 1915, p. 251</a>)
+            </caption>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Predicted</th>
+                    <th>Actual </th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>4 Nov</td>
+                    <td>9,597</td>
+                    <td>9,597</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>2 Dec</td>
+                    <td>18,817</td>
+                    <td>18,817</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>30 Dec</td>
+                    <td>33,835</td>
+                    <td>33,835</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>27 Jan</td>
+                    <td>47,191</td>
+                    <td>47,287</td>
+                    <td>(updated)</td>
+                </tr>
+                <tr>
+                    <td>24 Feb</td>
+                    <td>43,182</td>
+                    <td>57,004</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>24 Mar</td>
+                    <td>21,927</td>
+                    <td>27,958</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>21 Apr</td>
+                    <td>5,226</td>
+                    <td>15,856</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>19 May</td>
+                    <td>494</td>
+                    <td>14,734</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>16 Jun</td>
+                    <td>16</td>
+                    <td>5,000</td>
+                    <td>(approx)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p>
+            Farr explained the mechanism at work here. I've edited his words
+            into more modern English: "All germs are reproduced in every
+            individual they attack. If they lose part of the force of infection
+            in every body through which they pass, the epidemic has a tendency
+            to subside. Also, the individuals left are less susceptible of
+            attack, either by constitution or by hygienic conditions, than those
+            killed. This is as true of infections in animals as it is of
+            epidemics attacking people." (Adapted from <a href="https://www.jstor.org/stable/25314501">Brownlee, BMJ, 14 Aug 1915, p. 251</a>)
         </p>
         <p>
-            At the onset of the Covid pandemic, many websites explained how the
-            simplest useful macro model, an SIR one (for
-            Susceptible-Infectious-Recovered), worked. We'll start with that and
-            then try to implement an equivalent micro model. We'll then discuss
-            the differences between the two types of models and their
-            consequences for understanding real-world epidemics. Then we'll
-            implement models of HIV and Covid and consider what we can learn
-            about these and other infectious diseases from macro and micro
-            models.
+            Farr's letter explaiend how this reasoning applied to epidemics in
+            humans, including cholera, diptheria, influenza, measles and
+            smallpox.
+        </p>
+        </p>
+        From this one shouldn't conclude that Farr thought that
+        diseases should simply be allowed to run their course. He wrote:
+        "When an epidemic disease of foreign origin enters a country it
+        encounters difficulties of diffusion, and it is undoubtedly wise to
+        throw obstacles in its way, so that it may pass through its phases
+        within the narrowest possible circle."
         </p>
         <p><i>This page has little asides that you may find useful.
             Click the big green buttons to open and read them.</i>
@@ -158,6 +297,45 @@
                 </p>
             </div>
         </aside>
+
+        <aside>
+            <button type="button">Reading the history of epidemiological modelling</button>
+            <div>
+                <p>
+                    A good place to start is the Wikipedia page <a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology">Compartmental Models in Epidemiology</a>.
+                </p>
+                <p>
+
+                </p>
+            </div>
+        </aside>
+        <p>
+            At the time Farr's letter was not well received. But by the early
+            20th century Farr's thinking inspired several papers that tackled
+            the mathematics of epidemics and led to our current ways of
+            modelling epidemics.
+        </p>
+        <p>
+            There are many ways to model epidemics, but we can broadly divide
+            models into two types: macro and micro. The former typically use a
+            set of equations &mdash; either difference or differential ones
+            &mdash; to calculate changes in a population, while the latter
+            consist of numerous agents, each representing a person with their
+            own specific behaviour. Macro models are often also called
+            compartmental or equation-based, while micro models are often called
+            agent-based or individual-based simulations.
+        </p>
+        <p>
+            At the onset of the Covid pandemic, many websites explained how the
+            simplest useful macro model, an SIR one (for
+            Susceptible-Infectious-Recovered), worked. We'll start with that and
+            then try to implement an equivalent micro model. We'll then discuss
+            the differences between the two types of models and their
+            consequences for understanding real-world epidemics. Then we'll
+            implement models of HIV and Covid and consider what we can learn
+            about these and other infectious diseases from macro and micro
+            models.
+        </p>
         <aside>
             <button type="button">Terminology</button>
             <div>
@@ -471,6 +649,7 @@
             set $\underline{R}_0$ to close to 3000 without reducing the time
             step. Of course such a high $\underline{R}_0$ is of no practical
             concern.
+        </p>
         <aside>
             <button type="button">Differential equation solver</button>
             <div>
@@ -488,7 +667,7 @@
         <h3>SIR micro model</h3>
 
         <p>Now let's implement a micro model that approximates the above macro
-        model.</p>
+            model.</p>
 
         <p>
             A micro model consists of agents and events. An agent typically
@@ -538,7 +717,7 @@ Execute after events
         <div id="microSIR" class="sir"></div>
 
         <p>Run the two SIR macro models and then run the micro model multiple
-        times. What do you notice?</p>
+            times. What do you notice?</p>
 
         <p>
             Even with these simple models of our highly idealised model world,
@@ -607,8 +786,8 @@ Execute after events
                 </p>
                 <ol>
                     <li>Open an interactive Javascript console in your browser.
-                    On Firefox or Chromium I press CTRL-SHIFT-C and then click
-                    on the console tab.
+                        On Firefox or Chromium I press CTRL-SHIFT-C and then click
+                        on the console tab.
                     </li>
                     <li>
                         Then execute this code:
@@ -666,19 +845,20 @@ microSIR.parameters;
         <aside>
             <button type="button">Micro model implementation</button>
             <div>
-                <h2>Matching the difference equation macro models</h2>
+                <h5>Matching the difference equation macro models</h5>
                 <p>
-                    I've tried to implement the micro models to match as closely
-                    as possible the macro models that use difference equations.
-                    The code makes certain compromises to do this. For example,
-                    the $\lambda_t$ is calculated using the number of infections
-                    at the end of the previous time step, not the current number
-                    of infections which may have changed as the infection event
-                    iterates over agents. Other than for the purpose of trying
-                    to match the models as closely as possible, I see no reason
-                    to do this.
+                    I've tried to implement the micro models to match as
+                    closely as possible the macro models that use difference
+                    equations. The code makes certain compromises to do
+                    this. For example, the $\lambda_t$ is calculated using
+                    the number of infections at the end of the previous time
+                    step, not the current number of infections which may
+                    have changed as the infection event iterates over
+                    agents. Other than for the purpose of trying to match
+                    the models as closely as possible, I see no reason to do
+                    this.
                 </p>
-                <h2>What programming language to use for micro models?</h2>
+                <h5>What programming language to use for micro models?</h5>
                 <p>
                     There is far more debate on the Internet about which are the
                     best programming languages than the topic deserves. In fact,
@@ -891,7 +1071,7 @@ microSIR.parameters;
         <h2>Measles</h2>
 
         <p>Measles is an interesting but frustrating infectious disease to
-        model.</p>
+            model.</p>
 
         <p>
             This graph shows the oscillating nature of measles in England and
@@ -1189,7 +1369,7 @@ microSIR.parameters;
                 <a href="https://github.com/nathangeffen/understandingepi">Source code</a>
                 <a href="https://www.simhub.online">Simhub</a>
             </nav>
-           <p>
+            <p>
                 <a href="https://www.gnu.org/licenses/agpl-3.0.html">Copyright</a>
                 &copy; 2023 Nathan Geffen
             </p>
