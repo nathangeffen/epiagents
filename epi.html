@@ -36,7 +36,7 @@
 
         <!--# include file="contents.html" -->
 
-        <h1>Two ways to model infectious diseases - and what they tell us about epidemics</h1>
+        <h1>Modelling infectious diseases</h1>
 
         <p class="date-heading">
             Published: <time datetime="2023-02-01">18 February 2023</time>.
@@ -74,6 +74,7 @@
             recorded number of new cases for every four weeks since the epidemic
             started:
         </p>
+        <div class="epi-table">
         <table>
             <caption>
                 Cattle plague infections 1865-66 (<a href="https://www.jstor.org/stable/25314501">Brownlee, BMJ, 14 Aug 1915, p. 251</a>)
@@ -149,6 +150,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
         <p>
             What Farr noticed is that although the number of new cases was
             rising alarmingly, the rate at which they were increasing was
@@ -161,6 +163,7 @@
             an impressively close match.
         </p>
 
+        <div class="epi-table">
         <table>
             <caption>
                 Farr explained his method: "To obtain the series, multiply the
@@ -240,6 +243,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
 
         <p>
             Farr explained the mechanism at work here. I've edited his words
@@ -256,13 +260,13 @@
             humans, including cholera, diptheria, influenza, measles and
             smallpox.
         </p>
-        </p>
-        From this one shouldn't conclude that Farr thought that
-        diseases should simply be allowed to run their course. He wrote:
-        "When an epidemic disease of foreign origin enters a country it
-        encounters difficulties of diffusion, and it is undoubtedly wise to
-        throw obstacles in its way, so that it may pass through its phases
-        within the narrowest possible circle."
+        <p>
+            From this one shouldn't conclude that Farr thought that
+            diseases should simply be allowed to run their course. He wrote:
+            "When an epidemic disease of foreign origin enters a country it
+            encounters difficulties of diffusion, and it is undoubtedly wise to
+            throw obstacles in its way, so that it may pass through its phases
+            within the narrowest possible circle."
         </p>
         <p><i>This page has little asides that you may find useful.
             Click the big green buttons to open and read them.</i>
@@ -292,7 +296,7 @@
                 </p>
                 <p>
                     It's all on <a href="https://github.com/nathangeffen/understandingepi">Github</a>.
-                    So download, adapt, improve and the code as you see fit, but
+                    So download, adapt, and improve the code as you see fit, but
                     please stick to the terms of the licenses.
                 </p>
             </div>
@@ -966,6 +970,8 @@ microSIR.parameters;
             Below are the results. As usual, because the micro model is
             stochastic, your results will probably differ a little.
         </p>
+
+        <div class="epi-table">
         <table>
             <tr>
                 <th>
@@ -1063,7 +1069,7 @@ microSIR.parameters;
                 </td>
             </tr>
         </table>
-
+        </div>
         <p>
             The results are consistent with what we see for the SIR models.
         </p>
@@ -1241,6 +1247,7 @@ microSIR.parameters;
         <p>We can quite easily implement a microsimulation version of this.</p>
         <div id="microGranichEtAl" class="sir"></div>
 
+        <div class="epi-table">
         <table>
             <tr>
                 <th>
@@ -1346,6 +1353,7 @@ microSIR.parameters;
                 </td>
             </tr>
         </table>
+        </div>
 
         <p>
             While I have done my best to match the two models, the course of the

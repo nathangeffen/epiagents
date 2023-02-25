@@ -57,7 +57,7 @@ h1, h2, h3 {
 }
 
 .toc .level-h3 {
-  margin-left: 6px;
+  margin-left: 18px;
   font-size: 75%;
 }
 
@@ -77,8 +77,9 @@ blockquote {
 
 @media screen and (min-width: 992px) {
   body {
-    max-width: 850px;
+    max-width: 992px;
     margin: auto;
+    margin-left: 240px;
     font-size: 16px;
   }
 
@@ -356,7 +357,7 @@ div.epi-hide-help p.epi-help-text {
   display: none;
 }
 
-table {
+.epi-table {
   max-width: 100%;
   overflow-x: scroll;
 }
