@@ -199,7 +199,7 @@
                 <tr>
                     <th>Date</th>
                     <th>Predicted</th>
-                    <th>Actual </th>
+                    <th>Recorded </th>
                     <th>Note</th>
                 </tr>
             </thead>
@@ -290,7 +290,7 @@
             At the time Farr's letter was not well received. But by the early
             20th century Farr's thinking inspired several papers that tackled
             the mathematics of epidemics and led to our current ways of
-            modelling epidemics. Building on this, <a href="https://en.wikipedia.org/wiki/Anderson_Gray_McKendrick">Anderson McKendrick</a> and
+            modelling epidemics. <a href="https://en.wikipedia.org/wiki/Anderson_Gray_McKendrick">Anderson McKendrick</a> and
             <a href="https://en.wikipedia.org/wiki/Anderson_Gray_McKendrick">William Kermack</a> in
             1927 articulated, albeit in a <a href="https://royalsocietypublishing.org/doi/epdf/10.1098/rspa.1927.0118">very difficult paper</a>,
             what we now call the Susceptible-Infectious-Recovered, or SIR,
@@ -298,18 +298,27 @@
             is given by David Kendall in 1956 .
         </p>
 
+        <p>
+            Farr's insight that epidemics roughly follow a normal curve was
+            certainly useful. With the hindsight of over 100 years of
+            epidemiological modelling, it may seem obvious. But as we shall see,
+            with measles and Covid for example, matters are often not this
+            simple. Also, even in the idealised SIR models we shall look at, the
+            distributions are skewed to the right.
+        </p>
+
         <p><i>This page has little asides that you may find useful.
             Click the big green buttons to open and read them.</i>
         </p>
+        <a id="copyright-details"></a>
         <aside>
             <button type="button">Using the resources on this webpage</button>
             <div>
                 <p>
-                    This webpage uses only open-source software. The text on
-                    this page is available for republication under <a href="https://creativecommons.org/licenses/by-sa/4.0/">this
-                    Creative Commons license</a>.
-                    The Javascript and CSS files that I've written for it are available
-                    under one the <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU
+                    This webpage uses only open-source software.
+                    The text on this page is available for republication under <a href="https://creativecommons.org/licenses/by-sa/4.0/">this
+                    Creative Commons license</a>. The Javascript and CSS files
+                    that I've written for it are available under the <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU
                     Affero General Public License</a>.
                     <a href="https://www.chartjs.org/docs/latest/">Chart.js</a> is
                     used to generate the charts (MIT license), and <a href="https://github.com/giannotr/runge-kutta-js">Ruben
@@ -336,20 +345,68 @@
             <button type="button">Reading the history of epidemiological modelling</button>
             <div>
                 <p>
-                    A good place to start are the Wikipedia page <a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology">Compartmental Models in Epidemiology</a> and <a href="https://en.wikipedia.org/wiki/William_Farr">William Farr</a>. This <a href="https://fn.bmj.com/content/87/1/F67">article on Farr</a> in the British Medical Journal is worth reading.
+                    Thucydides, the Greek historian <a hef="https://www.gutenberg.org/cache/epub/7142/pg7142-images.html">wrote</a> about the plague that
+                    hit Athens in 430BC:</p>
+                <blockquote>
+                    "[A] pestilence of such extent and mortality was nowhere
+                    remembered. Neither were the physicians at first of any
+                    service, ignorant as they were of the proper way to treat
+                    it, but they died themselves the most thickly, as they
+                    visited the sick most often; nor did any human art succeed
+                    any better. Supplications in the temples, divinations, and
+                    so forth were found equally futile, till the overwhelming
+                    nature of the disaster at last put a stop to them
+                    altogether."
+                </blockquote>
+                <p>
+                    Thucydides's description of the plague is worth reading.
+                    It's a few pages long at the beginning of Chapter VII in <a href="https://www.gutenberg.org/cache/epub/7142/pg7142-images.html">The
+                    History of the Peloponnesian War</a>. His factual, detailed
+                    description of the plague is remarkable. There is no resort
+                    to the supernatural. One might call his account modern, but
+                    for the fact that many modern accounts of epidemics are much
+                    less accurate than Thucydides. Importantly, he understood,
+                    and presumably the Athenians also did, that the disease was
+                    contagious; it spread from person to person and those more
+                    proximate to the infected were more likely to become sick.
+                    Epidemiological modelling is impossible without
+                    understanding this fundamental point.
+                </p>
+                <p>
+                    Also remarkable is <a href="https://www.gutenberg.org/files/23700/23700-h/23700-h.htm">The Decameron</a> of
+                    Giovanni Boccaccio. It is set against the bubonic plague of
+                    the mid-14th century. It perhaps remains the pandemic that
+                    killed the greatest proportion of the human population.
+                    Boccacio's writing is less factual and more inclinded to
+                    invoke the supernatural than Thucydides. But it is also more
+                    replete with beautiful literary flourishes. Europeans at
+                    this time clearly understood that removing themselves from
+                    the proximity of the ill reduced their risk of illness.
+                    Indeed the ten protagonists of The Decameron did just this,
+                    as they take shelter in a villa outside Florence in order to
+                    escape the plague. (Because the plague was likely spread by
+                    fleas, probably on rats, isolation was not a foolproof way
+                    of escaping infection and death.)
+                </p>
+                <p>
+                    The <a href="https://en.wikipedia.org/wiki/The_Ghost_Map">Ghost Map</a> by
+                    Steven Johnson also isn't about epidemiological modelling,
+                    but it does tell the story of London's 1854 Broad Street
+                    cholera outbreak in London and how the efforts of John Snow
+                    and Henry Whitehead ushered in scientific responses to
+                    epidemics.
+                </p>
+
+                <p>
+                    A good place to start on modelling are the Wikipedia pages
+                    on<a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology">Compartmental Models in Epidemiology</a> and <a href="https://en.wikipedia.org/wiki/William_Farr">William Farr</a>. This <a href="https://fn.bmj.com/content/87/1/F67">article on Farr</a> in
+                    the British Medical Journal is also worth reading.
                 </p>
                 <p>
                     Interesting is the <a href="https://babel.hathitrust.org/cgi/pt?id=njp.32101064041955&view=1up&seq=65">appendix</a>
                     Farr wrote to the Registrar-General of Births, Deaths and
                     Marriages in June 1840. The format of the link is not
                     convenient. Scroll to page 69 to begin reading.
-                </p>
-                <p>
-                    The <a href="https://en.wikipedia.org/wiki/The_Ghost_Map">Ghost Map</a> by
-                    Steven Johnson isn't about epidemiological modelling, but it
-                    does tell the story of London's 1854 Broad Street cholera
-                    outbreak in London and how the efforts of John Snow and
-                    Henry Whitehead ushered in modern responses to epidemics.
                 </p>
 
                 <p>
@@ -950,8 +1007,10 @@ microSIR.parameters;
             </div>
         </aside>
 
+        <h2><em><u>R</u><sub>0</sub></em>: Its uses and limits</h2>
 
-        <h3>Adding an exposure compartment</h3>
+
+        <h2>Adding an exposure compartment</h2>
 
         <p>
             Let's get a bit more complicated. We change our model world so that
@@ -1132,7 +1191,7 @@ microSIR.parameters;
             The results are consistent with what we see for the SIR models.
         </p>
 
-        <h2>Measles</h2>
+        <h2>The measles cycle</h2>
 
         <p>Measles is an interesting but frustrating infectious disease to
             model.</p>
@@ -1423,6 +1482,7 @@ microSIR.parameters;
             inconsequential.
         </p>
 
+        <h2>Covid-19</h2>
         <p>Here is a quick and dirty Covid-like-disease model.</p>
         <div id="macroCovid" class="sir"></div>
 
@@ -1431,13 +1491,16 @@ microSIR.parameters;
 
         <footer>
             <nav>
-                <a href="COPYING">License</a>
                 <a href="https://github.com/nathangeffen/understandingepi">Source code</a>
                 <a href="https://www.simhub.online">Simhub</a>
             </nav>
             <p>
-                <a href="https://www.gnu.org/licenses/agpl-3.0.html">Copyright</a>
-                &copy; 2023 Nathan Geffen
+                Written by <a href="https://www.simhub.online/nathan/">Nathan Geffen</a> (<a href="mailto:nathan@simhub.online">email)</a>
+            </p>
+            <p>
+                &copy; 2023 Nathan Geffen.<br />
+                <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This work is licensed under the <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.<br />
+                All source code used on this page is open source. Most of it is available under the <a href="https://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License</a>. See the section <a href="#copyright-details">Using the resources on this webpage</a>.
             </p>
         </footer>
 
