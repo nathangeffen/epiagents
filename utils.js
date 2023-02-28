@@ -39,6 +39,7 @@ function makeTOCTable()
         levelArr.push(1);
       } else {
         levelArr.pop();
+        ++levelArr[levelArr.length - 1];
       }
       current_level = level;
     }
@@ -60,8 +61,10 @@ function displayTOCTable()
   const elem = document.querySelector('.toc');
   if (elem) {
     const toc = makeTOCTable();
+    let div = document.createElement('div');
     let ul = document.createElement('ul');
-    elem.append(ul);
+    div.append(ul);
+    elem.append(div);
     for (let entry of toc) {
       let li = document.createElement('li');
       li.classList.add(entry['class']);

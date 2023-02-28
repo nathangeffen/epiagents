@@ -43,6 +43,7 @@ h1, h2, h3 {
 
 .toc h5 {
   font-size: 120%;
+  margin-top: 3px;
   margin-bottom: 6px;
 }
 
@@ -50,6 +51,8 @@ h1, h2, h3 {
   list-style-type: none;
   font-size: 85%;
   padding-left: 3px;
+  max-height: 85vh;
+  overflow: auto;
 }
 
 .toc a {
@@ -125,7 +128,7 @@ pre {
   background-color: white;
   border-radius: 5px;
   padding: 10px;
-  overflow-x: scroll;
+  overflow-x: auto;
 }
 
 img {
@@ -359,7 +362,7 @@ div.epi-hide-help p.epi-help-text {
 
 .epi-table {
   max-width: 100%;
-  overflow-x: scroll;
+  overflow-x: auto;
 }
 
 caption {
@@ -395,6 +398,10 @@ figure img {
   border: 1px solid gray;
   border-radius: 5px;
   padding: 6px;
+}
+
+#fourR0graphs img {
+  max-width: 250px;
 }
 
 figcaption {

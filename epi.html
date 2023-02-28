@@ -767,7 +767,7 @@
             we use to solve our differential equations also breaks down if we
             set $\underline{R}_0$ to close to 3000 without reducing the time
             step. Of course such a high $\underline{R}_0$ is of no practical
-            concern.
+            concern. $\underline{R}_0$
         </p>
         <aside>
             <button type="button">Differential equation solver</button>
@@ -1009,6 +1009,121 @@ microSIR.parameters;
 
         <h2><em><u>R</u><sub>0</sub></em>: Its uses and limits</h2>
 
+        <p>
+            Sometimes highly technical abstract mathematical concepts become
+            part of the popular imagination. Perhaps the clearest example is
+            Einstein's equation $E=MC^2$. During the first couple of years of
+            Covid-19 pandemic it was $\underline{R}_0$. While it is a helpful
+            concept, it's usefulness has been somewhat overstated and it is
+            often misunderstood.
+        </p>
+
+        <p>
+            What exactly is $\underline{R}_0$? Imagine introducing a single
+            infected person &mdash; the index case &mdash; into a community
+            where every single person is susceptible. Moreover imagine that
+            everyone has the same risk of infection and that everyone mixes
+            randomly. In this idealised scenario the number of people infected
+            by the index case is $\underline{R}_0$. In all real-world situation
+            $\underline{R}_0$ is at most an approximation.
+        </p>
+        <p>
+            The following graphs are obtained by running the differential
+            equation SIR model with different values of $\underline{R}_0$.
+        </p>
+        <figure id="fourR0graphs">
+            <img src="fourGraphsOfR0.png" alt="Four graphs showing infections with different values of R0" />
+            <figcaption>
+                These graphs show the number of infections by week over 96 weeks
+                with four different values of $\underline{R}_0$. From top to
+                bottom the values of $\underline{R}_0$ are 1, 2, 4 and 8. The y-axis
+                plots infections. The x-axis is the week number.
+            </figcaption>
+        </figure>
+
+        <p>
+            Note how the higher the value of $\underline{R}_0$, the higher the
+            peak number of infections and the longer the epidemic's tail,
+            rendering the curve less and less like the standard normal curve.
+        </p>
+        <p>
+            $\underline{R}_0$ can be generalised to $\underline{R}_t$, the
+            average number of people infected by an infected person on a
+            specific timestep $t$. Given $\underline{R}_0$ and $s$, the
+            proportion of the total population that remains susceptible, we have
+            the following equation:
+        </p>
+
+        <p>
+            \begin{equation}
+            \underline{R_t} = s \underline{R_0}
+            \end{equation}
+        </p>
+
+        <p>
+            The salient feature of $\underline{R_t}$ is that if it's below 1 the
+            number of new cases is declining and if it's above 1 the number of
+            new cases is increasing.
+        </p>
+
+        <p>
+            A slight misconception during the Covid-19 pandemic was to ascribe
+            this feature to $\underline{R_0}$, instead of $\underline{R_t}$, but
+            if $\underline{R_0}$ was below 1 there would have been no Covid-19
+            pandemic. (I say "slight", because while people used the term
+            $\underline{R_0}$, it was usually obvious in context that they were
+            talking about $\underline{R_t}$ and such minor reductions in
+            accuracy for the sake of simplicity are forgivable when explaining
+            complex topics to the public.)
+        </p>
+
+        <p>
+            A more serious misconception during the height of the pandemic was
+            the concept of herd immunity. Many implied that once herd immunity
+            was reached, that was pretty much the end of the epidemic. Putting
+            aside that the SARS-CoV-2 virus keeps mutating, with the consequence
+            that recovered people become susceptible again, even in its
+            idealised meaning herd immuunity does not mean an epidemic has
+            ended, or is even necessarily close to the end.
+        </p>
+
+        <p>
+            The Herd Immunity Threshold is simply the peak of the above graphs.
+            It is the proportion of the population which is immune when the
+            number of new infections begins to decline, or when
+            $\underline{R_t}$ goes below one, and is given by this equation:
+        </p>
+
+        <p>
+            \begin{equation}
+            1 - {1 \over \underline{R_0}}
+            \end{equation}
+        </p>
+
+        <p>
+            Related to this is the proportion of the population that remains
+            susceptible when $\underline{R_t}$ goes below one. This is simply
+            the second term in the Herd Immunity Threshhold equation:
+        </p>
+
+        <p>
+            \begin{equation}
+            1 \over \underline{R_0}
+            \end{equation}
+        </p>
+
+
+        <p>
+            The Herd Immunity Threshold is the target proportion of the
+            population vaccination programmes aims to reach to suppress an
+            infectious disease, such as measles for example. During the height
+            of the Covid pandemic, But the problem with \underline{R_0} and
+            \underline{R_t} is that they are easy to define and calculate in our
+            idealised SIR model. They are hard to calculate in micro models or
+            even complex macro models. And they are extremely hard to estimate
+            in real world epidemics, which usually progress in fits and starts
+            and not the nice smooth curves of our macro models.
+        </p>
 
         <h2>Adding an exposure compartment</h2>
 
@@ -1488,6 +1603,12 @@ microSIR.parameters;
 
         <p>Here is the equivalent micro model.</p>
         <div id="microCovid" class="sir"></div>
+
+        <h2>Acknowledgements</h2>
+
+        <p>
+            [INSERT names here.]
+        </p>
 
         <footer>
             <nav>
