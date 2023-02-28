@@ -26,7 +26,7 @@ body {
     counter-reset: heading;
 }
 
-h1, h2, h3, p, ul, ol, dl, li, aside, blockquote {
+h1, h2, h3, p, ul, ol, dl, li, aside, blockquote, figure, figcaption {
   max-width: 600px;
 }
 
@@ -394,9 +394,14 @@ th {
   color: white;
 }
 
+figure {
+  margin-left: 0;
+  border-top: 1px solid lightgray;
+  border-bottom: 1px solid lightgray;
+  padding: 3px;
+}
+
 figure img {
-  border: 1px solid gray;
-  border-radius: 5px;
   padding: 6px;
 }
 
@@ -410,10 +415,10 @@ figcaption {
 }
 
 footer {
-  border-top: 1px solid lightgray;
-  margin-top: 12px;
+  border-top: 1px solid black;
+  margin-top: 24px;
   margin-bottom: 12px;
-  padding-top: 12px;
+  padding: 24px;
 }
 
 nav a {
