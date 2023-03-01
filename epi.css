@@ -24,6 +24,8 @@ body {
     font-size: 18px;
     font-family:sans-serif;
     counter-reset: heading;
+    counter-reset: figures;
+    counter-reset: models;
 }
 
 h1, h2, h3, p, ul, ol, dl, li, aside, blockquote, figure, figcaption {
@@ -135,11 +137,18 @@ img {
   max-width: 100%;
 }
 
+.sir:before {
+  content: counter(models, upper-alpha)".";
+  font-weight: bold;
+  color: #5F9EA0;;
+}
+
 .sir {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 12px;
+  counter-increment: models;
 }
 
 .sir > div {
@@ -344,7 +353,7 @@ aside h5 {
 }
 
 .show {
-    max-height: 1500px;
+    max-height: 3000px;
     transition: max-height 0.4s ease-in;
     overflow: hidden;
 }
@@ -399,6 +408,11 @@ figure {
   border-top: 1px solid lightgray;
   border-bottom: 1px solid lightgray;
   padding: 3px;
+  counter-increment: figures;
+}
+
+figcaption:before {
+  content: "Figure " counter(figures) ": ";
 }
 
 figure img {
