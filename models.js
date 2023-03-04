@@ -176,8 +176,8 @@ const macroMeasles = {
     'R': 0,
   },
   parameters: {
-    R0: 2.2,
-    β: 0.009,
+    R0: 2,
+    β: 0.0092,
     iterations: 415,
     updates: 5,
   },
@@ -707,8 +707,8 @@ const microMeasles = {
     'R': 0
   },
   parameters: {
-    R0: 2.2,
-    β: 0.009,
+    R0: 2,
+    β: 0.0092,
     r: 0.0,
     iterations: 415,
     updates: 5,

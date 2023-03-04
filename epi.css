@@ -22,7 +22,7 @@ body {
     margin: auto;
     padding: 9px;
     font-size: 18px;
-    font-family:sans-serif;
+    font-family: sans-serif;
     counter-reset: heading;
     counter-reset: figures;
     counter-reset: models;
@@ -137,10 +137,8 @@ img {
   max-width: 100%;
 }
 
-.sir:before {
-  content: counter(models, upper-alpha)".";
-  font-weight: bold;
-  color: #5F9EA0;;
+.model-heading:before {
+  content: counter(models, upper-alpha)". ";
 }
 
 .sir {
@@ -176,7 +174,6 @@ img {
   border: 1px solid black;
   border-radius: 5px;
   padding: 4px;
-  /* overflow: scroll;*/
 }
 
 .epi-results-table-holder, .epi-parameters-holder {
@@ -353,9 +350,9 @@ aside h5 {
 }
 
 .show {
-    max-height: 3000px;
-    transition: max-height 0.4s ease-in;
-    overflow: hidden;
+  max-height: 9000px;
+  transition: max-height 0.4s ease-in;
+  overflow: hidden;
 }
 
 div p.epi-help-text {
@@ -437,4 +434,34 @@ footer {
 
 nav a {
   margin-right: 12px;
+}
+
+.footnote {
+  display: block;
+  font-size: 80%;
+  font-weight: 80%;
+}
+
+
+.footnote-hide {
+  max-height: 0;
+  transition: height 0.4s ease-out;
+  overflow: hidden;
+  display: none;
+}
+
+.footnote-show {
+  max-height: 3000px;
+  transition: height 0.4s ease-out;
+  overflow: hidden;
+  margin: 6px;
+  padding: 6px;
+  border: 1px solid black;
+}
+
+.footnote-curtain {
+  vertical-align: super;
+  font-size: 80%;
+  cursor: pointer;
+  color: blue;
 }

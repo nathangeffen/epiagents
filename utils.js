@@ -85,6 +85,30 @@ function displayTOCTable()
 
 displayTOCTable();
 
+function manageFootnotes() {
+
+  const footnotes = document.querySelectorAll(".footnote");
+  let i = 1;
+  for (let footnote of footnotes) {
+    footnote.classList.add('footnote-hide');
+    let span = document.createElement('span');
+    span.classList.add('footnote-curtain');
+    span.textContent = i++;
+    span.addEventListener('click', function(e) {
+      if (footnote.classList.contains('footnote-show')) {
+        footnote.classList.remove('footnote-show');
+        footnote.classList.add('footnote-hide');
+      } else {
+        footnote.classList.add('footnote-show');
+        footnote.classList.remove('footnote-hide');
+      }
+    });
+    footnote.parentNode.insertBefore(span, footnote);
+  }
+}
+
+manageFootnotes();
+
 window.MathJax = {
   tex: {
     tags: 'ams',
