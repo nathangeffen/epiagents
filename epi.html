@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
     <head>
         <meta charset="utf-8">
-        <meta name=viewport content="width=device-width, initial-scale=1">
-        <meta name="author" content="Nathan Geffen">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="author" content="Nathan Geffen" >
         <meta name="description" content="Epidemiology: Macro and micro models for infectious disease epidemics">
         <meta name="keywords" content="Epidemiology,models,micro models,macro models,agent-based models,simulation,infectious disease">
         <title>Two types of infectious disease models</title>
@@ -14,7 +15,6 @@
          infectious disease epidemics.
 
          Copyright (C) 2023  Nathan Geffen
-
          This program is free software: you can redistribute it and/or modify
          it under the terms of the GNU Affero General Public License as
          published by the Free Software Foundation, either version 3 of the
@@ -30,6 +30,9 @@
 
          The source code for this project is available here:
          https://github.com/nathangeffen/understandingepi
+
+         DO NOT MOVE THIS NOTICE ABOUT THE <meta charset="utf-8"> line to avoid
+         HTML validation error.
     -->
 
     <body>
@@ -41,9 +44,18 @@
             Last updated: <time datetime="2023-02-01">28 February 2023</time>
         </p>
 
-        <div class="toc">
-            <h5>Contents</h5>
+        <div id="toc-bar">
+            <div id="toc-container">
+            <div id="table-of-contents" class="toc">
+                <h5>Contents</h5>
+            </div>
+
+            <div id="table-of-asides" class="toc">
+                <h5>Asides</h5>
+            </div>
+            </div>
         </div>
+
         <h2>Cows and the origins of epidemiological modelling</h2>
         <p>
             In late 1865 cows began dying in large numbers in England. This
@@ -290,7 +302,7 @@
             1927 articulated, albeit in a <a href="https://royalsocietypublishing.org/doi/epdf/10.1098/rspa.1927.0118">very difficult paper</a>,
             what we now call the Susceptible-Infectious-Recovered, or SIR,
             model. A somewhat simpler <a href="https://projecteuclid.org/ebooks/berkeley-symposium-on-mathematical-statistics-and-probability/Proceedings-of-the-Third-Berkeley-Symposium-on-Mathematical-Statistics-and/chapter/Deterministic-and-Stochastic-Epidemics-in-Closed-Populations/bsmsp/1200502553">exposition of the SIR model</a>
-            is given by David Kendall in 1956 .
+            is given by David Kendall in 1956.
         </p>
 
         <p>
@@ -496,7 +508,7 @@
                 homogeneous mixing. (Changing to heterogeneous mixing makes
                 things much more complicated.)
             </li>
-            <lI>When there are a tiny number of infected people in the
+            <li>When there are a tiny number of infected people in the
                 population, they will on average infect two other people before
                 they recover.
             </li>
@@ -738,7 +750,7 @@
             and
 
             \begin{equation}
-            \frac{dR}{dt} =  r I(t)
+            \frac{dR}{dt} = r I(t)
             \end{equation}
 
         </p>
@@ -792,7 +804,8 @@
             <em>before</em> events. These typically would create and initialise
             the agents, write a report of the initial state of the population
             and perhaps calculate some working variables that won't change once
-            the simulation starts. </p>
+            the simulation starts.
+        </p>
         <p>
             Then iteratively execute the <em>during</em> events until some stop
             condition is met. As with our difference equation macro model, each
@@ -801,7 +814,15 @@
             user-defined constant. Typical during events would shuffle the
             agents (to generate more stochasticity), infect some susceptibe
             agents, vaccinate some agents, recover some infected agents, or kill
-            some ill agents.</p>
+            some ill agents.<span class="footnote">A different way to do micro
+            models is to schedule stochastically ocurring specific events on
+            specific agents. I haven't used this methodology and I am currently
+            unable to see how to create efficient models using this approach.
+            But, that may be simply a factor of my ignorance, and in future I
+            may investigate this methodology and, once I understand it better,
+            write about it.
+            </span>
+        </p>
         <p>
             Finally execute the after events which would typically be writing a
             report or creating a CSV file of the outputs.
@@ -863,13 +884,13 @@
         </p>
 
         <p>
-            During Covid, there were many reports comparing why many people
-            became infected in one geographic location versus another. Such
-            speculation can be useful. The severity of an epidemic can be
-            mitigated by timely rational action. But we should realise the role
-            of chance; sometimes whether an epidemic explodes in one community
-            and dissipates without much consequence in another is a matter of
-            nature playing dice.
+            During the height of the Covid pandemic, there were many reports
+            comparing why many people became infected in one geographic location
+            versus another. Such speculation can be useful. The severity of an
+            epidemic can be mitigated by timely rational action. But we should
+            realise the role of chance; sometimes whether an epidemic explodes
+            in one community and dissipates without much consequence in another
+            is a matter of nature playing dice.
         </p>
 
         <p>
@@ -1002,7 +1023,7 @@
             Sometimes highly technical abstract mathematical concepts become
             part of the popular imagination. Perhaps the clearest example is
             Einstein's equation $E=MC^2$. During the first couple of years of
-            Covid pandemic it was $\underline{R}_0$. While it is a helpful
+            the Covid pandemic it was $\underline{R}_0$. While it is a helpful
             concept, it's usefulness has been somewhat overstated and it is
             often misunderstood.
         </p>
@@ -1056,14 +1077,14 @@
         </p>
 
         <p>
-            A slight misconception during the Covid pandemic was to ascribe
-            this feature to $\underline{R_0}$, instead of $\underline{R_t}$, but
-            if $\underline{R_0}$ was below 1 there would have been no Covid
-            pandemic. (I say "slight", because while people used the term
-            $\underline{R_0}$, it was usually obvious in context that they were
-            talking about $\underline{R_t}$ and such minor reductions in
-            accuracy for the sake of simplicity are forgivable when explaining
-            complex topics to the public.)
+            A slight misconception during the height of the Covid pandemic was
+            to ascribe this feature to $\underline{R_0}$, instead of
+            $\underline{R_t}$, but if $\underline{R_0}$ was below 1 there would
+            have been no Covid pandemic. (I say "slight", because while people
+            used the term $\underline{R_0}$, it was usually obvious in context
+            that they were talking about $\underline{R_t}$ and such minor
+            reductions in accuracy for the sake of simplicity are forgivable
+            when explaining complex topics to the public.)
         </p>
 
         <p>
@@ -1313,8 +1334,7 @@
         </p>
 
         <figure>
-            <img src="MeaslesEnglandAndWales.webp"
-                 alt="Graph of measles in England and Wales">
+            <img src="MeaslesEnglandAndWales.webp" alt="Graph of measles in England and Wales">
             <figcaption>
                 Source: <a href="https://pubmed.ncbi.nlm.nih.gov/7085179/">Measles in England and Wales--I: An analysis of factors
                 underlying seasonal patterns</a> by Fine and Clarkson, Int J
@@ -1422,6 +1442,7 @@
             The 1918/19 global flu pandemic was one of the worst in history. The
             table below shows recorded deaths in India's Bombay Presidency.
         </p>
+
 
         <figure>
             <img src="RegisteredDeathsBombay-1918-1919.webp" alt="Registered deaths in Bombay Presidency 1918-1919">
@@ -1554,13 +1575,14 @@
 
         <p>
             In the late 2000s until 2015 there was a feisty discussion in the
-            HIV field about the optimal time for people with HIV to start
-            antiretroviral treatment. Antiretroviral pills taken daily for life
-            reduce the number of HIV virions in the blood of infected people,
-            usually to undetectable levels. This brings two advantages: (1) it
-            extends life-expectancy to almost normal and (2) it reduces the risk
-            of transmitting the virus to others, though this was not known with
-            much confidence until a large clinical trial confirmed it in 2011.
+            HIV field about the optimal time for eople with HIV to start
+            antiretroviral treatment. These pills taken daily for life reduce
+            the number of HIV virions in the blood of people with this
+            infection, usually to undetectable levels. This brings two
+            advantages: (1) it extends life-expectancy to almost normal and (2)
+            it reduces the risk of transmitting the virus to others, though this
+            was not known with much confidence until a large clinical trial
+            confirmed it in 2011.
         </p>
         <p>
             The ideal time to start treatment wasn't clear because of three
@@ -1572,7 +1594,7 @@
         <p>
             In 2015
             a <a href="https://www.nejm.org/doi/full/10.1056/nejmoa1506816">large
-            well-conducted clinical trial</a> showed the benefit of starting
+            clinical trial</a> showed the benefit of starting
             treatment as soon as a person was diagnosed were substantial.
             Moreover drug resistance and serious side effects with newer
             antiretroviral regimens have become minor problems. Nowadays medical
@@ -1583,9 +1605,9 @@
         <p> Nevertheless in the late 2000s all of this was unclear. World Health
             Organisation researchers (Granich et al. 2009) published models in <a href="https://www.sciencedirect.com/science/article/abs/pii/S0140673608616979">The Lancet</a> that
             showed that a policy of actively testing and immediately treating
-            people with HIV in South Africa, the state with the most number of
-            people with this virus in the world, would reduce the country's HIV
-            prevalence to a negligible level in 50 years.
+            people with HIV in South Africa, the country with the most number of
+            people with this virus, would reduce its HIV prevalence to a
+            negligible level in 50 years.
         </p>
         <p>
             The paper certainly made a splash, evoking voiceferous discussion.
@@ -1594,13 +1616,13 @@
             cited infectious disease model ever.
         </p>
         <p>
-            The graphic with its accompanying caption below, copied from the
-            Granich paper in The Lancet, describes one of their models.
+            The graphic below from the paper in The Lancet, describes one of
+            their models.
         </p>
 
         <figure>
             <img src="GranichEtAlModel.webp" alt="Model by Granich et al">
-            <figcaption>From <a href="https://www.sciencedirect.com/science/article/abs/pii/S0140673608616979">Granich et al. 2009</a>
+            <figcaption>From <a href="https://www.sciencedirect.com/science/article/abs/pii/S0140673608616979">Granich et al. 2009</a>.
                 The authors explain:<br>
                 "N represents population aged 15 years and above. People enter
                 into the susceptible class (S) at a rate $βN$, become infected at
@@ -1635,9 +1657,12 @@
         <p>
             In the results table, the total number of infections (the sum of
             compartments I1 through I4 and A1 through A4) is tracked in the
-            column with the heading I. Try adjusting the parameters and
-            rerunning the model to see how the course of the epidemic changes,
-            particularly the S (susceptibles), D (deaths) and I (infections) columns.
+            column with the heading I. Try adjusting the parameters, especially
+            τ, and rerunning the model to see how the course of the epidemic
+            changes, particularly the S (susceptibles), D (deaths) and I
+            (infections) columns. For example set τ to 0.00 (in other words no
+            treatment takes place) and notice how the population declines, and
+            infections and deaths skyrocket.
         </p>
 
         <p>We can quite easily implement a microsimulation version of this.</p>
@@ -1753,15 +1778,242 @@
 
         <p>
             While I have done my best to match the two models, the course of the
-            epidemic is now highly non-linear and near-perfect matching like in
-            the SIR and SEIR models doesn't seem possible. Nevertheless, in
-            infectious disease modelling we are seldom, if ever, interested in
-            precise predictions; we merely hope for plausible approximations. So
-            the differences between the outputs of the two models appear to be
-            inconsequential.
+            epidemic is now highly non-linear and I haven't achieved
+            near-perfect matching like in the SIR and SEIR models. Nevertheless,
+            in infectious disease modelling we are seldom, if ever, interested
+            in precise predictions; we merely hope for plausible approximations.
+            So the differences between the outputs of the two models appear to
+            be inconsequential.
         </p>
 
+        <aside>
+            <button type="button">Can models predict the future?</button>
+            <div>
+                <h5>The first Covid models</h5>
+
+                <p>
+                    In March 2020 – a few months after the appearance of the Covid
+                    pandemic &mdash; a <a href="https://www.imperial.ac.uk/media/imperial-college/medicine/mrc-gida/2020-03-16-COVID19-Report-9.pdf">micro model</a> by
+                    Neil Ferguson and his team at Imperial College in the UK was
+                    widely reported in the media. The modellers considered how various
+                    interventions, such as isolation, quarantining, social distancing
+                    and school and university closures would affect the spread of
+                    SARS-CoV-2 and the pressure on hospitals.
+                </p>
+
+                <p>
+                    Their report is detailed and nuanced. There is extensive discussion
+                    about mitigating the effects of Covid — reducing $\underline{R_t}$
+                    but not below 1 — versus suppressing it completely — reducing
+                    $\underline{R_t}$ below 1. It also had to make a plethora of
+                    assumptions given how little was understood about Covid at the time.
+                </p>
+
+                <p>
+                    Unsurprisingly, as with any model that tries to predict the future,
+                    it got some things wrong, such as the time period over which Covid
+                    would peak. It also didn’t consider that SARS-CoV-2 would mutate and
+                    that the epidemic would return in waves of differing infectiousness
+                    and virulence.
+                </p>
+
+                <p>
+                    The report concludes that social distancing would have the largest
+                    impact. Combining this with isolating infected people and school and
+                    university closures had “the potential to suppress transmission
+                    below the threshold of $\underline{R} = 1$”, the authors wrote.
+                </p>
+
+                <p>
+                    They also pointed out that, “to avoid a rebound in transmission”,
+                    these policies would need to be maintained until large stocks of
+                    vaccine became available. They pessimistically predicted this would
+                    be 18 months or more, but in fact vaccines became available near the
+                    end of 2020, although most countries wouldn’t start rolling them out
+                    until 2021.
+                </p>
+                <p>
+                    The authors recommended using hospital surveillance to switch these
+                    measures on and off. Importantly they wrote: “Given local epidemics
+                    are not perfectly synchronised, local policies are also more
+                    efficient and can achieve comparable levels of suppression to
+                    national policies while being in force for a slightly smaller
+                    proportion of the time.”
+                </p>
+                <p>
+                    They were cautious:
+                </p>
+
+                <blockquote>
+                    "However, there are very large uncertainties around the transmission
+                    of this virus, the likely effectiveness of different policies and
+                    the extent to which the population spontaneously adopts risk
+                    reducing behaviours. This means it is difficult to be definitive
+                    about the likely initial duration of measures which will be
+                    required, except that it will be several months. Future decisions on
+                    when and for how long to relax policies will need to be informed by
+                    ongoing surveillance."
+                </blockquote>
+
+                <p>
+                    They also considered mitigation instead of suppression:
+                </p>
+
+                <blockquote>
+                    "Our results show that the alternative relatively short-term
+                    (3-month) mitigation policy option might reduce deaths seen in the
+                    epidemic by up to half, and peak healthcare demand by two-thirds.
+                    The combination of case isolation, household quarantine and social
+                    distancing of those at higher risk of severe outcomes (older
+                    individuals and those with other underlying health conditions) are
+                    the most effective policy combination for epidemic mitigation."
+                </blockquote>
+
+                <p>
+                    There is very little emphasis on actual results. The same is true
+                    for Imperial College's <a href="https://www.imperial.ac.uk/news/196234/covid-19-imperial-researchers-model-likely-impact/">news summary</a> of
+                    the report for the general public. This seems to be a sensible
+                    approach. No model in March 2020, less than three months after Covid
+                    had been discovered, could rely on sufficient accurate knowledge to
+                    predict the future with any realistic accuracy. Even when diseases
+                    are well-understood, and slow moving, like TB and HIV, it is very
+                    hard to predict future infections and mortality with much accuracy.
+                </p>
+                <p>
+                    What models can do, and what the Imperial College model did, is show
+                    the approximate magnitude of certain interventions on mitigating or
+                    suppressing infectious outbreaks.
+                </p>
+                <p>
+                    Yet the Imperial College model was widely criticised, especially by
+                    those with an ideology opposed to stringent government intervention.
+                </p>
+
+                <p>
+                    In April 2020, the US-based Cato Institute <a href="https://www.cato.org/blog/how-one-model-simulated-22-million-us-deaths-covid-19">lambasted</a> the
+                    model. It criticised its pessimistic predictions, which hadn’t come
+                    close to being true by that time. "Neither the high infection rate
+                    nor the high fatality rate holds up under scrutiny.” The article,
+                    which echoed the Cato Institute’s opposition to lockdowns or any
+                    stringent government measures to control the epidemic, stated:
+                </p>
+                <blockquote>
+                    "The trouble with being too easily led by models is we can too
+                    easily be misled by models. Epidemic models may seem entirely different
+                    from economic models or climate models, but they all make terrible
+                    forecasts if filled with wrong assumptions and parameters.”
+                </blockquote>
+
+                <p>
+                    Much is made of the model’s estimate of 2.2 million Covid-19 deaths
+                    in the US in the absence of any interventions, something the
+                    modelling report correctly did <strong>not</strong> emphasise at all.
+                </p>
+
+                <p>
+                    The critique is not entirely unfair: it makes the point that the
+                    model and the response of governments didn’t account for some people
+                    voluntarily taking action to reduce their risk of infection. And the
+                    long-term repurcussions of closing schools and universities for long
+                    periods of time are still being debated, and felt.
+                </p>
+                <p>
+                    But much of the Imperial College model did in fact stand up to
+                    scrutiny in the long run. There have been over 1.1 million Covid
+                    deaths in the US. At least <a href="https://www.commonwealthfund.org/publications/issue-briefs/2021/dec/us-covid-19-vaccination-program-one-year-how-many-deaths-and">one study</a> estimated
+                    that vaccines saved over a million lives. This suggests that Covid
+                    in the US, left unchecked, may well have claimed about 2 million
+                    lives. But the Imperial College model did not get the timeframe or
+                    wavy nature of the pandemic right.
+                </p>
+                <p>
+                    Even so, this is not the point. The modellers didn’t emphasise the
+                    precision of their measurements. That wasn’t the point of their
+                    model. Their aim was rather to reach broad conclusions: that if the
+                    pandemic was left unmitigated or unsuppressed it would have a much
+                    more devastating impact. On this they were right.
+                </p>
+                <p>
+                    In South Africa the earliest released <a href="https://www.groundup.org.za/article/heres-what-models-predict-about-covid-19/">government model</a> was
+                    widely criticised by opponents of lockdowns, who wanted to minimise
+                    the pandemic’s effects to support their arguments. The model had, a
+                    quickly done back-of-a-cigarette-box, feel to it. Like the Imperial
+                    College model it didn’t account for mutations and the consequent
+                    wavy nature of the disease, and it also predicted a much swifter
+                    unfolding of things. But, frankly, given the state of knowledge at
+                    the time, a simple SIR-type model was arguably sufficient to make
+                    the point that reducing social contacts would slow the pandemic.
+                </p>
+                <p>
+                    Given the heated ideological disputes in response to Covid, perhaps
+                    there was no way early modellers could have escaped criticism, even
+                    if they had miraculously estimated the trajectory of the pandemic
+                    with pinpoint accuracy. Nevertheless modellers might consider
+                    explicitly explaining upfront that it is the broad conclusions
+                    rather than the specific estimates of their model that are
+                    important.
+                </p>
+                <p>
+                    Also, when an epidemic’s parameters are hard to know with precision
+                    or vary a lot from place to place, modellers should perhaps consider
+                    running thousands of simulations that randomly perturb the
+                    parameters within reasonable ranges. Then we can present multiple
+                    possible scenarios to the public. Though this must be done in a way
+                    that emphasises the more likely scenarios and that does not
+                    overwhelm the public with a plethora of possibilities. Done
+                    properly, I hope this acknowledgement of our ignorance may actually
+                    gain greater public confidence in the modelling process.
+                </p>
+
+                <h5>The Thembisa model</h5>
+
+                <p>
+                    Since the 1990s models to predict the trajectory of the HIV epidemic
+                    in South Africa have been useful for estimating medical need and
+                    cost. The most widely acclaimed of these was the Actuarial Society
+                    of South Africa model, predominantly developed by Rob Dorrington.
+                    This was enhanced, mainly by Leigh Johnson into what is now the
+                    <a href="https://thembisa.org/">Thembisa model</a>.<span class="footnote">The
+                        full citations for the model are: <em>Johnson
+                        LF, May MT, Dorrington RE, Cornell M, Boulle A, Egger M and Davies
+                        MA. (2017) Estimating the impact of antiretroviral treatment on
+                        adult mortality trends in South Africa: a mathematical modelling
+                        study. PLoS Medicine. 14(12): e1002468.</em> and <em>Johnson LF,
+                        Dorrington RE, Moolla H. (2017) Progress towards the 2020
+                        targets for HIV diagnosis and antiretroviral treatment in South
+                        Africa. Southern African Journal of HIV Medicine.18(1): a694</em></span>
+                </p>
+                <p>
+                    The Thembisa model is extremely complex and carefully calibrated to
+                    match known data points. It uses a monthly timestep and produces a
+                    huge number of outputs, including the South African population size,
+                    number of deaths, number of deaths from HIV, the number of people
+                    with HIV, the number of new infections and more. This is all broken
+                    down by age group and sex. Thembisa includes several interventions
+                    including antiretroviral treatment, male medical circumcision,
+                    pre-exposure prophylaxis and the prevention of mother-to-child
+                    transmission.
+                </p>
+                <p>
+                    South Africa's latest available census results are from 2011. A
+                    census was conducted in 2022 but has not yet been published (and
+                    there are concerns about how well the census was conducted). Because
+                    the census data is so old I (and others) use the population size,
+                    life expectancy and other demographic outputs of Thembisa when
+                    writing about these things. The model, which is meticulously
+                    constructed, has de facto become the definitive source of population
+                    estimates. This is despite my cautions about using models to predict
+                    the future accurately. But it's justified in this case because (1)
+                    the dynamics of HIV are currently still better understood than Covid
+                    and the epidemic fluctuates at a stately pace compared to Covid, and
+                    (2) the Thembisa model has decades of careful work behind it.
+                </p>
+
+            </div>
+        </aside>
+
         <h2>Covid</h2>
+
         <p>Here is a quick and dirty Covid-like-disease model.</p>
         <div id="macroCovid" class="sir"></div>
 
@@ -1772,7 +2024,7 @@
 
         <p>
             Thanks to Alex Welte for advice.
-            All errors are obviously solely my responsibility.
+            All errors are my responsibility.
         </p>
 
         <footer>
@@ -1781,10 +2033,7 @@
                 <a href="https://www.simhub.online">Simhub</a>
             </nav>
             <p>
-                Written by <a href="https://www.simhub.online/nathan/">Nathan Geffen</a> (<a href="mailto:nathan@simhub.online">email)</a>
-            </p>
-            <p>
-                &copy; 2023 Nathan Geffen.<br>
+                Written by <a href="https://www.simhub.online/nathan/">Nathan Geffen</a> (&copy; 2023, <a href="mailto:nathan@simhub.online">email</a>)<br>
                 <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png"></a><br>This work is licensed under the <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.<br>
                 All source code used on this page is open source. Most of it is available under the <a href="https://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License</a>. See the section <a href="#copyright-details">Using the resources on this webpage</a>.
             </p>
@@ -1797,10 +2046,10 @@
         <script src="epi-ui.js?v=20230225"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-        <script id="MathJax-script" async
-                src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
         </script>
         <script src="models.js?v=20230119"></script>
 
     </body>
+
 </html>

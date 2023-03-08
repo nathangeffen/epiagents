@@ -20,61 +20,67 @@ function setupAsides()
   }
 }
 
-setupAsides();
-
-function makeTOCTable()
+function makeTOCTable(selectors, useLevels)
 {
-  const selectors = ['h2', 'h3', 'h4'];
   const selector = selectors.join();
   const headings = document.querySelectorAll(selector);
+  console.log(selectors);
   let toc = [];
-  let current_level = 2;
+  let current_level = 0;
   let levelArr = [0];
   for (const heading of headings) {
-    const level = parseInt(heading.nodeName[heading.nodeName.length - 1]);
-    if (level == current_level) {
-      ++levelArr[levelArr.length - 1];
-    } else {
-      if (level > current_level) {
-        levelArr.push(1);
-      } else {
-        levelArr.pop();
+    if (useLevels) {
+      const level = selectors.indexOf(heading.nodeName.toLowerCase());
+      console.log(level);
+      if (level == current_level) {
         ++levelArr[levelArr.length - 1];
+      } else {
+        if (level > current_level) {
+          levelArr.push(1);
+        } else {
+          levelArr.pop();
+          ++levelArr[levelArr.length - 1];
+        }
+        current_level = level;
       }
-      current_level = level;
+    } else {
+      ++current_level;
     }
-    const prefix = levelArr.join('.') + '.\t';
+
+    const prefix = useLevels ? (levelArr.join('.') + '.\t') : "";
     const entry = {
       'prefix': prefix,
       'class': 'level-' + heading.nodeName.toLowerCase(),
       'text': prefix + heading.textContent,
       'node': heading,
-      'id': levelArr.join('_')
+      'id': useLevels ? levelArr.join('_') : current_level + "_"
     }
     toc.push(entry);
   }
   return toc;
 }
 
-function displayTOCTable()
+function displayTOCTable(tocClass, selector, prefix, useLevels)
 {
-  const elem = document.querySelector('.toc');
+  console.log(selector);
+  const elem = document.querySelector(tocClass);
   if (elem) {
-    const toc = makeTOCTable();
+    const toc = makeTOCTable(selector, useLevels);
     let div = document.createElement('div');
     let ul = document.createElement('ul');
     div.append(ul);
     elem.append(div);
     for (let entry of toc) {
+      const id = prefix + entry.id;
       let li = document.createElement('li');
       li.classList.add(entry['class']);
       let link = document.createElement('a');
-      link.setAttribute('href', "#" + entry.id);
+      link.setAttribute('href', "#" + id);
       link.textContent = entry.text;
       li.append(link);
       ul.append(li);
       let target = document.createElement('a');
-      target.id = entry.id;
+      target.id = id;
       const saved_html = entry.node.innerHTML;
       entry.node.innerHTML = "";
       entry.node.append(target);
@@ -83,7 +89,7 @@ function displayTOCTable()
   }
 }
 
-displayTOCTable();
+
 
 function manageFootnotes() {
 
@@ -107,8 +113,6 @@ function manageFootnotes() {
   }
 }
 
-manageFootnotes();
-
 window.MathJax = {
   tex: {
     tags: 'ams',
@@ -119,3 +123,9 @@ window.MathJax = {
     displayIndent: '32px'
   }
 };
+
+
+setupAsides();
+displayTOCTable('#table-of-contents', ['h2', 'h3', 'h4'], "_toc_", true);
+displayTOCTable('#table-of-asides', ['aside > button'], "_aside_", false);
+manageFootnotes();
