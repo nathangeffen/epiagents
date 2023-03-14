@@ -20,7 +20,6 @@
 
 "use strict";
 
-
 const HELP = {
   'S': 'Susceptible',
   'E': 'Exposed (infected) but not yet infectious',
@@ -43,7 +42,7 @@ const NAMES = {
   iterations: 'Iterations',
 };
 
-/* Macro models */
+// SIR models
 
 const macroSIR = {
   name: "SIR macro model using difference equations",
@@ -100,6 +99,59 @@ macroSIR100.compartments.S = 900;
 macroSIR100.compartments.I = 100;
 macroSIR100.name = "Macro model: SIR with 100 initial infections";
 EpiUI.create(macroSIR100, document.getElementById('macroSIR100'));
+
+const microSIR = {
+  name: "SIR micro model",
+  compartments: {
+    'S': 999,
+    'I': 1,
+    'R': 0,
+  },
+  parameters: {
+    R0: 2.0,
+    D: 5.0,
+    iterations: 100,
+    updates: 10,
+  },
+  names: NAMES,
+  beforeEvents: [
+    EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
+    EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
+    EpiMicro.eventSetAgentPositions,
+    function(model) {
+      model.working.beta = model.parameters.R0 /
+        (model.agents.length * model.parameters.D);
+      model.working.r = 1.0 / model.parameters.D;
+    }
+  ],
+
+  duringEvents: [
+    EpiMicro.eventShuffle,
+    function(model) {
+      return EpiMicro.eventStoI(model, 'S', 'I', model.working.beta, ['I']);
+    },
+    function(model) {
+      EpiMicro.eventFromToRisk(model, 'I', 'R', model.working.r);
+    },
+    EpiMicro.eventResetChanged,
+    EpiMicro.eventTallyCompartments
+  ],
+
+  afterEvents: [],
+  options: {
+    colors: EpiUI.THREE_COLORS
+  }
+};
+
+EpiUI.create(microSIR, document.getElementById('microSIR'));
+
+let microSIR100 = EpiMacro.deepCopy(microSIR);
+microSIR100.compartments.S = 900;
+microSIR100.compartments.I = 100;
+microSIR100.name = "SIR micro model with 100 initial infections";
+EpiUI.create(microSIR100, document.getElementById('microSIR100'));
+
+// SEIR models
 
 const macroSEIR = {
   name: "SEIR macro model using difference equations",
@@ -164,6 +216,61 @@ macroSEIROde.ode = function(model) {
 
 EpiUI.create(macroSEIROde, document.getElementById('macroSEIROde'));
 
+const microSEIR = {
+  name: "SEIR micro model",
+  compartments: {
+    'S': 999,
+    'E': 1,
+    'I': 0,
+    'R': 0
+  },
+  parameters: {
+    R0: 2.0,
+    E_I: 2.0,
+    I_R: 5.0,
+    iterations: 100,
+    updates: 10,
+  },
+  names: NAMES,
+  beforeEvents: [
+    EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
+    EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
+    EpiMicro.eventSetAgentPositions,
+    function(model) {
+      model.working.beta = model.parameters.R0 /
+        (model.agents.length * model.parameters.I_R);
+      model.working.f = 1.0 / model.parameters.E_I;
+      model.working.r = 1.0 / model.parameters.I_R;
+    }
+  ],
+
+  duringEvents: [
+    EpiMicro.eventShuffle,
+    function(model) {
+      return EpiMicro.eventStoI(model, 'S', 'E', model.working.beta, ['I']);
+    },
+    function(model) {
+      EpiMicro.eventFromToRisk(model, 'E', 'I', model.working.f);
+    },
+    function(model) {
+      EpiMicro.eventFromToRisk(model, 'I', 'R', model.working.r);
+    },
+    EpiMicro.eventResetChanged,
+    EpiMicro.eventTallyCompartments
+  ],
+
+  afterEvents: [],
+
+  options: {
+    colors: EpiUI.FOUR_COLORS
+  }
+};
+
+EpiUI.create(microSEIR, document.getElementById('microSEIR'));
+
+
+// Measles models
+
 // Based on slides by Brian Williams at
 // http://www.ici3d.org/DAIDD2016/Materials/Brian%20Williams%20What%20is%20Science.pdf
 // (see p. 36), which is based on Fine, P. and Clarkson, J.A. (1982)
@@ -198,7 +305,7 @@ const macroMeasles = {
       if (model.compartments.S + model.working.growth - model.working.I  < 0)
         model.working.I = model.compartments.S;
       return {
-        'from': '*',
+        'from': "*",
         'to': 'I',
         'value': model.working.I
       };
@@ -237,6 +344,84 @@ const macroMeasles = {
 EpiUI.create(macroMeasles, document.getElementById('macroMeasles'));
 
 
+const microMeasles = {
+  name: "Measles micro model",
+  compartments: {
+    'S': 990,
+    'I': 10,
+    'R': 0
+  },
+  parameters: {
+    R0: 2,
+    β: 0.0092,
+    r: 0.0,
+    iterations: 415,
+    updates: 5,
+  },
+  names: NAMES,
+  beforeEvents: [
+    EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
+    EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
+    EpiMicro.eventSetAgentPositions,
+    function(model) {
+      model.working.N = model.compartments.S + model.compartments.I +
+        model.compartments.R;
+      model.working.growth = Math.round(model.parameters.β * model.working.N);
+    }
+  ],
+
+  duringEvents: [
+    EpiMicro.eventShuffle,
+    // If no I set first agent to I. This is random because of shuffle.
+    function(model) {
+      if (model.compartments.I == 0) {
+        if (Math.random() < model.parameters.r)
+          model.agents[0].compartment = "I";
+      }
+    },
+    // I
+    function(model) {
+      let risk = model.parameters.R0 * model.compartments.I *
+        (model.compartments.S / model.working.N) / model.working.N;
+      EpiMicro.eventFromToRisk(model, 'S', 'I', risk);
+    },
+    // R
+    function(model) {
+      let i = 0;
+      for (let agent of model.agents) {
+        if (i >= model.compartments.I) break;
+        if (agent.compartment === "I") {
+          agent.compartment = "R";
+          i++;
+        }
+      }
+    },
+    // S
+    function(model) {
+      let i = 0;
+      for (let agent of model.agents) {
+        if (i >= model.working.growth) break;
+        if (agent.compartment === "R") {
+          agent.compartment = "S";
+          i++;
+        }
+      }
+    },
+    EpiMicro.eventResetChanged,
+    EpiMicro.eventTallyCompartments
+  ],
+
+  afterEvents: [],
+
+  options: {
+    colors: EpiUI.THREE_COLORS
+  }
+};
+
+EpiUI.create(microMeasles, document.getElementById('microMeasles'));
+
+// Granich et al HIV models
+
 const macroGranichEtAlColors = [
   'green',
   '#FF0000', '#EE0000', '#DD0000', '#CC0000',
@@ -245,14 +430,13 @@ const macroGranichEtAlColors = [
 ];
 
 // Tally infections for UI purposes only
-function tallyInfections(model) {
+function tallyInfectionsGranich(model) {
   const value = model.compartments.I1 + model.compartments.I2 +
         model.compartments.I3 + model.compartments.I4 +
         model.compartments.A1 + model.compartments.A2 +
-        model.compartments.A3 + model.compartments.A4 -
-        model.compartments.I;
+        model.compartments.A3 + model.compartments.A4;
   return {
-    "from": "_",
+    "from": "*",
     "to": "I",
     "value": value
   }
@@ -271,7 +455,6 @@ const macroGranichEtAl = {
     A3: 0,
     A4: 0,
     D: 0,
-    I: 100
   },
   parameters: {
     β: 0.009,
@@ -287,6 +470,11 @@ const macroGranichEtAl = {
     iterations: 50,
     updates: 10
   },
+  initialize: [
+    function(model) {
+      model.compartments.I = tallyInfectionsGranich(model).value;
+    },
+  ],
   transitions: [
     // _->S
     function(model) {
@@ -441,7 +629,7 @@ const macroGranichEtAl = {
       return EpiMacro.delta_X_Y(model.compartments, 'A4', 'I4',
                                 model.parameters.φ);
     },
-    tallyInfections
+    tallyInfectionsGranich
   ],
   options: {
     colors: macroGranichEtAlColors
@@ -450,337 +638,6 @@ const macroGranichEtAl = {
 
 EpiUI.create(macroGranichEtAl, document.getElementById('macroGranichEtAl'));
 
-const macroCovid = {
-  name: "Covid macro model",
-  compartments: {
-    S: 999,
-    E: 1,
-    Ia: 0,
-    Is: 0,
-    Ih: 0,
-    Ii: 0,
-    R: 0,
-    V: 0,
-    D: 0,
-  },
-  parameters: {
-    c_e: 0.5,
-
-    S_V: 0.05,
-
-    E_Ia: 0.5,
-
-    Ia_Is: 0.2,
-    Ia_R: 0.2,
-
-    Is_Ih: 0.03,
-    Is_R: 0.25,
-
-    Ih_Ii: 0.15,
-    Ih_R: 0.3,
-
-    Ii_D: 0.2,
-    Ii_R: 0.1,
-
-    V_S: 0.002,
-
-    R_S: 0.002,
-
-    Inf_Ia: 0.5,
-    Inf_Is: 1.0,
-    Inf_Ih: 0.5,
-    Inf_Ii: 0.5,
-
-    iterations: 370,
-    updates: 10
-  },
-  initialize: [
-    function(model) {
-      const N = EpiMacro.calcN(model.compartments, ['D']);
-      model.working.β = model.parameters.c_e / N;
-    }
-  ],
-  transitions: [
-    // S->E
-    function(model) {
-      const I =
-            model.parameters.Inf_Ia * model.compartments.Ia +
-            model.parameters.Inf_Is * model.compartments.Is +
-            model.parameters.Inf_Ih * model.compartments.Ih +
-            model.parameters.Inf_Ii * model.compartments.Ii;
-      const λt = model.working.β * I;
-      const change = λt * model.compartments.S;
-      return {
-        'from': 'S',
-        'to': 'E',
-        'value': change
-      };
-    },
-
-    // S->V
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'S', 'V',
-                                model.parameters.S_V);
-    },
-
-    // E->Ia
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'E', 'Ia',
-                                model.parameters.E_Ia);
-    },
-
-    // Ia_Is
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'Ia', 'Is',
-                                model.parameters.Ia_Is);
-    },
-    // Ia_R
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'Ia', 'R',
-                                model.parameters.Ia_R);
-    },
-
-    // Is_Ih
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'Is', 'Ih',
-                                   model.parameters.Is_Ih);
-    },
-    // Is_R
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'Is', 'R',
-                                model.parameters.Is_R);
-    },
-
-    // Ih_Ii
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'Ih', 'Ii',
-                                model.parameters.Ih_Ii);
-    },
-    // Ih_i_R
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'Ih', 'R',
-                                model.parameters.Ih_R);
-    },
-
-    // Ii_R
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'Ii', 'R',
-                                model.parameters.Ii_R);
-    },
-    // Ih_i_R
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'Ii', 'D',
-                                model.parameters.Ii_D);
-    },
-
-    // R_S
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'R', 'S',
-                                model.parameters.R_S);
-    },
-
-    // V_S
-    function(model) {
-      return EpiMacro.delta_X_Y(model.compartments, 'V', 'S',
-                                model.parameters.V_S);
-    },
-
-  ],
-  options: {
-    colors: EpiUI.NINE_COLORS
-  }
-};
-
-EpiUI.create(macroCovid, document.getElementById('macroCovid'));
-
-/* Micro models */
-
-const microSIR = {
-  name: "SIR micro model",
-  compartments: {
-    'S': 999,
-    'I': 1,
-    'R': 0,
-  },
-  parameters: {
-    R0: 2.0,
-    D: 5.0,
-    iterations: 100,
-    updates: 10,
-  },
-  names: NAMES,
-  beforeEvents: [
-    EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
-    EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
-    EpiMicro.eventSetAgentPositions,
-    function(model) {
-      model.working.beta = model.parameters.R0 /
-        (model.agents.length * model.parameters.D);
-      model.working.r = 1.0 / model.parameters.D;
-    }
-  ],
-
-  duringEvents: [
-    EpiMicro.eventShuffle,
-    function(model) {
-      return EpiMicro.eventStoI(model, 'S', 'I', model.working.beta, ['I']);
-    },
-    function(model) {
-      EpiMicro.eventFromToRisk(model, 'I', 'R', model.working.r);
-    },
-    EpiMicro.eventResetChanged,
-    EpiMicro.eventTallyCompartments
-  ],
-
-  afterEvents: [],
-  options: {
-    colors: EpiUI.THREE_COLORS
-  }
-};
-
-EpiUI.create(microSIR, document.getElementById('microSIR'));
-
-let microSIR100 = EpiMacro.deepCopy(microSIR);
-microSIR100.compartments.S = 900;
-microSIR100.compartments.I = 100;
-microSIR100.name = "SIR micro model with 100 initial infections";
-EpiUI.create(microSIR100, document.getElementById('microSIR100'));
-
-const microSEIR = {
-  name: "SEIR micro model",
-  compartments: {
-    'S': 999,
-    'E': 1,
-    'I': 0,
-    'R': 0
-  },
-  parameters: {
-    R0: 2.0,
-    E_I: 2.0,
-    I_R: 5.0,
-    iterations: 100,
-    updates: 10,
-  },
-  names: NAMES,
-  beforeEvents: [
-    EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
-    EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
-    EpiMicro.eventSetAgentPositions,
-    function(model) {
-      model.working.beta = model.parameters.R0 /
-        (model.agents.length * model.parameters.I_R);
-      model.working.f = 1.0 / model.parameters.E_I;
-      model.working.r = 1.0 / model.parameters.I_R;
-    }
-  ],
-
-  duringEvents: [
-    EpiMicro.eventShuffle,
-    function(model) {
-      return EpiMicro.eventStoI(model, 'S', 'E', model.working.beta, ['I']);
-    },
-    function(model) {
-      EpiMicro.eventFromToRisk(model, 'E', 'I', model.working.f);
-    },
-    function(model) {
-      EpiMicro.eventFromToRisk(model, 'I', 'R', model.working.r);
-    },
-    EpiMicro.eventResetChanged,
-    EpiMicro.eventTallyCompartments
-  ],
-
-  afterEvents: [],
-
-  options: {
-    colors: EpiUI.FOUR_COLORS
-  }
-};
-
-EpiUI.create(microSEIR, document.getElementById('microSEIR'));
-
-
-const microMeasles = {
-  name: "Measles micro model",
-  compartments: {
-    'S': 990,
-    'I': 10,
-    'R': 0
-  },
-  parameters: {
-    R0: 2,
-    β: 0.0092,
-    r: 0.0,
-    iterations: 415,
-    updates: 5,
-  },
-  names: NAMES,
-  beforeEvents: [
-    EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
-    EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
-    EpiMicro.eventSetAgentPositions,
-    function(model) {
-      model.working.N = model.compartments.S + model.compartments.I +
-        model.compartments.R;
-      model.working.growth = Math.round(model.parameters.β * model.working.N);
-    }
-  ],
-
-  duringEvents: [
-    EpiMicro.eventShuffle,
-    // If no I set first agent to I. This is random because of shuffle.
-    function(model) {
-      if (model.compartments.I == 0) {
-        if (Math.random() < model.parameters.r)
-          model.agents[0].compartment = "I";
-      }
-    },
-    // I
-    function(model) {
-      let risk = model.parameters.R0 * model.compartments.I *
-        (model.compartments.S / model.working.N) / model.working.N;
-      EpiMicro.eventFromToRisk(model, 'S', 'I', risk);
-    },
-    // R
-    function(model) {
-      let i = 0;
-      console.log("I", model.compartments.I);
-      for (let agent of model.agents) {
-        if (i >= model.compartments.I) break;
-        if (agent.compartment === "I") {
-          agent.compartment = "R";
-          i++;
-          console.log("R!");
-        }
-      }
-    },
-    // S
-    function(model) {
-      let i = 0;
-      console.log("G", model.working.growth);
-      for (let agent of model.agents) {
-        if (i >= model.working.growth) break;
-        if (agent.compartment === "R") {
-          agent.compartment = "S";
-          i++;
-          console.log("S");
-        }
-      }
-    },
-    EpiMicro.eventResetChanged,
-    EpiMicro.eventTallyCompartments
-  ],
-
-  afterEvents: [],
-
-  options: {
-    colors: EpiUI.THREE_COLORS
-  }
-};
-
-EpiUI.create(microMeasles, document.getElementById('microMeasles'));
-
-
-
 const microGranichEtAl = {
   name: "Micro model implementation of Granich et al.",
   compartments: EpiMacro.deepCopy(macroGranichEtAl.compartments),
@@ -788,7 +645,10 @@ const microGranichEtAl = {
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
-    EpiMicro.eventSetAgentPositions
+    EpiMicro.eventSetAgentPositions,
+    function(model) {
+      model.compartments.I = tallyInfectionsGranich(model).value;
+    }
   ],
   duringEvents: [
     EpiMicro.eventShuffle,
@@ -946,11 +806,7 @@ const microGranichEtAl = {
     EpiMicro.eventResetChanged,
     EpiMicro.eventTallyCompartments,
     function(model) {
-      model.compartments.I =
-        model.compartments.I1 + model.compartments.I2 +
-        model.compartments.I3 + model.compartments.I4 +
-        model.compartments.A1 + model.compartments.A2 +
-        model.compartments.A3 + model.compartments.A4;
+      model.compartments.I = tallyInfectionsGranich(model).value;
     }
   ],
   options: {
@@ -960,11 +816,25 @@ const microGranichEtAl = {
 
 EpiUI.create(microGranichEtAl, document.getElementById('microGranichEtAl'));
 
-const microCovid = {
-  name: "Covid micro model",
+// Covid models
+
+// Tally infections for UI purposes only
+function tallyInfectionsCovid(model) {
+  const value = model.compartments.E + model.compartments.Ia +
+        model.compartments.Is + model.compartments.Ih +
+        model.compartments.Ii;
+  return {
+    "from": "*",
+    "to": "I",
+    "value": value
+  }
+}
+
+const macroCovid = {
+  name: "Covid macro model",
   compartments: {
-    S: 999,
-    E: 1,
+    S: 995,
+    E: 5,
     Ia: 0,
     Is: 0,
     Ih: 0,
@@ -972,11 +842,13 @@ const microCovid = {
     R: 0,
     V: 0,
     D: 0,
+    I: 10
   },
   parameters: {
-    c_e: 0.5,
+    α: 0.8,
+    r: 0.001,
 
-    S_V: 0.05,
+    S_V: 0.001,
 
     E_Ia: 0.5,
 
@@ -986,37 +858,155 @@ const microCovid = {
     Is_Ih: 0.03,
     Is_R: 0.25,
 
-    Ih_Ii: 0.15,
+    Ih_Ii: 0.1,
     Ih_R: 0.3,
 
-    Ii_D: 0.2,
+    Ii_D: 0.1,
     Ii_R: 0.1,
 
-    V_S: 0.002,
+    V_S: 0.004,
 
-    R_S: 0.002,
+    R_S: 0.004,
 
     Inf_Ia: 0.5,
     Inf_Is: 1.0,
-    Inf_Ih: 0.5,
-    Inf_Ii: 0.5,
-    iterations: 370,
+    Inf_Ih: 0.7,
+    Inf_Ii: 0.7,
+
+    iterations: 3*365,
     updates: 10
   },
+  initialize: [
+    function(model) {
+      const N = EpiMacro.calcN(model.compartments, ['D']);
+      model.working.β = model.parameters.α / N;
+    },
+    function(model) {
+      model.compartments.I = tallyInfectionsCovid(model).value;
+    },
+  ],
+  transitions: [
+    // S->E
+    function(model) {
+      const I =
+            model.parameters.Inf_Ia * model.compartments.Ia +
+            model.parameters.Inf_Is * model.compartments.Is +
+            model.parameters.Inf_Ih * model.compartments.Ih +
+            model.parameters.Inf_Ii * model.compartments.Ii;
+      const λt = model.working.β * I;
+      const change = λt * model.compartments.S;
+      return {
+        'from': 'S',
+        'to': 'E',
+        'value': change
+      };
+    },
+
+    // S->V
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'S', 'V',
+                                model.parameters.S_V);
+    },
+
+    // E->Ia
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'E', 'Ia',
+                                model.parameters.E_Ia);
+    },
+
+    // Ia_Is
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'Ia', 'Is',
+                                model.parameters.Ia_Is);
+    },
+    // Ia_R
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'Ia', 'R',
+                                model.parameters.Ia_R);
+    },
+
+    // Is_Ih
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'Is', 'Ih',
+                                   model.parameters.Is_Ih);
+    },
+    // Is_R
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'Is', 'R',
+                                model.parameters.Is_R);
+    },
+
+    // Ih_Ii
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'Ih', 'Ii',
+                                model.parameters.Ih_Ii);
+    },
+    // Ih_i_R
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'Ih', 'R',
+                                model.parameters.Ih_R);
+    },
+
+    // Ii_R
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'Ii', 'R',
+                                model.parameters.Ii_R);
+    },
+    // Ih_i_R
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'Ii', 'D',
+                                model.parameters.Ii_D);
+    },
+
+    // R_S
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'R', 'S',
+                                model.parameters.R_S);
+    },
+
+    // V_S
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'V', 'S',
+                                model.parameters.V_S);
+    },
+    // External S -> E risk
+    function(model) {
+      return EpiMacro.delta_X_Y(model.compartments, 'S', 'E',
+                                model.parameters.r);
+    },
+    function(model) {
+      return tallyInfectionsCovid(model);
+    },
+  ],
+  options: {
+    colors: EpiUI.NINE_COLORS
+  }
+};
+
+EpiUI.create(macroCovid, document.getElementById('macroCovid'));
+
+const microCovid = {
+  name: "Covid micro model",
+  compartments: macroCovid.compartments,
+  parameters: macroCovid.parameters,
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
     EpiMicro.eventSetAgentPositions,
     function(model) {
       const N = EpiMacro.calcN(model.compartments, ['D']);
-      model.working.β = model.parameters.c_e / N;
+      model.working.β = model.parameters.α / N;
+    },
+    function(model) {
+      model.compartments.I = tallyInfectionsCovid(model).value;
     }
   ],
   duringEvents: [
+    EpiMicro.eventResetChanged,
+    EpiMicro.eventTallyCompartments,
     EpiMicro.eventShuffle,
     // S->E
     function(model) {
-      EpiMicro.eventTallyCompartments(model);
       const I =
             model.parameters.Inf_Ia * model.compartments.Ia +
             model.parameters.Inf_Is * model.compartments.Is +
@@ -1096,7 +1086,15 @@ const microCovid = {
       return EpiMicro.eventFromToRisk(model, 'V', 'S',
                                       model.parameters.V_S);
     },
-    EpiMicro.eventTallyCompartments,
+
+    //External exposure (i.e. not infected in community)
+    function(model) {
+      return EpiMicro.eventFromToRisk(model, 'S', 'E',
+                                      model.parameters.r);
+    },
+    function(model) {
+      model.compartments.I = tallyInfectionsCovid(model).value;
+    }
   ],
   options: {
     colors: EpiUI.NINE_COLORS
@@ -1105,6 +1103,7 @@ const microCovid = {
 
 EpiUI.create(microCovid, document.getElementById('microCovid'));
 
+// Just keeping around in case.
 // rungeKutta test
 // Setup parameters for the transmission speed (T)
 // and the recovery rate R (R).

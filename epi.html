@@ -630,7 +630,10 @@
 
             where
 
-            \begin{equation} \beta = {\underline{R}_0 \over {ND}} \end{equation}
+            \begin{equation}
+            \beta = {\underline{R}_0 \over {ND}}
+            \label{eq:R0}
+            \end{equation}
 
             where $N$ is the population size and $D$ is the average number of
             days a person is infected (5 in our model).
@@ -993,16 +996,36 @@
             <div>
                 <h5>Matching the difference equation macro models</h5>
                 <p>
-                    I've tried to implement the micro models to match as
-                    closely as possible the macro models that use difference
-                    equations. The code makes certain compromises to do
-                    this. For example, the $\lambda_t$ is calculated using
-                    the number of infections at the end of the previous time
-                    step, not the current number of infections which may
-                    have changed as the infection event iterates over
-                    agents. Other than for the purpose of trying to match
-                    the models as closely as possible, I see no reason to do
-                    this.
+                    I've tried to implement the micro models to match as closely
+                    as possible the macro models that use difference equations.
+                    The code makes certain compromises to do this. For example,
+                    $\lambda_t$ is calculated using the number of infections at
+                    the end of the previous time step, not the current number of
+                    infections which may have changed as the infection event
+                    iterates over agents. Other than for the purpose of trying
+                    to match the models as closely as possible, I see no reason
+                    to do this.
+                </p>
+                <p>
+                    Moreover, while thinking in terms of compartments make sense
+                    for macro models, for micro or agent based models, it's more
+                    natural to think of agents having states, rather than being
+                    in compartments. In a macro model if you wish to include
+                    additional characteristics such as sex and age group, you
+                    would need to replicate all the compartments for each sex
+                    and age group. But in a micro model, without compartments,
+                    an agent could have a sex, age and state. A state may even
+                    be partial (e.g. an agent transitioning from an asymptomatic
+                    to symptomatic phase &mdash; with different levels of
+                    infectiousness or different subsequent behaviours &mdash;
+                    may do so gradually), or an agent may be in multiple states.
+                    As models increase in complexity, macro models become
+                    extremely difficult to implement, while the increase in
+                    programming complexity in micro models is much slower.</p>
+                <p>
+                    Nevertheless in the micro models here I continue to talk of
+                    agents being in compartments rather than states, simply to
+                    keep the nomenclature consistent with the macro models.
                 </p>
                 <h5>What programming language to use for micro models?</h5>
                 <p>
@@ -1034,6 +1057,8 @@
                 <h5>C++ example ##TODO</h5>
             </div>
         </aside>
+
+
 
         <h2><em><u>R</u><sub>0</sub></em>: Its uses and limits</h2>
 
@@ -2051,17 +2076,146 @@
             </div>
         </aside>
 
-        <h2>Covid #TODO</h2>
+        <h2>Covid: Not an easy disease to model</h2>
 
-        <p>Here is a quick and dirty Covid-like-disease model.</p>
+        <p>
+            Here is a model world that tries to capture the nature of a Covid
+            outbreak in a small community:
+        </p>
+        <ul>
+            <li>
+                To start with we have a large susceptible (S) population and
+                a few people who are infected with SARS-CoV-2.
+            </li>
+            <li>
+                People progress through several stages of infection: exposed
+                (E), infectious asymptomatic (Ia), infectious symptomatic (Is),
+                infectious hospitalised (Ih) and infectious ICU (Iu). Every
+                E person becomes Ia but all other stages can be skipped.
+            </li>
+            <li>
+                The level of infectiousness of people varies from stage to
+                stage. People in the Is compartment are more infectiousness than
+                people in Ia, Ih and Iu (the latter two because infectious
+                control should be better in hospitals).
+            </li>
+            <li>
+                At the end of the infection stages, a person either recovered
+                (R) or dies (D).
+            </li>
+            <li>
+                People can also become vaccinated (V), in which case, if they
+                are uninfected they are more likely to remain so than
+                susceptible people.
+            </li>
+            <li>
+                But both recovered and vaccinated people can become susceptible
+                again.
+            </li>
+            <li>
+                At a random interval, a susceptible person becomes exposed to
+                Covid outside the community. (This is so we can model
+                introducing Covid continuously into the community.)
+            </li>
+        </ul>
+        <p>
+            In our model, our compartments are S, E, Ia, Is, Ih, Ii, R, V and D.
+            The time step is one day. The probability at which people transition
+            between two compartments is specified by the name of the source
+            compartment, an underscore, _, and the name of the destination
+            department. For example if we set Ia_Is to 0.2, this means there is
+            a 20% chance that people in the infectious asymptomatic compartment
+            will move to the infectious symptomatic compartment on a time step.
+        </p>
+        <p>
+            People in some compartments can transition to one of two mutually
+            exclusive compartments. For example there is also an Ia_R
+            transition, representing people who move straight from asymptomatic
+            infection to recovery. The model must first calculate the one
+            transition and then the other. The order matters. The order in which
+            the transitions are listed in the model is the order in which they
+            are calculated.
+        </p>
+        <p>
+            It's tricky to use $\underline{R_0}$ directly to calculate the
+            number of people that become exposed per time step in this model.
+            This is because the average number of days of infectiousness, $D$ in
+            equation \eqref{eq:R0}, is very hard to calculate.
+            <span class="review-query">Does this make sense?</span>
+            Instead the parameter α replaces it so that on a given time step the
+            number of new infections (i.e. the transition from S to E, S_E) is:
+
+            \begin{equation} S\_E = { {α \times I \times S} \over N_0 }
+            \end{equation}
+
+            where $N_0$ is the initial population.
+        </p>
+        <p>
+            The rate at which susceptible people are exposed outside the
+            community on a time step is given by the parameter $r$.
+        </p>
+        <p>
+            The relative infectiousness of each infectious stage Ia, Is, Ih and
+            Ii is specified by Inf_Ia, Inf_Is, Inf_ih and Inf_Ii respectively.
+        </p>
+        <p>
+            Here is our macro model using difference equations.
+        </p>
         <div id="macroCovid" class="sir">
             <noscript>You need Javascript enabled to run this webpage's models.</noscript>
         </div>
 
-        <p>Here is the equivalent micro model.</p>
+        <p>Here is a micro model that attempts to match the macro model as much
+            as possible.
+        </p>
+
         <div id="microCovid" class="sir">
             <noscript>You need Javascript enabled to run this webpage's models.</noscript>
         </div>
+
+        <p>
+            Try experimenting with different parameter values. In particular, in
+            the default setting, we have a very vaccination-averse population.
+            See what happens to the infections and deaths if a much higher
+            vaccination rate is used.
+        </p>
+
+        <p>
+            There are many shortcomings of these two models. Here are a few:
+        </p>
+
+        <ul>
+            <li>
+                They do not account for the large variations (heterogeneity) we
+                have been seeing in infectious periods.
+            </li>
+            <li>
+                While we try to model viral mutations by moving a proportion of
+                vaccinated and recovered people back into the susceptible
+                compartment, the way this works in reality is much more complex
+                and we are not sufficiently capturing these dynamics here.
+            </li>
+            <li>
+                Once vaccinated or recovered, the likelihood of dying with Covid
+                on subsequent infections is greatly reduced but this is not
+                modelled at all here, resulting in a mortality rate that is too
+                high, at least with the default parameter values.
+            </li>
+        </ul>
+
+        <p>
+            Frankly with the default settings, neither model's infection curve
+            looks much like any I've seen, and this may very well be due to
+            these shortcomings.
+        </p>
+
+        <p>
+            Removing these shortcomings would be easier in a micro model than a
+            macro one. The number of compartments would multiply rapidly and the
+            complexity of the model would likely tax even highly competent
+            programmers. Heterogeneity is often especially hard to model in macro
+            models.
+        </p>
 
         <h2>Graphical depictions of health interventions ##TODO</h2>
 

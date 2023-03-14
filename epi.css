@@ -43,7 +43,7 @@ h1, h2, h3 {
 
 .toc {
   background-color:  #dfecec;
-  height: 100%;
+  /* height: 100%;*/
   padding: 6px;
 }
 
@@ -57,7 +57,6 @@ h1, h2, h3 {
   list-style-type: none;
   font-size: 85%;
   padding-left: 3px;
-  max-height: 85vh;
 }
 
 .toc a {
@@ -106,8 +105,6 @@ blockquote {
 @media screen and (min-width: 992px) {
   #table-of-asides, #table-of-contents {
     display: block;
-    height: 40%;
-    overflow: auto;
   }
 
   #toc-bar {
@@ -181,6 +178,25 @@ img {
     width: 95%;
   }
 }
+
+.review-query:before {
+  color: blue;
+  content: "QUERY FOR REVIEWER: "
+}
+
+.review-query {
+  color: blue;
+}
+
+.review:before {
+  color: red;
+  content: "COMMENT BY REVIEWER: "
+}
+
+.review {
+  color: red;
+}
+
 
 .epi-results, .epi-chart, .epi-population, .epi-parameters {
   height: 230px;

@@ -24,14 +24,12 @@ function makeTOCTable(selectors, useLevels)
 {
   const selector = selectors.join();
   const headings = document.querySelectorAll(selector);
-  console.log(selectors);
   let toc = [];
   let current_level = 0;
   let levelArr = [0];
   for (const heading of headings) {
     if (useLevels) {
       const level = selectors.indexOf(heading.nodeName.toLowerCase());
-      console.log(level);
       if (level == current_level) {
         ++levelArr[levelArr.length - 1];
       } else {
@@ -62,7 +60,6 @@ function makeTOCTable(selectors, useLevels)
 
 function displayTOCTable(tocClass, selector, prefix, useLevels)
 {
-  console.log(selector);
   const elem = document.querySelector(tocClass);
   if (elem) {
     const toc = makeTOCTable(selector, useLevels);

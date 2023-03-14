@@ -273,8 +273,8 @@
             defaultUpdates);
 
     const options = model.options || {};
-    let currentCompartments = {};
 
+    EpiMacro.initializeModel(model);
     options.decimals = options.decimals || (modelType(model) == MICRO ? 0 : 2);
     let resultsTbody = initResults(resultsDiv, options, model.compartments);
     let chart = initChart(chartCanvas, totalIterations, options,
@@ -287,7 +287,6 @@
       compartments = undefined;
     drawPopulation(populationCanvas, model, compartments);
 
-    EpiMacro.initializeModel(model);
     let currentIteration = 0;
     setTimeout(updateLoop, getSpeed(speedInput.value));
 
@@ -351,6 +350,7 @@
     runButtonDiv.append(speedLabel);
     let speed = document.createElement("input");
     speed.type = "range";
+    speed.value = 100;
     //speed.setAttribute("value", model.parameters.interval || "800");
     speed.classList.add('epi-speed');
     speed.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
