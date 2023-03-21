@@ -1,83 +1,81 @@
 /*
- * Compilation instructions using gcc (tested on Linux using gcc version 11.3):
+ * Compilation instructions using gcc (tested on Linux using gcc version
+ * 11.3):
  *
- * Debug version:
- * g++ -Wall -g model_example.cc -o model_example
+ * Debug version: g++ -Wall -g model_example.cc -o model_example
  *
- * Optimized version:
- * g++ -Wall -O3 model_example.cc -o model_example
+ * Optimized version: g++ -Wall -O3 model_example.cc -o model_example
  *
  * If you are using clang, simply replace g++ with clang++.
  *
- * If you are using a slightly older gcc or clang compiler you might need to use
- * the -std=c++17 flag.
+ * If you are using a slightly older gcc or clang compiler you might need to
+ * use the -std=c++17 flag.
  *
- * This is an example of how to implement an agent-based or micro model.  I have
- * kept it simple but not too simple. It needs to be complicated enough to show
- * how a micro model can be much more flexible than a macro one, and able to
- * account for heterogeneous characteristics across a population. For a more
- * complicated model, see
- * https://github.com/nathangeffen/ABM_CTI/blob/master/abm_hetgen.cc.  This is
- * free software published under the GNU General Public License version 3.
+ * This is an example of how to implement an agent-based or micro model.  I
+ * have kept it simple but not too simple. It needs to be complicated enough
+ * to show how a micro model can be much more flexible than a macro one, and
+ * able to account for heterogeneous characteristics across a
+ * population. For a more complicated model, see
+ * https://github.com/nathangeffen/ABM_CTI/blob/master/abm_hetgen.cc.  This
+ * is free software published under the GNU General Public License version
+ * 3.
  */
 
 /*
  * A few notes on style:
  *
- * I have tried to find a balance between keeping the code readable and using
- * C++'s newer very convenient features. I have tried to avoid using
- * constructors and destructors. I have used printf instead of cout because the
- * latter is often way too verbose. I have also used struct instead of class
- * because having to deal with private variables and getters and setters is
- * unnecessary for the pedagogical purposes of this code. Moreover, in my
- * experience, most models are implemented by one or two people. The software
- * engineering benefits of using private variables (and several other C++
- * features) may be immense for large teams, but they simply get in the way of
- * small one/two/three people projects.
+ * I have tried to find a balance between keeping the code readable and
+ * using C++'s newer very convenient features. I have tried to avoid using
+ * constructors and destructors. I have used printf instead of cout because
+ * the latter is often way too verbose. I have also used struct instead of
+ * class because having to deal with private variables and getters and
+ * setters is unnecessary for the pedagogical purposes of this
+ * code. Moreover, in my experience, most models are implemented by one or
+ * two people. The software engineering benefits of using private variables
+ * (and several other C++ features) may be immense for large teams, but they
+ * simply get in the way of small one/two/three people projects.
  *
- * There are a lot of features and improvements intentionally omitted. The
+ * There are a lot of features and improvements intentionally omitted.  The
  * aim of this code is to be an example that modellers can extend. Bells and
- * whistles that make the code more difficult to comprehend have therefore been
- * left out.
+ * whistles that make the code more difficult to comprehend have therefore
+ * been left out.
  *
- * Also, I am not an expert on C++. If there are some things I could have done
- * better, my apologies.
+ * Also, I am not an expert on C++. If there are some things I could do
+ * better, without making the program more difficult to read, please let me
+ * know.
  */
 
 #include <algorithm>
 #include <any>
 #include <chrono>
 #include <cmath>
-#include <iostream>
 #include <functional>
-#include <random>
+#include <iostream>
 #include <map>
+#include <random>
 #include <unordered_map>
 #include <vector>
 
-// Our time step is one day, and We're going to increment agents' age
-// every time step so we'll need this.
+// Our time step is one day, and We're going to increment agents' age every
+// time step so we'll need this.
 #define YEAR 365.25
 #define DAY (1.0 / YEAR)
 
 // These are our random number generators. They are thread_local. What this
 // means is every thread gets its own random number generator with its own
-// seed so that we don't duplicate sequences across threads. The current version
-// isn't multithreaded, so this is simply a future-proof mechanism. You can
-// safely remove thread_local in the current version.
+// seed so that we don't duplicate sequences across threads. The current
+// version isn't multithreaded, so this is simply a future-proof
+// mechanism. You can safely remove thread_local in the current version.
 
 thread_local std::random_device rd{};
-thread_local std::mt19937 gen { rd() };
+thread_local std::mt19937 gen{rd()};
 
-// Every agent will have a sex because the death rates between males and females
-// will be different. Vaccine uptake will also differ.
+// Every agent will have a sex because the death rates between males and
+// females will be different. Vaccine uptake will also differ.
 
-enum Sex {
-  MALE = 0,
-  FEMALE
-};
+enum Sex { MALE = 0, FEMALE };
 
-// These are the states  an agent can be in. In macro models, we'd call these
+// These are the states an agent can be in. In macro models, we'd call these
 // compartments.
 
 enum State {
@@ -90,8 +88,8 @@ enum State {
   COUNT
 };
 
-// This is the agent struct. An array (std::vector actually) of these is kept in
-// the Model struct.
+// This is the agent struct. An array (std::vector actually) of these is
+// kept in the Model struct.
 
 struct Agent {
   int id;
@@ -100,20 +98,19 @@ struct Agent {
   State state;
 };
 
-
-// We have to notify the compiler of the existence of Model here so that it can
-// compile the following typedef statement.
+// We have to notify the compiler of the existence of Model here so that it
+// can compile the following typedef statement.
 struct Model;
 
-// Every event is implemented as a void function that takes a reference to the
-// Model as its parameter.
+// Every event is implemented as a void function that takes a reference to
+// the Model as its parameter.
 typedef std::function<void(Model &)> EventFunc;
 
 // The model engine will loop through arrays of events, executing each one.
 typedef std::vector<EventFunc> EventArray;
 
-// Our parameters are implemented in a hash table (unordered_map), each having a
-// name and an associated value.
+// Our parameters are implemented in a hash table (unordered_map), each
+// having a name and an associated value.
 typedef std::unordered_map<std::string, std::any> Parameters;
 
 // This is the struct at the heart of our program.
@@ -121,8 +118,8 @@ typedef std::unordered_map<std::string, std::any> Parameters;
 struct Model {
   // To avoid using a constructor, the model variables that need to be
   // initialized are kept at the top of the struct, and we simply use an
-  // initializer list to set the class members. But if you intend to make this
-  // code more complicated,  rather implement a constructor.
+  // initializer list to set the class members. But if you intend to make
+  // this code more complicated, rather implement a constructor.
   Parameters parameters;
   EventArray before_events;
   EventArray during_events;
@@ -136,34 +133,38 @@ struct Model {
   // by the function event_tally_stats.
   std::array<int, State::COUNT> state_counter;
 
-  // Track the number of births that have to be given on a particular time_step
+  // Track the number of births that have to be given on a particular
+  // time_step
   double birth_tracker = 0.0;
 
   // Track the number of deaths while infectious.
   int deaths_while_infectious = 0;
 
-  // This is the method that runs our model. It steps through the before, during
-  // and after events respectively, passing this model as a parameter to each
-  // event function, so that the event function can update the model.
+  // This is the method that runs our model. It steps through the before,
+  // during and after events respectively, passing this model as a parameter
+  // to each event function, so that the event function can update the
+  // model.
   void run() {
 
-    for (auto & event: before_events) event(*this);
+    for (auto &event : before_events)
+      event(*this);
     int time_steps = std::any_cast<int>(parameters["time_steps"]);
     for (int i = 0; i < time_steps; i++) {
       ++current_time_step;
-      for (auto & event: during_events)
+      for (auto &event : during_events)
         event(*this);
     }
-    for (auto & event: after_events) event(*this);
+    for (auto &event : after_events)
+      event(*this);
   };
 };
 
 // This event creates and initializes the agents.
-void event_initialize_agents(Model& model)
-{
-  // This determines the number of susceptible agents at the beginning of the
-  // simulation.
-  int num_susceptible = std::any_cast<int>(model.parameters["num_susceptible"]);
+void event_initialize_agents(Model &model) {
+  // This determines the number of susceptible agents at the beginning of
+  // the simulation.
+  int num_susceptible =
+      std::any_cast<int>(model.parameters["num_susceptible"]);
   // This determines the number of exposed agents at the beginning of the
   // simulation.
   int num_exposed = std::any_cast<int>(model.parameters["num_exposed"]);
@@ -171,38 +172,37 @@ void event_initialize_agents(Model& model)
   // Used to determine the sex of agents.
   std::uniform_int_distribution<int> sex_dist(0, 1);
 
-  // The proportion of males and females for each age up to 90 are
-  // drawn from the following distribution. The data is from the Thembisa model.
+  // The proportion of males and females for each age up to 90 are drawn
+  // from the following distribution. The data is from the Thembisa model.
   // An improved version of this program would read this in from a file.
-  std::discrete_distribution<int> age_dist[2] {
-    {
-      556199, 550200, 554289, 554555, 552631, 550195, 547156, 560931, 563200,
-        563224, 559176, 553679, 546729, 543589, 549932, 546043, 531869, 516847,
-        502187, 469603, 457234, 458782, 458195, 466585, 466894, 478880, 499952,
-        494485, 499192, 503553, 509185, 514547, 518779, 522765, 524642, 525344,
-        524028, 521013, 504604, 490965, 470985, 446012, 418694, 392725, 370384,
-        353289, 340052, 328700, 316930, 304013, 289265, 273724, 258566, 245052,
-        233457, 224203, 216432, 208929, 200901, 192589, 183617, 174159, 164848,
-        155780, 146472, 136949, 127381, 117876, 108654, 99880, 91671, 83926,
-        76578, 69446, 62413, 55426, 48685, 42274, 36528, 31740, 27981, 24914,
-        22216, 19608, 16967, 14268, 11689, 9404, 7509, 5910, 17220
-        },
-      {
-        546583, 540070, 542761, 543436, 541679, 539135, 536397, 550108, 552589,
-          552977, 549468, 544628, 538484, 536059, 542961, 539811, 526372,
-          511457, 497112, 465517, 453715, 454499, 454057, 462111, 462002,
-          473948, 495224, 490080, 496446, 501890, 507712, 512689, 516280,
-          519075, 519740, 520070, 519042, 514800, 498903, 485707, 466135,
-          441880, 416150, 392858, 374232, 361659, 353606, 347796, 341605,
-          333841, 323561, 311601, 299187, 288039, 278985, 272570, 267692,
-          262837, 256621, 248861, 239132, 228056, 216780, 205881, 195007,
-          184279, 173677, 163111, 152615, 142337, 132336, 122614, 113283,
-          104226, 95242, 86302, 77627, 69138, 61368, 54957, 50070, 46156,
-          42632, 38899, 34836, 30361, 25828, 21628, 17972, 14930, 51609
-          }
-  };
-  // The above sets the age in years as an integer value. To get the fraction of
-  // the year, we add on a uniform random number between 0 and 1.
+  std::discrete_distribution<int> age_dist[2]{
+      {556199, 550200, 554289, 554555, 552631, 550195, 547156, 560931,
+       563200, 563224, 559176, 553679, 546729, 543589, 549932, 546043,
+       531869, 516847, 502187, 469603, 457234, 458782, 458195, 466585,
+       466894, 478880, 499952, 494485, 499192, 503553, 509185, 514547,
+       518779, 522765, 524642, 525344, 524028, 521013, 504604, 490965,
+       470985, 446012, 418694, 392725, 370384, 353289, 340052, 328700,
+       316930, 304013, 289265, 273724, 258566, 245052, 233457, 224203,
+       216432, 208929, 200901, 192589, 183617, 174159, 164848, 155780,
+       146472, 136949, 127381, 117876, 108654, 99880,  91671,  83926,
+       76578,  69446,  62413,  55426,  48685,  42274,  36528,  31740,
+       27981,  24914,  22216,  19608,  16967,  14268,  11689,  9404,
+       7509,   5910,   17220},
+      {546583, 540070, 542761, 543436, 541679, 539135, 536397, 550108,
+       552589, 552977, 549468, 544628, 538484, 536059, 542961, 539811,
+       526372, 511457, 497112, 465517, 453715, 454499, 454057, 462111,
+       462002, 473948, 495224, 490080, 496446, 501890, 507712, 512689,
+       516280, 519075, 519740, 520070, 519042, 514800, 498903, 485707,
+       466135, 441880, 416150, 392858, 374232, 361659, 353606, 347796,
+       341605, 333841, 323561, 311601, 299187, 288039, 278985, 272570,
+       267692, 262837, 256621, 248861, 239132, 228056, 216780, 205881,
+       195007, 184279, 173677, 163111, 152615, 142337, 132336, 122614,
+       113283, 104226, 95242,  86302,  77627,  69138,  61368,  54957,
+       50070,  46156,  42632,  38899,  34836,  30361,  25828,  21628,
+       17972,  14930,  51609}};
+  // The above sets the age in years as an integer value. To get the
+  // fraction of the year, we add on a uniform random number between 0
+  // and 1.
   std::uniform_real_distribution<double> year_dist(0.0, 1.0);
 
   // Now we loop through the number of susceptible and exposed, creating an
@@ -212,41 +212,39 @@ void event_initialize_agents(Model& model)
     State state = i < num_susceptible ? SUSCEPTIBLE : EXPOSED;
     double age = year_dist(gen) + age_dist[sex](gen);
     // Because don't use constructors, the agent's characteristics are set
-    // in the order they've been declared above in the Agent struct. They are
-    // id, sex, age and state.
+    // in the order they've been declared above in the Agent struct. They
+    // are id, sex, age and state.
     model.agents.push_back({i, sex, age, state});
   }
 }
 
-// We'll need to randomize the order of the agents at the beginning of each time
-// step to avoid bias.
-void event_shuffle_agents(Model & model)
-{
+// We'll need to randomize the order of the agents at the beginning of each
+// time step to avoid bias.
+void event_shuffle_agents(Model &model) {
   shuffle(model.agents.begin(), model.agents.end(), gen);
 }
 
 // This event increments the living agents' ages by a day.
-void event_increment_age(Model &model)
-{
-  for (auto &agent: model.agents)
-    if (agent.state != DEAD) agent.age += DAY;
+void event_increment_age(Model &model) {
+  for (auto &agent : model.agents)
+    if (agent.state != DEAD)
+      agent.age += DAY;
 }
 
-/* This is our event infection algorithm. It works like this: Each susceptible
- * agent, A, is randomly placed in contact with n other contacts, where n is a
- * randomly drawn integer from a normal distribution with mean num_contacts_avg
- * and standard deviation num_contacs_stdev. Then each infectious agent, B, that
- * A comes into contact with, will infect A with probability
- * risk_exposure_per_contact.
+/* This is our event infection algorithm. It works like this: Each
+ * susceptible agent, A, is randomly placed in contact with n other
+ * contacts, where n is a randomly drawn integer from a normal distribution
+ * with mean num_contacts_avg and standard deviation num_contacs_stdev. Then
+ * each infectious agent, B, that A comes into contact with, will infect A
+ * with probability risk_exposure_per_contact.
  */
-void event_infect(Model &model)
-{
+void event_infect(Model &model) {
   const double num_contacts =
-    std::any_cast<double>(model.parameters["num_contacts_avg"]);
+      std::any_cast<double>(model.parameters["num_contacts_avg"]);
   const double stdev =
-    std::any_cast<double>(model.parameters["num_contacts_stdev"]);
+      std::any_cast<double>(model.parameters["num_contacts_stdev"]);
   const double risk_exposure =
-    std::any_cast<double>(model.parameters["risk_exposure_per_contact"]);
+      std::any_cast<double>(model.parameters["risk_exposure_per_contact"]);
   std::normal_distribution<> num_contacts_dist(num_contacts, stdev);
   // We need the indices of all the living agents. They are the potential
   // contacts.
@@ -256,28 +254,29 @@ void event_infect(Model &model)
       alive_indices.push_back(i);
 
   // We'll need this to randomly find contacts for each susceptible agent.
-  std::uniform_int_distribution<size_t>
-    contact_dist(0, alive_indices.size() - 1);
+  std::uniform_int_distribution<size_t> contact_dist(
+      0, alive_indices.size() - 1);
   std::uniform_real_distribution<> exposure_dist(0, 1);
 
   // We only going to iterate over living agents
   for (auto i : alive_indices) {
     if (model.agents[i].state == SUSCEPTIBLE) {
       // This seemingly complicated line of code chooses a random number of
-      // contacts and makes sure that it's a least 0 and at most the number of
-      // elements in the alive_indices array.
+      // contacts and makes sure that it's a least 0 and at most the number
+      // of elements in the alive_indices array.
       int num_contacts =
-        std::max( (size_t) 0,
-                  (std::min(alive_indices.size(),
-                            (size_t) std::round(num_contacts_dist(gen)))));
-      // Susceptible agents are potentially exposed to num_contact agents. To
-      // keep things simple, the algorithm can select the same agent more than
-      // once as a contact and the agent itself might be its own contact.  But
-      // for our purposes this shortcoming isn't important; it only reduces the
-      // number of actual contacts.
+          std::max((size_t)0,
+                   (std::min(alive_indices.size(),
+                             (size_t)std::round(num_contacts_dist(gen)))));
+      // Susceptible agents are potentially exposed to num_contact agents.
+      // To keep things simple, the algorithm can select the same agent more
+      // than once as a contact and the agent itself might be its own
+      // contact.  But for our purposes this shortcoming isn't important; it
+      // only reduces the number of actual contacts.
       for (int j = 0; j < num_contacts; j++) {
         size_t contact_index = contact_dist(gen);
-        if (model.agents[alive_indices[contact_index]].state == INFECTIOUS) {
+        if (model.agents[alive_indices[contact_index]].state ==
+            INFECTIOUS) {
           if (exposure_dist(gen) < risk_exposure) {
             model.agents[i].state = EXPOSED;
             break;
@@ -288,23 +287,20 @@ void event_infect(Model &model)
   }
 }
 
-
 // This is used by events that transition an agent from one state to another
 // with given probability.
-void
-change_agent_states(Model &model, State from_state, State to_state,
-                    const char *parameter)
-{
+void change_agent_states(Model &model, State from_state, State to_state,
+                         const char *parameter) {
   std::uniform_real_distribution<> dist(0, 1);
   double risk;
   try {
     risk = std::any_cast<double>(model.parameters[parameter]);
-  } catch (const std::exception& ex) {
-    fprintf(stderr, "Exception at line %d with parameter %s\n",
-            __LINE__, parameter);
+  } catch (const std::exception &ex) {
+    fprintf(stderr, "Exception at line %d with parameter %s\n", __LINE__,
+            parameter);
     exit(1);
   }
-  for (auto & agent: model.agents)
+  for (auto &agent : model.agents)
     if (agent.state == from_state)
       if (dist(gen) < risk)
         agent.state = to_state;
@@ -312,146 +308,138 @@ change_agent_states(Model &model, State from_state, State to_state,
 
 // This moves agents in the exposed state to the infectious state with
 // probabilty risk_exposed_infectious.
-void event_exposed_to_infectious(Model &model)
-{
-  change_agent_states(model, EXPOSED, INFECTIOUS, "risk_exposed_infectious");
+void event_exposed_to_infectious(Model &model) {
+  change_agent_states(model, EXPOSED, INFECTIOUS,
+                      "risk_exposed_infectious");
 }
 
 // This moves agents in the infectious state to the recovered state with
 // probabilty risk_infectious_exposed.
-void event_infectious_to_recovered(Model &model)
-{
-  change_agent_states(model, INFECTIOUS, RECOVERED, "risk_infectious_recovered");
+void event_infectious_to_recovered(Model &model) {
+  change_agent_states(model, INFECTIOUS, RECOVERED,
+                      "risk_infectious_recovered");
 }
 
 // This moves agents in the recovered state to the susceptible state with
 // probabilty risk_recovered_infectious.
-void event_recovered_to_susceptible(Model &model)
-{
+void event_recovered_to_susceptible(Model &model) {
   change_agent_states(model, RECOVERED, SUSCEPTIBLE,
                       "risk_recovered_susceptible");
 }
 
 // This moves agents in the susceptible state to the vaccinated state with
 // probabilty risk_susceptible_vaccinated.
-void event_susceptible_to_vaccinated(Model &model)
-{
+void event_susceptible_to_vaccinated(Model &model) {
   change_agent_states(model, SUSCEPTIBLE, VACCINATED,
                       "risk_susceptible_vaccinated");
 }
 
 // This moves agents in the vaccinated state to the susceptible state with
 // probabilty risk_vaccinated_susceptible.
-void event_vaccinated_to_susceptible(Model &model)
-{
+void event_vaccinated_to_susceptible(Model &model) {
   change_agent_states(model, VACCINATED, SUSCEPTIBLE,
                       "risk_vaccinated_susceptible");
 }
 
 /* This event adds new agents with age 0 to the population based on given
- * birth_rate. If the default time_step is small, say a day, and the population
- * is also small, the number of births per day may be less than zero but this is
- * a discrete model and in that case there will never be births. So on each time
- * step we accumulate the number of births until greater than one (and then add
- * one or more agents to the population), then subtract the number of births
- * given from the accumulated number (so that a fraction between 0 and 1
- * remains).
-*/
-void event_births(Model &model)
-{
+ * birth_rate. If the default time_step is small, say a day, and the
+ * population is also small, the number of births per day may be less than
+ * zero but this is a discrete model and in that case there will never be
+ * births. So on each time step we accumulate the number of births until
+ * greater than one (and then add one or more agents to the population),
+ * then subtract the number of births given from the accumulated number (so
+ * that a fraction between 0 and 1 remains).
+ */
+void event_births(Model &model) {
   std::uniform_int_distribution<int> sex_dist(0, 1);
-  int id = (int) model.agents.size();
+  int id = (int)model.agents.size();
   double birth_rate = std::any_cast<double>(model.parameters["birth_rate"]);
-  model.birth_tracker += birth_rate *
-    (model.agents.size() -  model.state_counter[DEAD]);
-  for (int i = 0; i < (int) model.birth_tracker; i++) {
-    model.agents.push_back({id, sex_dist(gen) ? FEMALE : MALE,
-        0.0, SUSCEPTIBLE});
+  model.birth_tracker +=
+      birth_rate * (model.agents.size() - model.state_counter[DEAD]);
+  for (int i = 0; i < (int)model.birth_tracker; i++) {
+    model.agents.push_back(
+        {id, sex_dist(gen) ? FEMALE : MALE, 0.0, SUSCEPTIBLE});
     ++id;
   }
   if (model.birth_tracker > 0)
     model.birth_tracker -= std::floor(model.birth_tracker);
 }
 
-
 /*
- * This event moves agents into the death stage, after which they should not be
- * updated by any other events. An alternative way of doing this would be to
- * have a second vector that stores dead agents. This would have the advantage
- * the other events not continuously traversing over dead agents. Then you could
- * efficiently move a dead agent out of the vector of living agents by swapping
- * the dead agent with the living agent at the end of the vector, then copying
- * it into the vector of dead agents, then reducing the size of the vector of
- * living agents by one. But we've gone for a simpler solution here, which for
- * our purposes is efficient enough.
-*/
-void event_death(Model &model)
-{
-  // These death rates per sex and age (up to 90) are taken from the Thembisa
-  // model. An improvement would be to read this in from a file.
-  static const std::vector< std::vector<double> > death_risk {
-    {
-      0.000076520889,0.000017192652,0.000007240219,0.000005732737,
-        0.000004441361,0.000003385837,0.000002569825,0.000001990536,
-        0.000001632355,0.000001482819,0.000001580916,0.000001897548,
-        0.000002208913,0.000002665925,0.000003273968,0.000003996761,
-        0.000004820406,0.000005777845,0.000006868745,0.000008052928,
-        0.000009304271,0.000010546779,0.000011701298,0.000012734227,
-        0.000013650988,0.000014490752,0.000015306001,0.000016174900,
-        0.000017115953,0.000018095632,0.000019070014,0.000019976372,
-        0.000020767143,0.000021415938,0.000021956049,0.000022480765,
-        0.000023107817,0.000023928708,0.000024999344,0.000026292152,
-        0.000027738385,0.000029284192,0.000030868925,0.000032474390,
-        0.000034122993,0.000035866000,0.000037772632,0.000039906771,
-        0.000042305628,0.000044983861,0.000047950067,0.000051204119,
-        0.000054734790,0.000058521982,0.000062525288,0.000066680159,
-        0.000070914398,0.000075190600,0.000079522922,0.000083954371,
-        0.000088526342,0.000093290522,0.000098309032,0.000103656921,
-        0.000109436436,0.000115770302,0.000122776669,0.000130516418,
-        0.000138964572,0.000148092754,0.000157955894,0.000168657991,
-        0.000180337069
-        },
+ * This event moves agents into the death stage, after which they should not
+ * be updated by any other events. An alternative way of doing this would be
+ * to have a second vector that stores dead agents. This would have the
+ * advantage the other events not continuously traversing over dead agents.
+ * Then you could efficiently move a dead agent out of the vector of living
+ * agents by swapping the dead agent with the living agent at the end of the
+ * vector, then copying it into the vector of dead agents, then reducing the
+ * size of the vector of living agents by one. But we've gone for a simpler
+ * solution here, which for our purposes is efficient enough.
+ */
+void event_death(Model &model) {
+  // These death rates per sex and age (up to 90) are taken from the
+  // Thembisa model. An improvement would be to read this in from a file.
+  static const std::vector<std::vector<double>> death_risk{
+      {0.000076520889, 0.000017192652, 0.000007240219, 0.000005732737,
+       0.000004441361, 0.000003385837, 0.000002569825, 0.000001990536,
+       0.000001632355, 0.000001482819, 0.000001580916, 0.000001897548,
+       0.000002208913, 0.000002665925, 0.000003273968, 0.000003996761,
+       0.000004820406, 0.000005777845, 0.000006868745, 0.000008052928,
+       0.000009304271, 0.000010546779, 0.000011701298, 0.000012734227,
+       0.000013650988, 0.000014490752, 0.000015306001, 0.000016174900,
+       0.000017115953, 0.000018095632, 0.000019070014, 0.000019976372,
+       0.000020767143, 0.000021415938, 0.000021956049, 0.000022480765,
+       0.000023107817, 0.000023928708, 0.000024999344, 0.000026292152,
+       0.000027738385, 0.000029284192, 0.000030868925, 0.000032474390,
+       0.000034122993, 0.000035866000, 0.000037772632, 0.000039906771,
+       0.000042305628, 0.000044983861, 0.000047950067, 0.000051204119,
+       0.000054734790, 0.000058521982, 0.000062525288, 0.000066680159,
+       0.000070914398, 0.000075190600, 0.000079522922, 0.000083954371,
+       0.000088526342, 0.000093290522, 0.000098309032, 0.000103656921,
+       0.000109436436, 0.000115770302, 0.000122776669, 0.000130516418,
+       0.000138964572, 0.000148092754, 0.000157955894, 0.000168657991,
+       0.000180337069},
       {
-        0.000084085544,0.000019234231,0.000008680390,0.000006692589,
-          0.000005033958,0.000003712643,0.000002730538,0.000002065006,
-          0.000001679530,0.000001535762,0.000001592729,0.000001838024,
-          0.000002061974,0.000002351475,0.000002705738,0.000003106961,
-          0.000003547194,0.000004091870,0.000004790889,0.000005609952,
-          0.000006501563,0.000007371587,0.000008127697,0.000008734919,
-          0.000009208877,0.000009592531,0.000009941267,0.000010321245,
-          0.000010761386,0.000011251573,0.000011774332,0.000012300970,
-          0.000012807805,0.000013283732,0.000013750722,0.000014257017,
-          0.000014854579,0.000015589684,0.000016487504,0.000017539826,
-          0.000018716045,0.000019980015,0.000021295672,0.000022643855,
-          0.000024027336,0.000025468550,0.000027002242,0.000028667599,
-          0.000030499362,0.000032510646,0.000034683482,0.000036983990,
-          0.000039380543,0.000041858866,0.000044438940,0.000047186143,
-          0.000050185995,0.000053508553,0.000057185355,0.000061208012,
-          0.000065538377,0.000070127481,0.000074960964,0.000080083792,
-          0.000085535735,0.000091291510,0.000097296074,0.000103503214,
-          0.000109895484,0.000116577835,0.000123831829,0.000132015621,
+          0.000084085544, 0.000019234231, 0.000008680390, 0.000006692589,
+          0.000005033958, 0.000003712643, 0.000002730538, 0.000002065006,
+          0.000001679530, 0.000001535762, 0.000001592729, 0.000001838024,
+          0.000002061974, 0.000002351475, 0.000002705738, 0.000003106961,
+          0.000003547194, 0.000004091870, 0.000004790889, 0.000005609952,
+          0.000006501563, 0.000007371587, 0.000008127697, 0.000008734919,
+          0.000009208877, 0.000009592531, 0.000009941267, 0.000010321245,
+          0.000010761386, 0.000011251573, 0.000011774332, 0.000012300970,
+          0.000012807805, 0.000013283732, 0.000013750722, 0.000014257017,
+          0.000014854579, 0.000015589684, 0.000016487504, 0.000017539826,
+          0.000018716045, 0.000019980015, 0.000021295672, 0.000022643855,
+          0.000024027336, 0.000025468550, 0.000027002242, 0.000028667599,
+          0.000030499362, 0.000032510646, 0.000034683482, 0.000036983990,
+          0.000039380543, 0.000041858866, 0.000044438940, 0.000047186143,
+          0.000050185995, 0.000053508553, 0.000057185355, 0.000061208012,
+          0.000065538377, 0.000070127481, 0.000074960964, 0.000080083792,
+          0.000085535735, 0.000091291510, 0.000097296074, 0.000103503214,
+          0.000109895484, 0.000116577835, 0.000123831829, 0.000132015621,
           0.000141420706,
-      }
-  };
+      }};
   std::uniform_real_distribution<double> death_dist(0, 1);
 
-  for (auto & agent: model.agents) {
+  for (auto &agent : model.agents) {
     if (agent.state != DEAD) {
-      int age_index = (int) agent.age;
+      int age_index = (int)agent.age;
       // For agents who are older than the maximum age catered for in our
       // mortality risk array, we simply use the last entry in the array.
-      if (age_index >= (int) death_risk[agent.sex].size())
+      if (age_index >= (int)death_risk[agent.sex].size())
         age_index = death_risk[agent.sex].size() - 1;
       double risk = death_risk[agent.sex][age_index];
-      // If an agent is in the infectious stage we multiply their mortality by
-      // infectious_mortality_factor. A more sophisticated algorithm might have
-      // a separate set of mortality risks for infectious agents.
+      // If an agent is in the infectious stage we multiply their mortality
+      // by infectious_mortality_factor. A more sophisticated algorithm
+      // might have a separate set of mortality risks for infectious agents.
       if (agent.state == INFECTIOUS)
-        risk *= std::any_cast<double>(model.parameters
-                                      ["infectious_mortality_factor"]);
+        risk *= std::any_cast<double>(
+            model.parameters["infectious_mortality_factor"]);
       if (death_dist(gen) < risk) {
-        // Keep track of deaths of agents who are infected so that the differing
-        // mortality rates of infected and uninfected agents can be analsysed.
+        // Keep track of deaths of agents who are infected so that the
+        // differing mortality rates of infected and uninfected agents can
+        // be analsysed.
         if (agent.state == INFECTIOUS)
           ++model.deaths_while_infectious;
         agent.state = DEAD;
@@ -460,46 +448,39 @@ void event_death(Model &model)
   }
 }
 
-// Sorts the agents back into order by id. This is simply so that when we print
-// out the agents at the end, they are all in order instead of shuffled. Not
-// essential, because we could do this easily in our environment in which we
-// analyse the data (R, Python, a spreadsheet) but since this is only
-// executed once, it is quick.
-void event_sort_agents(Model & model)
-{
+// Sorts the agents back into order by id. This is simply so that when we
+// print out the agents at the end, they are all in order instead of
+// shuffled. Not essential, because we could do this easily in our
+// environment in which we analyse the data (R, Python, a spreadsheet) but
+// since this is only executed once, it is quick.
+void event_sort_agents(Model &model) {
 
   std::sort(model.agents.begin(), model.agents.end(),
-            [](Agent &a, Agent &b) {
-              return a.id < b.id;
-            });
+            [](Agent &a, Agent &b) { return a.id < b.id; });
 }
 
 // Event to count the number of agents in each state.
-void event_tally_states(Model & model)
-{
+void event_tally_states(Model &model) {
   model.state_counter.fill(0);
-  for (auto & agent: model.agents)
+  for (auto &agent : model.agents)
     ++model.state_counter[agent.state];
 }
 
-// Event to print a CSV file header. In this simple implementation the agents
-// and demographic outputs are all printed to standard output.
-// An improvement would have them print to their own file.
-void event_print_stats_header(Model & _)
-{
-  printf("#,S,E,I,R,V,D,D_i\n");
-}
-
+// Event to print a CSV file header. In this simple implementation the
+// agents and demographic outputs are all printed to standard output.  An
+// improvement would have them print to their own file.
+void event_print_stats_header(Model &_) { printf("#,S,E,I,R,V,D,D_i\n"); }
 
 // Event to print the number of agents in each state as well as some other
-// useful demographic data, such as the number of infectious agents who died.
-void event_print_stats(Model & model)
-{
-  // The output_frequency parameter determines how frequently this event is run.
-  // If we want it to run on every time step set to 1, but this is likely
-  // unnecessary and will slow down execution.
+// useful demographic data, such as the number of infectious agents who
+// died.
+void event_print_stats(Model &model) {
+  // The output_frequency parameter determines how frequently this event is
+  // run. If we want it to run on every time step set to 1, but this is
+  // likely unnecessary and will slow down execution.
   if (model.current_time_step %
-      std::any_cast<int>(model.parameters["output_frequency"]) == 0) {
+          std::any_cast<int>(model.parameters["output_frequency"]) ==
+      0) {
     printf("%d,", model.current_time_step);
     for (int i = 0; i < State::COUNT; i++)
       printf("%d,", model.state_counter[i]);
@@ -507,64 +488,57 @@ void event_print_stats(Model & model)
   }
 }
 
-
-// Event to print all the agents. We typically only execute this once before and
-// after the model has run. But for debugging or other purposes it may be useful
-// to do so in the middle of a simulation.
-void event_print_agents(Model & model)
-{
-  for (auto & agent: model.agents) {
-    printf("Agent: %d. Sex: %s. Age %.2f. State: %d.\n",
-           agent.id, (agent.sex == MALE) ? "male" : "female", agent.age,
-           agent.state);
+// Event to print all the agents. We typically only execute this once before
+// and after the model has run. But for debugging or other purposes it may
+// be useful to do so in the middle of a simulation.
+void event_print_agents(Model &model) {
+  for (auto &agent : model.agents) {
+    printf("Agent: %d. Sex: %s. Age %.2f. State: %d.\n", agent.id,
+           (agent.sex == MALE) ? "male" : "female", agent.age, agent.state);
   }
 }
 
-int main()
-{
-  Model model {
-    // Parameters
-    {
-      // Run for 20 years
-      {"time_steps", (int) (20 * 365.25) },
-      // Population will be 10,000 with 10 initially exposed agents.
-      {"num_susceptible", 9990},
-      {"num_exposed", 10},
-      // Mean number of contacts per agent per day. You could create even
-      // more heterogeneity by making this specific to each agent.
-      {"num_contacts_avg", 20.0},
-      // Standard deviation of number of contacts per agent per day.
-      {"num_contacts_stdev", 10.0},
-      // Risk of moving from susceptible to exposure state per contact.
-      {"risk_exposure_per_contact", 0.005},
-      // Increased risk of an infected agent dying.
-      {"infectious_mortality_factor", 8.0},
-      // Risks of moving from one state to another per time step (which is one
-      // day).
-      {"risk_exposed_infectious", 0.1},
-      {"risk_infectious_recovered", 0.005},
-      {"risk_recovered_susceptible", 0.0001},
-      {"risk_susceptible_vaccinated", 0.0003},
-      {"risk_vaccinated_susceptible", 0.0001},
-      // Number of new agents added to the model daily.
-      {"birth_rate", 0.000055},
-      // How often, in time steps, to print the demographic outputs.
-      {"output_frequency", 20}
-    },
-    // Before events
-    {event_initialize_agents, event_print_agents,
-     event_tally_states, event_print_stats_header, event_print_stats},
-    // During events
-    {event_shuffle_agents, event_increment_age, event_infect,
-     event_exposed_to_infectious, event_infectious_to_recovered,
-     event_recovered_to_susceptible, event_susceptible_to_vaccinated,
-     event_vaccinated_to_susceptible, event_births, event_death,
-     event_tally_states, event_print_stats},
-    // After events
-    {event_tally_states, event_print_stats, event_sort_agents,
-     event_print_agents
-    }
-  };
+int main() {
+  Model model{
+      // Parameters
+      {// Run for 20 years
+       {"time_steps", (int)(20 * 365.25)},
+       // Population will be 10,000 with 10 initially exposed agents.
+       {"num_susceptible", 9990},
+       {"num_exposed", 10},
+       // Mean number of contacts per agent per day. You could create even
+       // more heterogeneity by making this specific to each agent.
+       {"num_contacts_avg", 20.0},
+       // Standard deviation of number of contacts per agent per day.
+       {"num_contacts_stdev", 10.0},
+       // Risk of moving from susceptible to exposure state per contact.
+       {"risk_exposure_per_contact", 0.005},
+       // Increased risk of an infected agent dying.
+       {"infectious_mortality_factor", 8.0},
+       // Risks of moving from one state to another per time step (which is
+       // one
+       // day).
+       {"risk_exposed_infectious", 0.1},
+       {"risk_infectious_recovered", 0.005},
+       {"risk_recovered_susceptible", 0.0001},
+       {"risk_susceptible_vaccinated", 0.0003},
+       {"risk_vaccinated_susceptible", 0.0001},
+       // Number of new agents added to the model daily.
+       {"birth_rate", 0.000055},
+       // How often, in time steps, to print the demographic outputs.
+       {"output_frequency", 20}},
+      // Before events
+      {event_initialize_agents, event_print_agents, event_tally_states,
+       event_print_stats_header, event_print_stats},
+      // During events
+      {event_shuffle_agents, event_increment_age, event_infect,
+       event_exposed_to_infectious, event_infectious_to_recovered,
+       event_recovered_to_susceptible, event_susceptible_to_vaccinated,
+       event_vaccinated_to_susceptible, event_births, event_death,
+       event_tally_states, event_print_stats},
+      // After events
+      {event_tally_states, event_print_stats, event_sort_agents,
+       event_print_agents}};
 
   model.run();
   return 0;

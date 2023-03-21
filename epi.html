@@ -1000,82 +1000,6 @@
             how changing these changes the models' outputs.
         </p>
 
-        <aside>
-            <button type="button">Micro model implementation</button>
-            <div>
-                <h5>Matching the difference equation macro models</h5>
-                <p>
-                    I've tried to implement the micro models to match as closely
-                    as possible the macro models that use difference equations.
-                    The code makes certain compromises to do this. For example,
-                    $\lambda_t$ is calculated using the number of infections at
-                    the end of the previous time step, not the current number of
-                    infections which may have changed as the infection event
-                    iterates over agents. Other than for the purpose of trying
-                    to match the models as closely as possible, I see no reason
-                    to do this.
-                </p>
-                <p>
-                    Moreover, while thinking in terms of compartments make sense
-                    for macro models, for micro or agent based models, it's more
-                    natural to think of agents having states, rather than being
-                    in compartments. In a macro model if you wish to include
-                    additional characteristics such as sex and age group, you
-                    would need to replicate all the compartments for each sex
-                    and age group. But in a micro model, without compartments,
-                    an agent could have a sex, age and state. A state may even
-                    be partial (e.g. an agent transitioning from an asymptomatic
-                    to symptomatic phase &mdash; with different levels of
-                    infectiousness or different subsequent behaviours &mdash;
-                    may do so gradually), or an agent may be in multiple states.
-                    As models increase in complexity, macro models become
-                    extremely difficult to implement, while the increase in
-                    programming complexity in micro models is much slower.</p>
-                <p>
-                    Nevertheless in the micro models here I continue to talk of
-                    agents being in compartments rather than states, simply to
-                    keep the nomenclature consistent with the macro models.
-                </p>
-                <h5>What programming language to use for micro models?</h5>
-                <p>
-                    There is far more debate on the Internet about which are the
-                    best programming languages than the topic deserves. In fact,
-                    there are many good programming languages and all of them
-                    are flawed. Write your first simulations in a programming
-                    language you feel comfortable with. If it's a prototype it
-                    doesn't matter if it's Python, R, Ruby, Basic or whatever
-                    your favourite algebra for expressing algorithms is.
-                </p>
-                <p>
-                    If you need your simulation to execute many thousands of
-                    times and you are finding it too slow, changing to a
-                    compiled language like C, C++, Go, Fortran, Rust, Java or
-                    even a lisp-type language, may be necessary. But often the
-                    cause of execution being too slow isn't the language but an
-                    algorithm you might be using. Perhaps consider optimising or
-                    improving an algorithm before going to the effort of
-                    learning a new programming language.
-                </p>
-                <p>For what it's worth I tend to implement my micro models in
-                    Python when I'm just prototyping and then C or C++ if I
-                    truly need a lot more speed. But the models on this web page
-                    are implemented in Javascript, because that is the main
-                    programming language that the most popular web browsers
-                    support.
-                </p>
-                <h5>C++ example</h5>
-                <iframe id="cc-micro-model-example"
-                        title="C++ micro model example"
-                        width="100%"
-                        height="500px"
-                        src="cc-example.html">
-                </iframe>
-
-            </div>
-        </aside>
-
-
-
         <h2><em><u>R</u><sub>0</sub></em>: Its uses and limits</h2>
 
         <p>
@@ -2246,9 +2170,9 @@
                     water pump on Broad Street in Soho.
                 </p>
                 <figure>
-                    <img src="512px-Snow-cholera-map-1.jpg"
+                    <img src="512px-Snow-cholera-map-1.webp"
                          alt="Map by John Snow showing household deaths">
-                    <img src="broadblock_revised.jpg" alt="Zoomed in portion of John Snow's corrected map">
+                    <img src="broadblock_revised.webp" alt="Zoomed in portion of John Snow's corrected map">
                     <figcaption>
                         Top: John Snow's map.<br>
                         Bottom: Zoomed in part of the
@@ -2351,10 +2275,131 @@
 
         <h2>Calibration ##TODO</h2>
 
+        <aside>
+            <button type="button">Micro model implementation details</button>
+            <div>
+                <h5>Matching the difference equation macro models</h5>
+                <p>
+                    I've tried to implement the micro models to match as closely
+                    as possible the macro models that use difference equations.
+                    The code makes certain compromises to do this. For example,
+                    $\lambda_t$ is calculated using the number of infections at
+                    the end of the previous time step, not the current number of
+                    infections which may have changed as the infection event
+                    iterates over agents. Other than for the purpose of trying
+                    to match the models as closely as possible, I see no reason
+                    to do this.
+                </p>
+                <p>
+                    Moreover, while thinking in terms of compartments make
+                    sense for macro models, for micro or agent based models,
+                    it's more natural to think of agents having states,
+                    rather than being in compartments. In a macro model if
+                    you wish to include additional characteristics such as
+                    sex and age group, you would need to replicate all the
+                    compartments for each sex and age group. But in a micro
+                    model, without compartments, an agent could have a sex,
+                    age and state. A state may even be partial (e.g. an
+                    agent transitioning from an asymptomatic to symptomatic
+                    phase &mdash; with different levels of infectiousness or
+                    different subsequent behaviours &mdash; may do so
+                    gradually), or an agent may be in multiple states.  As
+                    models increase in complexity, macro models become
+                    extremely difficult to implement, while the increase in
+                    programming complexity in micro models is much slower.</p>
+                <p>
+                    Nevertheless in the micro models here I continue to talk
+                    of agents being in compartments rather than states,
+                    simply to keep the nomenclature consistent with the
+                    macro models.
+                </p>
+                <h5>What programming language to use for micro models?</h5>
+                <p>
+                    There is far more debate on the Internet about which are the
+                    best programming languages than the topic deserves. In fact,
+                    there are many good programming languages and all of them
+                    are flawed. Write your first simulations in a programming
+                    language you feel comfortable with. If it's a prototype it
+                    doesn't matter if it's Python, R, Ruby, Basic or whatever
+                    your favourite algebra for expressing algorithms is.
+                </p>
+                <p>
+                    If you need your simulation to execute many thousands of
+                    times and you are finding it too slow, changing to a
+                    compiled language like C, C++, Go, Fortran, Rust, Java
+                    or even a lisp-type language, may be necessary. But
+                    often the cause of execution being too slow isn't the
+                    language but an algorithm you might be using. Perhaps
+                    consider optimising or improving an algorithm before
+                    going to the effort of learning a new programming
+                    language.
+                </p>
+                <p>For what it's worth I tend to implement my micro models
+                    in Python when I'm just prototyping and then C or C++ if
+                    I truly need a lot more speed. But the models on this
+                    web page are implemented in Javascript, because that is
+                    the main programming language that the most popular web
+                    browsers support.
+                </p>
+            </div>
+        </aside>
+
+
+
+        <h2>An example micro model in C++</h2>
+
+        <p>
+            Modellers I've spoken to often yearn to make their micro, or
+            agent-based, models much faster. They usually don't have a
+            computer science background and only know a smattering of C or
+            C++. If you are in this boat, below is a heavily commented
+            non-trivial, but not too complicated ether, example model in C++
+            that can be extended quite easily. (In the Github repository it
+            is model_example.cc.)
+        </p>
+        <p>
+            The model has these characteristics:
+        </p>
+        <ul>
+            <li>
+                An agent can be in one of the following states: susceptible,
+                exposed, infectious, recovered, vaccinated or dead.
+            </li>
+            <li>
+                Once an agent is dead it is not processed further. It cannot
+                change states again (obviously).
+            </li>
+            <li>
+                Agents that are susceptible can become exposed through a
+                slightly complex algorithm. On any time step a susceptible
+                Agent, $A$, comes into contact with $n$ other agents, where
+                $n$ is drawn from a normal distribution. Then for any of
+                these $n$ agents who are in the infectious stage, $A$
+                becomes exposed if a random number less than some
+                pre-specified number between 0 and 1 is drawn.
+            </li>
+            <li>
+                The rate at which agents move between the other states is
+                occurs stochastically according to the model's parameters.
+            </li>
+        </ul>
+
+        <p>Here is the code:</p>
+
+        <iframe id="cc-micro-model-example"
+                title="C++ micro model example"
+                width="100%"
+                height="500px"
+                src="model_example.html">
+        </iframe>
+
         <h2>Acknowledgements</h2>
 
         <p>
-            Thanks to Alex Welte and Stefan Scholz for advice.  All errors are my responsibility.
+            Thanks to Alex Welte and Stefan Scholz for advice.  I have
+            learnt much about the modelling done here through discussions
+            with Leigh Johnson, Marcus Low and Eduard Grebe. All errors are
+            my responsibility.
         </p>
 
         <footer>
@@ -2364,7 +2409,9 @@
             </nav>
             <p>
                 Written by <a href="https://www.simhub.online/nathan/">Nathan Geffen</a> (&copy; 2023, <a href="mailto:nathan@simhub.online">email</a>)<br>
-                <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png"></a><br>This work is licensed under the <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.<br>
+                <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img
+                                                                                           alt="Creative Commons License"
+                                                                                           src="cc.webp"></a><br>This work is licensed under the <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.<br>
                 All source code used on this page is open source. Most of it is available under the <a href="https://www.gnu.org/licenses/agpl-3.0.html">GNU Affero General Public License</a>. See the section <a href="#copyright-details">Using the resources on this webpage</a>.
             </p>
         </footer>

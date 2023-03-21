@@ -28,7 +28,7 @@ body {
     counter-reset: models;
 }
 
-h1, h2, h3, p, ul, ol, dl, li, aside, blockquote, figure, figcaption {
+h1, h2, h3, p, ul, ol, dl, li, aside, blockquote, figure, figcaption, iframe {
   max-width: 600px;
 }
 

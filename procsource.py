@@ -14,7 +14,7 @@ with open("model_example.html", "w") as fo:
         <title>C++ example of micromodel</title>
     </head>
     <body>
-        <pre class="prettyprint lang-cc">
+        <pre class="prettyprint lang-cc" style="border:none;">
 """, file=fo)
     for line in lines:
         print(line[:-1], file=fo)
