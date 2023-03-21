@@ -111,16 +111,15 @@ function manageFootnotes() {
 }
 
 window.MathJax = {
-  tex: {
-    tags: 'ams',
-    inlineMath: [['$', '$'], ['\\(', '\\)']]
-  },
-  chtml: {
-    displayAlign: "left",
-    displayIndent: '32px'
-  }
+    tex: {
+        tags: 'ams',
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+    },
+    chtml: {
+        displayAlign: "left",
+        displayIndent: '32px'
+    },
 };
-
 
 setupAsides();
 displayTOCTable('#table-of-contents', ['h2', 'h3', 'h4'], "_toc_", true);

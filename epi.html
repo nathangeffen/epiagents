@@ -2273,7 +2273,68 @@
 
         <h2>Simulating thousands of infectious diseases ##TODO</h2>
 
-        <h2>Calibration ##TODO</h2>
+        <h2>Calibrating models to real-world data</h2>
+
+        <p>
+            When building a model that tries to explain the nature of a real
+            epidemic, especially if it tries to predict the future course of
+            that epidemic, it will likely be important to calibrate the
+            model against known data points.
+        </p>
+
+        <p>
+            For example the <a href="https://thembisa.org/">Thembisa model</a> is
+            calibrated to fit adult HIV prevalence, antiretroviral
+            metabolite data and adult mortality up to particular years. The
+            model then produces a bunch of inferred demographic outputs up
+            to those particular years, and also projects into the
+            future. It's a complex model and the calibration process is
+            especially complicated and <a href="https://thembisa.org/content/downloadPage/Thembisa4_4report"> worth reading</a>.
+        </p>
+
+        <p>
+            The topic of model calibration (which, for the most part, is
+            function optimization or linear regression) could do with much
+            more exposition in modelling literature. This is a somewhat
+            superficial introduction and I hope one day to flesh it out.
+        </p>
+
+        <p>
+            The first thing needed to calibrate a model is a way to measure
+            the error between the real world calibration points and the
+            model's outputs. The mean squared error is often a good choice
+            for such an error function.  Given $n$ known real-world data
+            points $Y_0, Y_1 ... Y_n$ and model outputs $y_0, y_1 ... y_n$,
+            the mean squared error, $E$ is:
+
+            \begin{equation} {1 \over n} \sum_{1}^{n} {(Y_i - y_i)}^2
+            \end{equation}
+        </p>
+
+        <p>
+            This mean squared error is partially differentiable with respect
+            to each output, which means it can be used easily with function
+            minimization techniques such as gradient descent.
+            <span class="review-query">Is this correct?</span>
+            Formally, the goal of calibration then is to find a set of
+            values for the model parameters, $p_1, p_2 ... p_m$, that
+            minimises the error function.
+        </p>
+
+        <p>
+            Calibration of complex models can involve thousands of model
+            executions. Stochastic micro models will generally take much
+            longer to calibrate than their equivalent deterministic macro
+            ones. There are two reasons for this: they take longer to run
+            and, because they are stochastic, the model has to be rerun
+            multiple times with each set of parameter values, $p_1, p_2
+            ... p_m$, and then $y_1, y_2 ... y_n$ will be the average output
+            values across the runs.
+        </p>
+
+        <p>
+            There are many error minimization techniques. One  ##TODO
+        </p>
 
         <aside>
             <button type="button">Micro model implementation details</button>
@@ -2423,7 +2484,7 @@
         <script src="epi-ui.js?v=20230321"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.0.1/es5/tex-mml-chtml.js">
+        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js">
         </script>
         <script src="models.js?v=20230321"></script>
 
