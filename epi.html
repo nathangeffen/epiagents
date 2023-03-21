@@ -326,7 +326,7 @@
         </p>
         <a id="copyright-details"></a>
         <aside>
-            <button type="button">Using the resources on this webpage</button>
+            <button type="button">How to use the resources on this webpage</button>
             <div>
                 <p>
                     This webpage uses only open-source software.
@@ -334,13 +334,18 @@
                     Creative Commons license</a>. The Javascript and CSS files
                     that I've written for it are available under the <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU
                     Affero General Public License</a>.
-                    <a href="https://www.chartjs.org/docs/latest/">Chart.js</a> is
-                    used to generate the charts (MIT license), and <a href="https://github.com/giannotr/runge-kutta-js">Ruben
-                        Giannotti</a> wrote the differential equation solver (also MIT
-                    license).
-                    The <a href="">MathJax</a> library generates the equations
-                    (Apache license). My C++ code is available under the
-                    <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License</a>.
+                    <a href="https://www.chartjs.org/docs/latest/">Chart.js</a>
+                    is used to generate the charts (MIT license),
+                    and <a href="https://github.com/giannotr/runge-kutta-js">Ruben
+                    Giannotti</a> wrote the differential equation solver (also
+                    MIT license).  The <a href="">MathJax</a> library generates
+                    the equations (Apache license). My C++ code is available
+                    under the
+                    <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU
+                      General Public License</a>.  The C++ code on this page is
+                      formatted
+                      using <a href="https://github.com/googlearchive/code-prettify">Google's
+                      code-prettify</a> (Apache 2.0 license).
                 </p>
                 <p>
                     I chose the GNU licenses to encourage anyone who uses and
@@ -356,7 +361,7 @@
         </aside>
 
         <aside>
-            <button type="button">Reading the history of epidemiological modelling</button>
+            <button type="button">History of epidemiological modelling</button>
             <div>
                 <p>
                     Thucydides, the Greek historian <a href="https://www.gutenberg.org/cache/epub/7142/pg7142-images.html">wrote</a> about the plague that
@@ -387,11 +392,12 @@
                     understanding this fundamental point.
                 </p>
                 <p>
-                    Also remarkable is <a href="https://www.gutenberg.org/files/23700/23700-h/23700-h.htm">The Decameron</a> of
-                    Giovanni Boccaccio. It is set against the bubonic plague of
-                    the mid-14th century. It perhaps remains the pandemic that
-                    killed the greatest proportion of the human population.
-                    Boccacio's writing is less factual and more inclinded to
+                    Also remarkable
+                    is <a href="https://www.gutenberg.org/files/23700/23700-h/23700-h.htm">The
+                    Decameron</a> of Giovanni Boccaccio. It is set against the
+                    bubonic plague of the mid-14th century, perhaps the pandemic
+                    that killed the greatest proportion of the human population.
+                    Boccacio's writing is less factual and more inclined to
                     invoke the supernatural than Thucydides. But it is also more
                     replete with beautiful literary flourishes. Europeans at
                     this time clearly understood that removing themselves from
@@ -403,18 +409,21 @@
                     of escaping infection and death.)
                 </p>
                 <p>
-                    The <a href="https://en.wikipedia.org/wiki/The_Ghost_Map">Ghost Map</a> by
-                    Steven Johnson also isn't about epidemiological modelling,
-                    but it does tell the story of London's 1854 Broad Street
-                    cholera outbreak in London and how the efforts of John Snow
-                    and Henry Whitehead ushered in scientific responses to
-                    epidemics.
+                    The <a href="https://en.wikipedia.org/wiki/The_Ghost_Map">Ghost
+                    Map</a> by Steven Johnson tells the story of London's 1854
+                    Broad Street cholera outbreak in London and how the efforts
+                    of John Snow and Henry Whitehead ushered in scientific
+                    responses to epidemics.
                 </p>
 
                 <p>
                     A good place to start on modelling are the Wikipedia pages
-                    on<a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology">Compartmental Models in Epidemiology</a> and <a href="https://en.wikipedia.org/wiki/William_Farr">William Farr</a>. This <a href="https://fn.bmj.com/content/87/1/F67">article on Farr</a> in
-                    the British Medical Journal is also worth reading.
+                    on<a href="https://en.wikipedia.org/wiki/Compartmental_models_in_epidemiology">Compartmental
+                    Models in Epidemiology</a>
+                    and <a href="https://en.wikipedia.org/wiki/William_Farr">William
+                    Farr</a>. This <a href="https://fn.bmj.com/content/87/1/F67">article
+                    on Farr</a> in the British Medical Journal is also worth
+                    reading.
                 </p>
                 <p>
                     Interesting is the <a href="https://babel.hathitrust.org/cgi/pt?id=njp.32101064041955&view=1up&seq=65">appendix</a>
@@ -1049,12 +1058,19 @@
                 </p>
                 <p>For what it's worth I tend to implement my micro models in
                     Python when I'm just prototyping and then C or C++ if I
-                    truly need a lot more speed. But the models on this webpage
-                    are of course all implemented in Javascript, because that is
-                    the main programming language that the most popular web
-                    browsers support.
+                    truly need a lot more speed. But the models on this web page
+                    are implemented in Javascript, because that is the main
+                    programming language that the most popular web browsers
+                    support.
                 </p>
-                <h5>C++ example ##TODO</h5>
+                <h5>C++ example</h5>
+                <iframe id="cc-micro-model-example"
+                        title="C++ micro model example"
+                        width="100%"
+                        height="500px"
+                        src="cc-example.html">
+                </iframe>
+
             </div>
         </aside>
 
@@ -2244,16 +2260,16 @@
                     </figcaption>
                 </figure>
                 <p>
-                    Each bar represents a cholera death in a household. Note
-                    how the deaths cluster around the Broad Street pump. At
-                    the time it was believed that cholera was caused by
-                    particles in the air caused by decomposition. Snow
-                    overturned this theory by showing that the source of
-                    infection was in the water from the public pump that
-                    households in the area used. The full story is more
-                    complicated and fascinating and told fantastically well
-                    in <a href="https://en.wikipedia.org/wiki/The_Ghost_Map">The Ghost Map</a> by
-                    Steven Johnson.
+                    Each bar represents a cholera death in a household. Note how
+                    the deaths cluster around the Broad Street pump. At the time
+                    it was believed that cholera was caused by particles in the
+                    air caused by decomposition. Snow overturned this theory by
+                    showing that the source of infection was in the water from
+                    the public pump that households in the area used. The full
+                    story is more complicated and fascinating and told
+                    fantastically well
+                    in <a href="https://en.wikipedia.org/wiki/The_Ghost_Map">The
+                    Ghost Map</a> by Steven Johnson.
                 </p>
                 <p>
                     More recently, in July 2022, Michael Worobey and his
@@ -2333,11 +2349,12 @@
 
         <h2>Simulating thousands of infectious diseases ##TODO</h2>
 
+        <h2>Calibration ##TODO</h2>
+
         <h2>Acknowledgements</h2>
 
         <p>
-            Thanks to Alex Welte for advice.
-            All errors are my responsibility.
+            Thanks to Alex Welte and Stefan Scholz for advice.  All errors are my responsibility.
         </p>
 
         <footer>
