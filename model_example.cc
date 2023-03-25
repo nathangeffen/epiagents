@@ -500,7 +500,8 @@ void event_print_agents(Model &model) {
 
 int main() {
   Model model{
-      // Parameters
+      // Parameters. An improvement would be to allow the user to specify
+      // these at the command line or in a configuration file.
       {// Run for 20 years
        {"time_steps", (int)(20 * 365.25)},
        // Population will be 10,000 with 10 initially exposed agents.

@@ -28,7 +28,8 @@ body {
     counter-reset: models;
 }
 
-h1, h2, h3, p, ul, ol, dl, li, aside, blockquote, figure, figcaption, iframe {
+h1, h2, h3, p, ul, ol, dl, li, aside, blockquote,
+figure, figcaption, iframe, div {
   max-width: 600px;
 }
 
@@ -97,8 +98,8 @@ blockquote {
     padding: 4px;
     border: 1px dashed #6495ED;
     border-radius: 5px;
-    padding: 16px;
-    margin: 24px auto 24px auto;
+    /* padding: 16px;*/
+    /* margin: 24px auto 24px auto;*/
   }
 }
 
@@ -160,7 +161,7 @@ img {
 }
 
 .sir > div {
-  width: 40%;
+  width: 47%;
 }
 
 .model-heading {
@@ -307,7 +308,7 @@ img {
 
 .epi-parameters .form-group label {
   display: inline-block;
-  width: 100px;
+  width: 80px;
   font-size: 80%
 }
 
@@ -315,7 +316,7 @@ img {
   display: inline-block;
   margin-bottom: 6px;
   font-size: 80%;
-  width: 60px;
+  width: 50px;
 }
 
 .sir button {
@@ -382,6 +383,16 @@ aside h5 {
   max-height: 9000px;
   transition: max-height 0.4s ease-in;
   overflow: hidden;
+}
+
+.click-to-open:before {
+  content: "+    ";
+  text-align: left;
+}
+
+.click-to-close:before {
+  content: "-    ";
+  text-align: left;
 }
 
 div p.epi-help-text {
@@ -452,6 +463,18 @@ figure img {
 figcaption {
   font-style: italic;
   margin-top: 3px;
+}
+
+#calibration-graph {
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 15px;
+}
+
+#calibration-graph label {
+  display: inline-block;
+  width: 150px;
+  text-align: right;
 }
 
 footer {

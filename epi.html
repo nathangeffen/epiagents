@@ -7,7 +7,7 @@
         <meta name="author" content="Nathan Geffen" >
         <meta name="description" content="Epidemiology: Macro and micro models for infectious disease epidemics">
         <meta name="keywords" content="Epidemiology,models,micro models,macro models,agent-based models,simulation,infectious disease">
-        <title>Two types of infectious disease models</title>
+        <title>Modelling infectious diseases</title>
         <link rel="stylesheet" href="epi.css?v=20230321">
     </head>
 
@@ -41,8 +41,8 @@
         <h1>Modelling infectious diseases</h1>
 
         <p class="date-heading">
-            Published: <time datetime="2023-03-21">21 March 2023</time>.
-            Last updated: <time datetime="2023-03-21">21 March 2023</time>
+            Published: <time datetime="2023-03-25">25 March 2023</time>.
+            Last updated: <time datetime="2023-03-25">25 March 2023</time>
         </p>
 
         <div id="toc-bar">
@@ -361,10 +361,9 @@
         </aside>
 
         <aside>
-            <button type="button">History of epidemiological modelling</button>
+            <button type="button">Interesting reading on the history of plagues</button>
             <div>
-                <p>
-                    Thucydides, the Greek historian <a href="https://www.gutenberg.org/cache/epub/7142/pg7142-images.html">wrote</a> about the plague that
+                <p>Thucydides, the Greek historian <a href="https://www.gutenberg.org/cache/epub/7142/pg7142-images.html">wrote</a> about the plague that
                     hit Athens in 430BC:</p>
                 <blockquote>
                     "[A] pestilence of such extent and mortality was nowhere
@@ -2276,6 +2275,59 @@
         <h2>Calibrating models to real-world data</h2>
 
         <p>
+            Imagine there's an outbreak of a new infectious disease in a distant
+            part of the world. Luckily scientists quickly develop a test for the
+            infection. Then the disease lands in your city, where you are the
+            head of public health. You organise for 1,000 people to be randomly
+            tested daily. Using this, you have the daily infection rate in your
+            city. Now you want to fit an SEIR model to your data.
+        </p>
+
+        <p>
+            In the graph below the blue line is the daily number of infections
+            &mdash; the observed values &mdash; in the sample of 1,000 people.
+            The pink line is an SEIR model. Adjust the values the parameters
+            &mdash; $\underline{R_0}$, average number of days in the exposure
+            compartment and average number of days in the infectious compartment
+            &mdash; until the model fits the observed data as closely as
+            possible. (The observed values change every time this webpage is
+            refreshed, so if they look especially terrible, simply refresh the
+            page.)
+        </p>
+        <div id="calibration-graph">
+            <canvas id="calibration-chart"></canvas>
+            <div>
+                <label for="calibration-graph-R0">
+                    <underline>R<sub>0</sub></underline></label>
+                <input type="range" min="1" max="10" value="4"
+                       id="calibration-graph-R0">
+                <span id="calibration-graph-R0-value">4</span>
+            </div>
+            <div>
+                <label for="calibration-graph-days-exposed">Days exposed</label>
+                <input type="range" min="1" max="10" value="2"
+                       id="calibration-graph-days-exposed">
+                <span id="calibration-graph-days-exposed-value">2</span>
+            </div>
+            <div>
+                <label for="calibration-graph-days-infectious">Days infectious</label>
+                <input type="range" min="1" max="15" value="5"
+                       id="calibration-graph-days-infectious">
+                <span id="calibration-graph-days-infectious-value">2</span>
+            </div>
+        </div>
+
+        <p>
+            What you've just done is calibrate a model. Of course the real world
+            is never as neat and tidy as this. (1) Daily surveys like this can
+            almost never be done. (2) Even if they could the sample size would
+            not consistently be 1,000. (3) This is coded so that the observed
+            values are always within 5% of the points along an SEIR model with
+            integer values for the three parameters; good luck finding a
+            real-world epidemic that's so accommodating.
+        </p>
+
+        <p>
             When building a model that tries to explain the nature of a real
             epidemic, especially if it tries to predict the future course of
             that epidemic, it will likely be important to calibrate the
@@ -2293,10 +2345,10 @@
         </p>
 
         <p>
-            The topic of model calibration (which, for the most part, is
-            function optimization or linear regression) could do with much
-            more exposition in modelling literature. This is a somewhat
-            superficial introduction and I hope one day to flesh it out.
+            The topic of model calibration (which, for the most part, is another
+            name for function optimization, function approximation or regression
+            analysis) could do with much more exposition in modelling
+            literature. This is a somewhat superficial introduction.
         </p>
 
         <p>
@@ -2333,7 +2385,7 @@
         </p>
 
         <p>
-            There are many error minimization techniques. One  ##TODO
+            There are many error minimization techniques.
         </p>
 
         <aside>
@@ -2411,12 +2463,12 @@
 
         <p>
             Modellers I've spoken to often yearn to make their micro, or
-            agent-based, models much faster. They usually don't have a
-            computer science background and only know a smattering of C or
-            C++. If you are in this boat, below is a heavily commented
-            non-trivial, but not too complicated ether, example model in C++
-            that can be extended quite easily. (In the Github repository it
-            is model_example.cc.)
+            agent-based, models much faster. They usually don't have a computer
+            science background and only know a smattering of C or C++. If you
+            are in this boat, below is a heavily commented non-trivial, but not
+            too complicated ether, example model in C++ that can be extended
+            quite easily. (In the Github repository it is model_example.cc.) <span class="review-query">Should I do an
+            equivalent Python program so that modellers, more used to the latter, can then compare with the C++ code? And R too?</span>
         </p>
         <p>
             The model has these characteristics:
@@ -2457,10 +2509,12 @@
         <h2>Acknowledgements</h2>
 
         <p>
-            Thanks to Alex Welte and Stefan Scholz for advice.  I have
-            learnt much about the modelling done here through discussions
-            with Leigh Johnson, Marcus Low and Eduard Grebe. All errors are
-            my responsibility.
+            Thanks to Alex Welte and Stefan Scholz for advice. I have learnt
+            much about the modelling done here through discussions with Leigh
+            Johnson, Marcus Low and Eduard Grebe. Stefan Scholz has coauthored
+            papers with me, advised me, introduce me to various modelling
+            software tools and helped me to understand calibration better.<br>
+            All errors are my responsibility.
         </p>
 
         <footer>
@@ -2483,6 +2537,7 @@
         <script src="epimicro.js?v=20230321"></script>
         <script src="epi-ui.js?v=20230321"></script>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="calibration.js?v=20230325"></script>
         <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
         <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js">
         </script>

@@ -8,13 +8,18 @@ function setupAsides()
     let div = aside.querySelector('div');
     div.classList.add('hide');
     let bar = aside.querySelector('button');
+    bar.classList.add("click-to-open");
     bar.addEventListener('click', function(e) {
       if (div.classList.contains('show')) {
         div.classList.remove('show');
         div.classList.add('hide');
+        bar.classList.add("click-to-open");
+        bar.classList.remove("click-to-close");
       } else {
         div.classList.add('show');
         div.classList.remove('hide');
+        bar.classList.add("click-to-close");
+        bar.classList.remove("click-to-open");
       }
     });
   }

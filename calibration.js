@@ -1,0 +1,183 @@
+/*
+  Epidemiological modelling demonstration: Macro and micro models for
+  infectious disease epidemics.
+
+  Copyright (C) 2023  Nathan Geffen
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Affero General Public License as
+  published by the Free Software Foundation, either version 3 of the
+  License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+"use strict";
+
+function getSeries(R0, daysExposed, daysInfectious) {
+  const N = 1000.0;
+  const f = 1.0 / daysExposed;
+  const r = 1.0 / daysInfectious;
+  const beta = R0 / (N * daysInfectious);
+  return rungeKutta(
+    function(t, y) {
+      return [-beta * y[0] * y[2],
+              beta * y[0] * y[2] - f * y[1],
+              f * y[1] - r * y[2],
+              r * y[2]];
+    },
+    [N, 1.0, 0.0, 0.0], [0, 80], 0.1);
+};
+
+
+function generateSeries()
+{
+  let R0 = Math.floor(Math.random() * (9.5 - 2.0) + 2.0);
+  let daysExposed = Math.floor(Math.random() * (10.0 - 2.0) + 2.0);
+  let daysInfectious = Math.floor(Math.random() * (10.0 - 4.0) + 4.0);
+  let series = getSeries(R0, daysExposed, daysInfectious);
+  return {
+    R0: R0,
+    daysExposed: daysExposed,
+    daysInfectious: daysInfectious,
+    series: series
+  };
+}
+
+function jiggleObservation(x, prop)
+{
+  const c = (Math.random() * prop * 2 * x) - prop * x;
+  return Math.max(0.0, x + c);
+}
+
+function jiggleObservations(observations, prop)
+{
+  let series = [];
+  for (const x of observations) {
+    series.push(jiggleObservation(x, prop));
+  }
+  return series;
+}
+
+function getObservationsAndModel(R0, daysExposed, daysInfectious)
+{
+  const observationSeries = generateSeries();
+  const observationInfections = [];
+  for (const entry of observationSeries['series'])
+    observationInfections.push(entry[1] + entry[2]);
+  const observations = jiggleObservations(observationInfections, 0.05);
+  const modelSeries = getSeries(R0, daysExposed, daysInfectious);
+  const modelInfections = [];
+  const observationFinal = [];
+
+  for (let i = 0; i < modelSeries.length; i++) {
+    if (i % 10 == 0) {
+      modelInfections.push(modelSeries[i][1] + modelSeries[i][2]);
+      observationFinal.push(observations[i]);
+    }
+  }
+
+  return {
+    'observationParameters': observationSeries,
+    'observations': observationFinal,
+    'modelParameters': {
+      R0: R0,
+      daysExposed: daysExposed,
+      daysInfectious: daysInfectious,
+      series: modelSeries
+    },
+    'model': modelInfections
+  };
+}
+
+
+function makeCalibrationGraph()
+{
+  const R0 = 4.0;
+  const DaysExposed = 2.0;
+  const DaysInfectious = 5.0;
+  const data = getObservationsAndModel(R0, DaysExposed, DaysInfectious);
+  let labels = [];
+  for (let i =0; i < data['model'].length; i++) {
+    labels.push(i);
+  }
+  const ctx = document.getElementById('calibration-chart');
+
+  let calibrationChart = new Chart(ctx, {
+    data: {
+      type: 'line',
+      labels: labels,
+      datasets: [
+        {
+          label: 'Observed',
+          data: data['observations'],
+          borderWidth: 1,
+          type: 'line'
+        },
+        {
+          label: 'Model',
+          data: data['model'],
+          borderWidth: 1,
+          type: 'line'
+        },
+      ]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+  return calibrationChart;
+}
+
+function updateCalibrationChart(chart)
+{
+  const R0 =    document.getElementById('calibration-graph-R0').value;
+  const daysExposed = document.getElementById('calibration-graph-days-exposed').
+        value;
+  const daysInfectious =  document.
+        getElementById('calibration-graph-days-infectious').value;
+  const modelSeries = getSeries(R0, daysExposed, daysInfectious);
+  const modelInfections = [];
+
+  for (let i = 0; i < modelSeries.length; i++) {
+    if (i % 10 == 0)
+      modelInfections.push(modelSeries[i][1] + modelSeries[i][2]);
+  }
+  chart.data.datasets[1].data = modelInfections;
+  chart.update();
+}
+
+function setupCalibration()
+{
+  let chart = makeCalibrationGraph();
+  document.getElementById('calibration-graph-R0').
+    addEventListener('click', function(e) {
+      document.getElementById('calibration-graph-R0-value').textContent =
+        e.target.value;
+      updateCalibrationChart(chart);
+    });
+  document.getElementById('calibration-graph-days-exposed').
+    addEventListener('click', function(e) {
+      document.getElementById('calibration-graph-days-exposed-value').textContent =
+        e.target.value;
+      updateCalibrationChart(chart);
+    });
+  document.getElementById('calibration-graph-days-infectious').
+    addEventListener('click', function(e) {
+      document.getElementById('calibration-graph-days-infectious-value').
+        textContent = e.target.value;
+      updateCalibrationChart(chart);
+    });
+}
+
+setupCalibration();
