@@ -2280,19 +2280,22 @@
             infection. Then the disease lands in your city, where you are the
             head of public health. You organise for 1,000 people to be randomly
             tested daily. Using this, you have the daily infection rate in your
-            city. Now you want to fit an SEIR model to your data.
+            city. Now you want to fit an SEIR model to your data, so that you
+            can predict the future trajectory of the epidemic.
         </p>
 
         <p>
-            In the graph below the blue line is the daily number of infections
+            In the graph below, the blue line is the daily number of infections
             &mdash; the observed values &mdash; in the sample of 1,000 people.
-            The pink line is an SEIR model. Adjust the values the parameters
-            &mdash; $\underline{R_0}$, average number of days in the exposure
+            The pink line represents the predicted number of infections by an
+            SEIR model. Adjust the values the parameters &mdash;
+            $\underline{R_0}$, average number of days in the exposure
             compartment and average number of days in the infectious compartment
-            &mdash; until the model fits the observed data as closely as
-            possible. (The observed values change every time this webpage is
+            &mdash; until the predicted values fit the observed data as closely
+            as possible. (The observed values change every time this webpage is
             refreshed, so if they look especially terrible, simply refresh the
-            page.)
+            page. Also, very occasionally, the web page will load with the
+            model already calibrated. In which case, simply reload the page.)
         </p>
         <div id="calibration-graph">
             <canvas id="calibration-chart"></canvas>
@@ -2315,6 +2318,8 @@
                        id="calibration-graph-days-infectious">
                 <span id="calibration-graph-days-infectious-value">2</span>
             </div>
+            <p id="calibration-alert">
+            </p>
         </div>
 
         <p>
@@ -2323,8 +2328,8 @@
             almost never be done. (2) Even if they could the sample size would
             not consistently be 1,000. (3) This is coded so that the observed
             values are always within 5% of the points along an SEIR model with
-            integer values for the three parameters; good luck finding a
-            real-world epidemic that's so accommodating.
+            integer values for the three parameters in a homogenous population;
+            good luck finding a real-world epidemic that's so accommodating.
         </p>
 
         <p>
@@ -2368,25 +2373,75 @@
             to each output, which means it can be used easily with function
             minimization techniques such as gradient descent.
             <span class="review-query">Is this correct?</span>
-            Formally, the goal of calibration then is to find a set of
-            values for the model parameters, $p_1, p_2 ... p_m$, that
-            minimises the error function.
+            Formally, the goal of calibration then is to find a set of values
+            for the model parameters, $p_1, p_2 ... p_m$, that minimises the
+            error function. (If you have come across the term <em>sum of the
+            squared residuals, the mean squared error is the same thing divided
+            by $n$.)
         </p>
 
         <p>
             Calibration of complex models can involve thousands of model
-            executions. Stochastic micro models will generally take much
-            longer to calibrate than their equivalent deterministic macro
-            ones. There are two reasons for this: they take longer to run
-            and, because they are stochastic, the model has to be rerun
-            multiple times with each set of parameter values, $p_1, p_2
-            ... p_m$, and then $y_1, y_2 ... y_n$ will be the average output
-            values across the runs.
+            executions. Stochastic micro models will generally take much longer
+            to calibrate than their equivalent deterministic macro ones. There
+            are two reasons for this: they take longer to run and, because they
+            are stochastic, the model may need to be rerun multiple times with
+            each set of parameter values, $p_1, p_2 ... p_m$, and then $y_1, y_2
+            ... y_n$ will be the average output values across the runs. This is
+            because a single run, or even only a few runs, may produce outputs
+            that are far from the mean for that particular set of parameters.
         </p>
 
         <p>
-            There are many error minimization techniques.
+            There are many error minimization techniques. Here are brief
+            descriptions of a few:
         </p>
+
+        <dl>
+            <dd>
+                <dt>Manual trial and error</dt>
+                If the model is simple enough it may be possible to fit the
+                real-world observations simply by adjusting the parameters
+                manually in a trial and error process, rerun the model each
+                time, until the error is sufficiently small. What constitutes
+                sufficiently small depends on the model's purpose.
+            </dd>
+            <dd>
+                <dt>Random selection</dt>
+                Peturbing the model parameters randomly may work when the
+                parameter space is small. Finding a good calibration is
+                unlikely, but this might help a modeller understand the nature
+                of the parameter space and select a decent initial set of
+                parameters for one of another calibration method.
+            </dd>
+            <dd>
+                <dt>Grid search</dt>
+                This works as follows: (1) Identify reasonable ranges for the
+                parameters. (2) Calculate how many times, $n$, the model can
+                conveniently be run for calibration purposes (remember that if
+                it's a micro model, a "run" actually consists of multiple
+                executions of the model). (3) Multiple the size of the ranges of
+                the parameters to give $t$. (4) Then the step size, $s$ is
+                calculated as $s = t / n$. (5) Repeatedly run the model,
+                peturbing the parameters, one at a time, by the step size, and
+                keeping track of the best set of parameters thus far. The
+                problem with this method is that for even a moderately
+                sophisticated model, either the step size will be very large,
+                resulting in parameter selection that is too coarse, or the size
+                of $n$ has to be impractically large. Nevertheless, as with
+                random peturbation, this might help a modeller understand the
+                nature of the parameter space and select a decent initial set of
+                parameters for one of another calibration method.
+            </dd>
+            <dd>
+                <dt>Gradient descent</dt>
+                This is a much better method than the above ones. The parameters
+                are modified in the direction of the gradient of an error
+                function, such as the mean squared error (which is a nice choice
+                because it's differentiable). There are numerous resources on
+                the web explaining <a href="https://en.wikipedia.org/wiki/Gradient_descent">gradient descent</a>. For example, this is a <a href="https://www.youtube.com/watch?v=sDv4f4s2SB8">good video</a>.
+            </dd>
+        </dl>
 
         <aside>
             <button type="button">Micro model implementation details</button>

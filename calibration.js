@@ -136,12 +136,55 @@ function makeCalibrationGraph()
       }
     }
   });
-  return calibrationChart;
+  return [calibrationChart, data];
 }
 
-function updateCalibrationChart(chart)
+function meanSquaredError(Y1, Y2)
 {
-  const R0 =    document.getElementById('calibration-graph-R0').value;
+  let total = 0.0;
+  let n = Y1.length;
+  for (let i = 0; i < n; i++) {
+    const d = Y1[i] - Y2[i];
+    total += d * d;
+  }
+  return total / n;
+}
+
+function maxSquaredError(observed)
+{
+  let zeros = [];
+  for (const _ of observed) zeros.push(0);
+  const maxError = meanSquaredError(observed, zeros);
+  return [0.01 * maxError, 0.1 * maxError, maxError]
+}
+
+function checkIfMatch(observed, model)
+{
+  const mse = meanSquaredError(observed, model).toFixed(2);
+
+  const [small, medium, _] = maxSquaredError(observed);
+
+  if (mse < small) {
+    document.getElementById('calibration-alert').textContent =
+      "Model is calibrated! MSE: " + mse;
+    document.getElementById('calibration-alert').classList.
+      add('calibration-success');
+  } else {
+    document.getElementById('calibration-alert').classList.
+      remove('calibration-success');
+    if (mse < medium) {
+      document.getElementById('calibration-alert').textContent =
+        "Model is almost calibrated. MSE: " + mse;
+    } else {
+      document.getElementById('calibration-alert').textContent =
+        "Model is not calibrated. MSE: " + mse;
+    }
+  }
+}
+
+function updateCalibrationChart(chart, data)
+{
+  const R0 =  document.getElementById('calibration-graph-R0').value;
   const daysExposed = document.getElementById('calibration-graph-days-exposed').
         value;
   const daysInfectious =  document.
@@ -155,28 +198,30 @@ function updateCalibrationChart(chart)
   }
   chart.data.datasets[1].data = modelInfections;
   chart.update();
+  checkIfMatch(data['observations'], modelInfections);
 }
 
 function setupCalibration()
 {
-  let chart = makeCalibrationGraph();
+  let [chart, data] = makeCalibrationGraph();
+  checkIfMatch(data['observations'], data['model']);
   document.getElementById('calibration-graph-R0').
     addEventListener('click', function(e) {
       document.getElementById('calibration-graph-R0-value').textContent =
         e.target.value;
-      updateCalibrationChart(chart);
+      updateCalibrationChart(chart, data);
     });
   document.getElementById('calibration-graph-days-exposed').
     addEventListener('click', function(e) {
       document.getElementById('calibration-graph-days-exposed-value').textContent =
         e.target.value;
-      updateCalibrationChart(chart);
+      updateCalibrationChart(chart, data);
     });
   document.getElementById('calibration-graph-days-infectious').
     addEventListener('click', function(e) {
       document.getElementById('calibration-graph-days-infectious-value').
         textContent = e.target.value;
-      updateCalibrationChart(chart);
+      updateCalibrationChart(chart, data);
     });
 }
 
