@@ -1,3 +1,4 @@
+#!/usr/bin/python
 fi = open("model_example.cc", "r")
 lines = fi.readlines()
 with open("model_example.html", "w") as fo:
@@ -17,6 +18,8 @@ with open("model_example.html", "w") as fo:
         <pre class="prettyprint lang-cc" style="border:none;">
 """, file=fo)
     for line in lines:
+        line = line.replace("<", "&lt;")
+        line = line.replace(">", "&gt;")
         print(line[:-1], file=fo)
 
     print("""

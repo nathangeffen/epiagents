@@ -60,16 +60,16 @@
  * know.
  */
 
-#include <algorithm>
-#include <any>
-#include <chrono>
-#include <cmath>
-#include <functional>
-#include <iostream>
-#include <map>
-#include <random>
-#include <unordered_map>
-#include <vector>
+#include &lt;algorithm&gt;
+#include &lt;any&gt;
+#include &lt;chrono&gt;
+#include &lt;cmath&gt;
+#include &lt;functional&gt;
+#include &lt;iostream&gt;
+#include &lt;map&gt;
+#include &lt;random&gt;
+#include &lt;unordered_map&gt;
+#include &lt;vector&gt;
 
 // Our time step is one day, and We're going to increment agents' age every
 // time step so we'll need this.
@@ -119,14 +119,14 @@ struct Model;
 
 // Every event is implemented as a void function that takes a reference to
 // the Model as its parameter.
-typedef std::function<void(Model &)> EventFunc;
+typedef std::function&lt;void(Model &)&gt; EventFunc;
 
 // The model engine will loop through arrays of events, executing each one.
-typedef std::vector<EventFunc> EventArray;
+typedef std::vector&lt;EventFunc&gt; EventArray;
 
 // Our parameters are implemented in a hash table (unordered_map), each
 // having a name and an associated value.
-typedef std::unordered_map<std::string, std::any> Parameters;
+typedef std::unordered_map&lt;std::string, std::any&gt; Parameters;
 
 // This is the struct at the heart of our program.
 
@@ -139,14 +139,14 @@ struct Model {
   EventArray before_events;
   EventArray during_events;
   EventArray after_events;
-  std::vector<Agent> agents;
+  std::vector&lt;Agent&gt; agents;
 
   // We'll need to keep track of time steps for when we print out stats
   int current_time_step = 0;
 
   // This is used to track how many agents are in each state. It is updated
   // by the function event_tally_stats.
-  std::array<int, State::COUNT> state_counter;
+  std::array&lt;int, State::COUNT&gt; state_counter;
 
   // Track the number of births that have to be given on a particular
   // time_step
@@ -163,8 +163,8 @@ struct Model {
 
     for (auto &event : before_events)
       event(*this);
-    int time_steps = std::any_cast<int>(parameters["time_steps"]);
-    for (int i = 0; i < time_steps; i++) {
+    int time_steps = std::any_cast&lt;int&gt;(parameters["time_steps"]);
+    for (int i = 0; i &lt; time_steps; i++) {
       ++current_time_step;
       for (auto &event : during_events)
         event(*this);
@@ -179,18 +179,18 @@ void event_initialize_agents(Model &model) {
   // This determines the number of susceptible agents at the beginning of
   // the simulation.
   int num_susceptible =
-      std::any_cast<int>(model.parameters["num_susceptible"]);
+      std::any_cast&lt;int&gt;(model.parameters["num_susceptible"]);
   // This determines the number of exposed agents at the beginning of the
   // simulation.
-  int num_exposed = std::any_cast<int>(model.parameters["num_exposed"]);
+  int num_exposed = std::any_cast&lt;int&gt;(model.parameters["num_exposed"]);
 
   // Used to determine the sex of agents.
-  std::uniform_int_distribution<int> sex_dist(0, 1);
+  std::uniform_int_distribution&lt;int&gt; sex_dist(0, 1);
 
   // The proportion of males and females for each age up to 90 are drawn
   // from the following distribution. The data is from the Thembisa model.
   // An improved version of this program would read this in from a file.
-  std::discrete_distribution<int> age_dist[2]{
+  std::discrete_distribution&lt;int&gt; age_dist[2]{
       {556199, 550200, 554289, 554555, 552631, 550195, 547156, 560931,
        563200, 563224, 559176, 553679, 546729, 543589, 549932, 546043,
        531869, 516847, 502187, 469603, 457234, 458782, 458195, 466585,
@@ -218,13 +218,13 @@ void event_initialize_agents(Model &model) {
   // The above sets the age in years as an integer value. To get the
   // fraction of the year, we add on a uniform random number between 0
   // and 1.
-  std::uniform_real_distribution<double> year_dist(0.0, 1.0);
+  std::uniform_real_distribution&lt;double&gt; year_dist(0.0, 1.0);
 
   // Now we loop through the number of susceptible and exposed, creating an
   // agent, appropriately initialized, on each iteration.
-  for (int i = 0; i < num_susceptible + num_exposed; i++) {
+  for (int i = 0; i &lt; num_susceptible + num_exposed; i++) {
     Sex sex = sex_dist(gen) ? FEMALE : MALE;
-    State state = i < num_susceptible ? SUSCEPTIBLE : EXPOSED;
+    State state = i &lt; num_susceptible ? SUSCEPTIBLE : EXPOSED;
     double age = year_dist(gen) + age_dist[sex](gen);
     // Because don't use constructors, the agent's characteristics are set
     // in the order they've been declared above in the Agent struct. They
@@ -255,23 +255,23 @@ void event_increment_age(Model &model) {
  */
 void event_infect(Model &model) {
   const double num_contacts =
-      std::any_cast<double>(model.parameters["num_contacts_avg"]);
+      std::any_cast&lt;double&gt;(model.parameters["num_contacts_avg"]);
   const double stdev =
-      std::any_cast<double>(model.parameters["num_contacts_stdev"]);
+      std::any_cast&lt;double&gt;(model.parameters["num_contacts_stdev"]);
   const double risk_exposure =
-      std::any_cast<double>(model.parameters["risk_exposure_per_contact"]);
-  std::normal_distribution<> num_contacts_dist(num_contacts, stdev);
+      std::any_cast&lt;double&gt;(model.parameters["risk_exposure_per_contact"]);
+  std::normal_distribution&lt;&gt; num_contacts_dist(num_contacts, stdev);
   // We need the indices of all the living agents. They are the potential
   // contacts.
-  std::vector<int> alive_indices;
-  for (size_t i = 0; i < model.agents.size(); i++)
+  std::vector&lt;int&gt; alive_indices;
+  for (size_t i = 0; i &lt; model.agents.size(); i++)
     if (model.agents[i].state != DEAD)
       alive_indices.push_back(i);
 
   // We'll need this to randomly find contacts for each susceptible agent.
-  std::uniform_int_distribution<size_t> contact_dist(
+  std::uniform_int_distribution&lt;size_t&gt; contact_dist(
       0, alive_indices.size() - 1);
-  std::uniform_real_distribution<> exposure_dist(0, 1);
+  std::uniform_real_distribution&lt;&gt; exposure_dist(0, 1);
 
   // We only going to iterate over living agents
   for (auto i : alive_indices) {
@@ -288,11 +288,11 @@ void event_infect(Model &model) {
       // than once as a contact and the agent itself might be its own
       // contact.  But for our purposes this shortcoming isn't important; it
       // only reduces the number of actual contacts.
-      for (int j = 0; j < num_contacts; j++) {
+      for (int j = 0; j &lt; num_contacts; j++) {
         size_t contact_index = contact_dist(gen);
         if (model.agents[alive_indices[contact_index]].state ==
             INFECTIOUS) {
-          if (exposure_dist(gen) < risk_exposure) {
+          if (exposure_dist(gen) &lt; risk_exposure) {
             model.agents[i].state = EXPOSED;
             break;
           }
@@ -306,10 +306,10 @@ void event_infect(Model &model) {
 // with given probability.
 void change_agent_states(Model &model, State from_state, State to_state,
                          const char *parameter) {
-  std::uniform_real_distribution<> dist(0, 1);
+  std::uniform_real_distribution&lt;&gt; dist(0, 1);
   double risk;
   try {
-    risk = std::any_cast<double>(model.parameters[parameter]);
+    risk = std::any_cast&lt;double&gt;(model.parameters[parameter]);
   } catch (const std::exception &ex) {
     fprintf(stderr, "Exception at line %d with parameter %s\n", __LINE__,
             parameter);
@@ -317,7 +317,7 @@ void change_agent_states(Model &model, State from_state, State to_state,
   }
   for (auto &agent : model.agents)
     if (agent.state == from_state)
-      if (dist(gen) < risk)
+      if (dist(gen) &lt; risk)
         agent.state = to_state;
 }
 
@@ -366,17 +366,17 @@ void event_vaccinated_to_susceptible(Model &model) {
  * that a fraction between 0 and 1 remains).
  */
 void event_births(Model &model) {
-  std::uniform_int_distribution<int> sex_dist(0, 1);
+  std::uniform_int_distribution&lt;int&gt; sex_dist(0, 1);
   int id = (int)model.agents.size();
-  double birth_rate = std::any_cast<double>(model.parameters["birth_rate"]);
+  double birth_rate = std::any_cast&lt;double&gt;(model.parameters["birth_rate"]);
   model.birth_tracker +=
       birth_rate * (model.agents.size() - model.state_counter[DEAD]);
-  for (int i = 0; i < (int)model.birth_tracker; i++) {
+  for (int i = 0; i &lt; (int)model.birth_tracker; i++) {
     model.agents.push_back(
         {id, sex_dist(gen) ? FEMALE : MALE, 0.0, SUSCEPTIBLE});
     ++id;
   }
-  if (model.birth_tracker > 0)
+  if (model.birth_tracker &gt; 0)
     model.birth_tracker -= std::floor(model.birth_tracker);
 }
 
@@ -394,7 +394,7 @@ void event_births(Model &model) {
 void event_death(Model &model) {
   // These death rates per sex and age (up to 90) are taken from the
   // Thembisa model. An improvement would be to read this in from a file.
-  static const std::vector<std::vector<double>> death_risk{
+  static const std::vector&lt;std::vector&lt;double&gt;&gt; death_risk{
       {0.000076520889, 0.000017192652, 0.000007240219, 0.000005732737,
        0.000004441361, 0.000003385837, 0.000002569825, 0.000001990536,
        0.000001632355, 0.000001482819, 0.000001580916, 0.000001897548,
@@ -435,23 +435,23 @@ void event_death(Model &model) {
           0.000109895484, 0.000116577835, 0.000123831829, 0.000132015621,
           0.000141420706,
       }};
-  std::uniform_real_distribution<double> death_dist(0, 1);
+  std::uniform_real_distribution&lt;double&gt; death_dist(0, 1);
 
   for (auto &agent : model.agents) {
     if (agent.state != DEAD) {
       int age_index = (int)agent.age;
       // For agents who are older than the maximum age catered for in our
       // mortality risk array, we simply use the last entry in the array.
-      if (age_index >= (int)death_risk[agent.sex].size())
+      if (age_index &gt;= (int)death_risk[agent.sex].size())
         age_index = death_risk[agent.sex].size() - 1;
       double risk = death_risk[agent.sex][age_index];
       // If an agent is in the infectious stage we multiply their mortality
       // by infectious_mortality_factor. A more sophisticated algorithm
       // might have a separate set of mortality risks for infectious agents.
       if (agent.state == INFECTIOUS)
-        risk *= std::any_cast<double>(
+        risk *= std::any_cast&lt;double&gt;(
             model.parameters["infectious_mortality_factor"]);
-      if (death_dist(gen) < risk) {
+      if (death_dist(gen) &lt; risk) {
         // Keep track of deaths of agents who are infected so that the
         // differing mortality rates of infected and uninfected agents can
         // be analsysed.
@@ -471,7 +471,7 @@ void event_death(Model &model) {
 void event_sort_agents(Model &model) {
 
   std::sort(model.agents.begin(), model.agents.end(),
-            [](Agent &a, Agent &b) { return a.id < b.id; });
+            [](Agent &a, Agent &b) { return a.id &lt; b.id; });
 }
 
 // Event to count the number of agents in each state.
@@ -494,10 +494,10 @@ void event_print_stats(Model &model) {
   // run. If we want it to run on every time step set to 1, but this is
   // likely unnecessary and will slow down execution.
   if (model.current_time_step %
-          std::any_cast<int>(model.parameters["output_frequency"]) ==
+          std::any_cast&lt;int&gt;(model.parameters["output_frequency"]) ==
       0) {
     printf("%d,", model.current_time_step);
-    for (int i = 0; i < State::COUNT; i++)
+    for (int i = 0; i &lt; State::COUNT; i++)
       printf("%d,", model.state_counter[i]);
     printf("%d\n", model.deaths_while_infectious);
   }
