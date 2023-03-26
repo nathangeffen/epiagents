@@ -2357,12 +2357,12 @@
         </p>
 
         <p>
-            The first thing needed to calibrate a model is a way to measure
-            the error between the real world calibration points and the
-            model's outputs. The mean squared error is often a good choice
-            for such an error function.  Given $n$ known real-world data
-            points $Y_0, Y_1 ... Y_n$ and model outputs $y_0, y_1 ... y_n$,
-            the mean squared error, $E$ is:
+            The first thing needed to calibrate a model is a way to measure the
+            error between the real world calibration points and the model's
+            outputs. The mean squared error (the MSE value in the graph above)
+            is often a good choice for such an error function. Given $n$ known
+            real-world data points $Y_0, Y_1 ... Y_n$ and model outputs $y_0,
+            y_1 ... y_n$, the mean squared error, $E$ is:
 
             \begin{equation} {1 \over n} \sum_{1}^{n} {(Y_i - y_i)}^2
             \end{equation}
@@ -2435,11 +2435,11 @@
             </dd>
             <dd>
                 <dt>Gradient descent</dt>
-                This is a much better method than the above ones. The parameters
-                are modified in the direction of the gradient of an error
-                function, such as the mean squared error (which is a nice choice
-                because it's differentiable). There are numerous resources on
-                the web explaining <a href="https://en.wikipedia.org/wiki/Gradient_descent">gradient descent</a>. For example, this is a <a href="https://www.youtube.com/watch?v=sDv4f4s2SB8">good video</a>.
+                This is usually a much better method than the above ones. The
+                parameters are modified in the direction of the gradient of an
+                error function, such as the mean squared error (which is a nice
+                choice because it's differentiable). There are numerous
+                resources on the web explaining <a href="https://en.wikipedia.org/wiki/Gradient_descent">gradient descent</a>. For example, this is a <a href="https://www.youtube.com/watch?v=sDv4f4s2SB8">good video</a>.
                 An excellent software library providing gradient descent and
                 other minimization algorithms is the <a href="https://www.gnu.org/software/gsl/doc/html/multimin.html">GNU Scientific
                 Library</a>.
