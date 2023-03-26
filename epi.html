@@ -2376,8 +2376,8 @@
             Formally, the goal of calibration then is to find a set of values
             for the model parameters, $p_1, p_2 ... p_m$, that minimises the
             error function. (If you have come across the term <em>sum of the
-            squared residuals, the mean squared error is the same thing divided
-            by $n$.)
+                squared residuals</em>, the mean squared error is the same thing
+            divided by $n$.)
         </p>
 
         <p>
@@ -2440,6 +2440,10 @@
                 function, such as the mean squared error (which is a nice choice
                 because it's differentiable). There are numerous resources on
                 the web explaining <a href="https://en.wikipedia.org/wiki/Gradient_descent">gradient descent</a>. For example, this is a <a href="https://www.youtube.com/watch?v=sDv4f4s2SB8">good video</a>.
+                An excellent software library providing gradient descent and
+                other minimization algorithms is the <a href="https://www.gnu.org/software/gsl/doc/html/multimin.html">GNU Scientific
+                Library</a>.
+                It is written in C, and is well tested and designed.
             </dd>
         </dl>
 
