@@ -28,18 +28,24 @@ const HELP = {
   'R0': `Average number of people infected by a single infectious individual in
   naive population`,
   'D': 'Average number of days that an individual is infectious',
-  'iterations': 'Number of times the model executes',
+  'iterations': 'Number of iterations the model executes',
   'updates': 'Number of iterations that are executed before the GUI is updated',
-  'r': 'Specifies probability of infectious agent being spontaneously created'
+  'ri': 'Specifies probability of infectious agent being spontaneously created',
+  'Ρ': 'Risk of infection if two agents collide',
+  'Ξ': 'Average number of isolation time steps',
+  'i': 'Average number of time steps before isolation'
 };
 
 const NAMES = {
   R0: "<i><u>R</u><sub>0</sub></i>",
-  E_I: "days exposed",
-  I_R: "days infectious",
-  r: "Random infection",
+  E_I: "Days exposed",
+  I_R: "Days infectious",
+  ri: "Random infection",
   updates: 'Updates',
-  iterations: 'Iterations',
+  iterations: 'Time steps',
+  Ρ: 'Risk infection',
+  Ξ: 'Isolation time steps',
+  i: 'Pre-isolation time steps'
 };
 
 // SIR models
@@ -354,7 +360,7 @@ const microMeasles = {
   parameters: {
     R0: 2,
     β: 0.0092,
-    r: 0.0,
+    ri: 0.0,
     iterations: 415,
     updates: 5,
   },
@@ -375,7 +381,7 @@ const microMeasles = {
     // If no I set first agent to I. This is random because of shuffle.
     function(model) {
       if (model.compartments.I == 0) {
-        if (Math.random() < model.parameters.r)
+        if (Math.random() < model.parameters.ri)
           model.agents[0].compartment = "I";
       }
     },
@@ -470,6 +476,7 @@ const macroGranichEtAl = {
     iterations: 50,
     updates: 10
   },
+  names: NAMES,
   initialize: [
     function(model) {
       model.compartments.I = tallyInfectionsGranich(model).value;
@@ -642,6 +649,7 @@ const microGranichEtAl = {
   name: "Micro model implementation of Granich et al.",
   compartments: EpiMacro.deepCopy(macroGranichEtAl.compartments),
   parameters: EpiMacro.deepCopy(macroGranichEtAl.parameters),
+  names: NAMES,
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
@@ -876,6 +884,7 @@ const macroCovid = {
     iterations: 3*365,
     updates: 10
   },
+  names: NAMES,
   initialize: [
     function(model) {
       const N = EpiMacro.calcN(model.compartments, ['D']);
@@ -989,6 +998,7 @@ const microCovid = {
   name: "Covid micro model",
   compartments: macroCovid.compartments,
   parameters: macroCovid.parameters,
+  names: NAMES,
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
@@ -1102,6 +1112,88 @@ const microCovid = {
 };
 
 EpiUI.create(microCovid, document.getElementById('microCovid'));
+
+
+/*** Visualization infections ***/
+
+let microVisu = EpiMacro.deepCopy(microSIR100);
+
+microVisu.name = "Micro model with visualization of infections";
+microVisu.compartments = {
+  'S': 95,
+  'I': 5,
+  'R': 0
+},
+microVisu.parameters = {
+  D: 200.0,
+  Ξ: 0,
+  i: 0.02,
+  Ρ: 1.0,
+  iterations: 300,
+  updates: 300,
+};
+microVisu.beforeEvents = [
+  EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
+  EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
+  EpiMicro.eventSetAgentPositions, EpiMicro.eventSetAgentdxdy,
+  EpiMicro.eventSetIsolate, EpiMicro.eventRandomizeAgentPositions,
+  function(model) {
+    model.working.r = 1.0 / model.parameters.D;
+    model.working.risk_leave_isolation = 1.0 / model.parameters.Ξ;
+  },
+];
+
+
+microVisu.duringEvents = [
+  EpiMicro.eventShuffle,
+  EpiMicro.eventIsolateAgents,
+  EpiMicro.eventUnisolateAgents,
+  // Possibly infect agents that are touching
+  function(model) {
+    for (let i = 0; i < model.agents.length - 1; i++) {
+      if (model.agents[i].compartment == 'R') {
+        continue;
+      }
+      for (let j = i + 1; j < model.agents.length; j++) {
+        if (model.agents[i].compartment !== model.agents[j].compartment) {
+          let infectious, susceptible;
+          if (model.agents[i].compartment === 'I' &&
+              model.agents[j].compartment === 'S') {
+            infectious = model.agents[i];
+            susceptible = model.agents[j];
+          } else if (model.agents[i].compartment === 'S' &&
+                     model.agents[j].compartment === 'I') {
+            infectious = model.agents[j];
+            susceptible = model.agents[i];
+          } else {
+            continue;
+          }
+          if (EpiMicro.touching(infectious, susceptible, model.working.radius)) {
+            if (Math.random() < model.parameters.Ρ) {
+              susceptible.compartment = 'I';
+              continue;
+            }
+          }
+        }
+      }
+    }
+  },
+  EpiMicro.eventMoveAgents,
+  function(model) {
+    EpiMicro.eventFromToRisk(model, 'I', 'R', model.working.r);
+  },
+  EpiMicro.eventResetChanged,
+  EpiMicro.eventTallyCompartments
+]
+EpiUI.create(microVisu, document.getElementById('microVisu'));
+
+let microVisuWithIsolationOn = EpiMacro.deepCopy(microVisu);
+microVisuWithIsolationOn.parameters.Ξ = 600;
+EpiUI.create(microVisuWithIsolationOn,
+             document.getElementById('microVisuWithIsolationOn'));
+
+
+/*****************************/
 
 // Just keeping around in case.
 // rungeKutta test

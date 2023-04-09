@@ -5,8 +5,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="author" content="Nathan Geffen" >
-        <meta name="description" content="Epidemiology: Macro and micro models for infectious disease epidemics">
-        <meta name="keywords" content="Epidemiology,models,micro models,macro models,agent-based models,simulation,infectious disease">
+        <meta name="description" content="Epidemiology: Macrosimulation and microsimulation models for infectious disease epidemics">
+        <meta name="keywords" content="Epidemiology,models,microsimulation models,macrosimulation models,agent-based models,simulation,infectious disease">
         <title>Modelling infectious diseases</title>
         <link rel="stylesheet" href="epi.css?v=20230321">
     </head>
@@ -463,13 +463,15 @@
         </aside>
         <p>
             There are many ways to model epidemics, but we can broadly divide
-            models into two types: macro and micro. The former typically use a
-            set of equations &mdash; either difference or differential ones
-            &mdash; to calculate changes in a population, while the latter
-            consist of numerous agents, each representing a person with their
-            own specific behaviour. Macro models are often also called
-            compartmental or equation-based, while micro models are often called
-            agent-based or individual-based simulations.
+            models into two types: macrosimulation and microsimulation. The
+            former typically use a set of equations &mdash; either difference or
+            differential ones &mdash; to calculate changes in a population,
+            while the latter consist of numerous agents, each representing a
+            person with their own specific behaviour. Macrosimulation models are
+            often also called compartmental or equation-based, while
+            microsimulation models are often called agent-based or
+            individual-based models. For short, we'll call them macro and micro
+            models.
         </p>
         <p>
             At the onset of the Covid pandemic, many websites explained how SIR
@@ -605,7 +607,9 @@
         <p>
             Note that the number of people in our macro model compartments are
             continuous real numbers, not discrete. This is a big difference
-            between our macro and micro models.
+            between our macro and micro models. Macro models are calculating the
+            expected values for the compartments on each time step, so their
+            outputs are non-integer values.
         </p>
 
         <p>
@@ -631,7 +635,8 @@
 
         <p>
             So if 10 people are susceptible and 2 of them become infected on an
-            iteration, $\lambda$ on that particular iteration is 0.2. But how do we update $\lambda$ on each iteration?
+            iteration, $\lambda$ on that particular iteration is 0.2. But how do
+            we update $\lambda$ on each iteration?
         </p>
 
         <p>
@@ -735,9 +740,10 @@
         </p>
         <p>
             There are two ways to fix such a problem. One would be to have each
-            iteration represent a much smaller time unit. You'd have to change
-            the value of $D$ appropriately. So if your timestep is 1/10th of a
-            day, then $D$ is then set to 50 to represent our new model world.
+            iteration represent a much smaller unit of time. You'd have to
+            change the value of $D$ appropriately. So if your timestep is 1/10th
+            of a day, then $D$ is then set to 50 to represent our new model
+            world.
         </p>
         <p>
             An alternative is to instead use differential equations. Difference
@@ -803,8 +809,8 @@
             set $\underline{R}_0$ too close to 3000 without reducing the time
             step. Of course such a high $\underline{R}_0$ is of no practical
             concern.<span class="footnote">
-            To solve differential equations we use the <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">Runge Kutta</a>
-            algorithm, nicely <a href="https://github.com/giannotr/runge-kutta-js">implemented by Ruben Giannotti</a>
+            To solve differential equations we use the <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods">Runge Kutta fourth order method</a>
+             <a href="https://github.com/giannotr/runge-kutta-js">implemented by Ruben Giannotti</a>
             in Javascript. I have set the step size to 0.01. A more
             sophisticated implementation could <a href="https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta_methods#Adaptive_Runge%E2%80%93Kutta_methods">adapt</a> the
             step size, but this seems unneccessary for our purposes.</span>
@@ -818,12 +824,16 @@
         <p>
             A micro model consists of agents and events. An agent typically
             represents a single person in a population. An event typically is
-            executed on a subset of agents. There are different ways to implement
-            micro models. The methodology described here is simple and fast.
+            executed on a subset of agents. There are different ways to
+            implement micro models. The methodology described here is simple and
+            fast and one I use.
         </p>
 
-        <p> There are three stages to executing our micro models: <em>before</em>
-            events, <em>during</em> events and <em>after</em> events.
+        <p>
+            We have three types of events, those that are executed once
+            <em>before</em> the simulation's main loop, those that are executed
+            repeatedly <em>during</em> the main loop and those that are executed
+            once <em>after</em> the main loop.
         </p>
         <p>
             First execute the
@@ -833,25 +843,24 @@
             the simulation starts.
         </p>
         <p>
-            Then iteratively execute the <em>during</em> events until some stop
-            condition is met. As with our difference equation macro model, each
-            iteration corresponds to our time step. A simple stop condition is
-            simply to execute the during events $n$ times, where $n$ is a
-            user-defined constant. Typical during events would shuffle the
-            agents (to generate more stochasticity), infect some susceptibe
-            agents, vaccinate some agents, recover some infected agents, or kill
-            some ill agents.<span class="footnote">A different way to do micro
-            models is to schedule stochastically ocurring specific events on
-            specific agents. I haven't used this methodology and I am currently
-            unable to see how to create efficient models using this approach.
-            But, that may be simply a factor of my ignorance, and in future I
-            may investigate this methodology and, once I understand it better,
-            write about it.
+            Then run the main loop which iteratively executes the <em>during</em>
+            events until some stop condition is met. A typical stop condition is
+            simply to execute the events $n$ times, where $n$ is a user-defined
+            constant specifying the number of time steps. Typical events would
+            shuffle the agents (to generate more stochasticity), infect some
+            susceptibe agents, vaccinate some agents, recover some infected
+            agents, or kill some ill agents.<span class="footnote">A different
+            way to do micro models is to schedule stochastically ocurring
+            specific events on specific agents. I haven't used this methodology
+            and I am currently unable to see how to create efficient models
+            using this approach. But, that may be a factor of my ignorance, and
+            in future I may investigate this methodology and, once I understand
+            it better, write about it.
             </span>
         </p>
         <p>
-            Finally execute the after events which would typically be writing a
-            report or creating a CSV file of the outputs.
+            Finally execute the <em>after</em> events which would typically be
+            writing a report or creating a CSV file of the outputs.
         </p>
 
         <p>Here is the structure of our micro models:</p>
@@ -889,7 +898,7 @@
             </li>
             <li>
                 With the parameters used here, the infectious disease in the
-                micro model often fails to take off; no one besides the
+                micro model often fails to take off; no one beyond the
                 originally infected agent becomes infected.
             </li>
             <li>
@@ -2160,8 +2169,44 @@
             models.
         </p>
 
-        <h2>Graphical depictions of health interventions ##TODO</h2>
+        <h2>Graphical depictions of health interventions</h2>
 
+        <p>
+            Models can be used to show the public why a medical intervention is
+            useful. For example, here is a straightforward model that shows that
+            if infectious people isolate during the outbreak of an airborne
+            disease, the number of infections can be reduced. The agents move
+            somewhat randomly. A susceptible agent becomes infected if it
+            touches an infectious one, with a probability determined by the  <em>Risk infection</em> parameter, which defaults to 1.
+        </p>
+        <p>
+            In the first version of the model, no one isolates.
+        </p>
+        <div id="microVisu" class="sir">
+            <noscript>You need Javascript enabled to run this webpage's models.</noscript>
+        </div>
+        <p>
+            In the second version infectious agents are likely to isolate for
+            most of the the period of their isolation. When agents isolate they
+            are moved into the left section of the Population panel and they
+            remain stationary for the duration of their isolation. They may
+            recover in that period. The models are identical except that the <em>isolation time steps</em> parameter
+            is set to 0 in the top model.
+        </p>
+        <div id="microVisuWithIsolationOn" class="sir">
+            <noscript>You need Javascript enabled to run this webpage's models.</noscript>
+        </div>
+        <p>
+            The models are abstract but also simple. Unlike our other models, a
+            time step here doesn't correspond to a day, but to all the
+            non-isolated agents moving one quantum. The model is stochastic so
+            results will differ across runs for the same parameter values.
+            Occasionally a run of the second model will result in more
+            infections than a run of the first one. Adjust the parameters to see
+            how the average level of isolation adherence affects the number of
+            infections, or how the efficacy of isolation differs for depending
+            on the disease duration and level of infectiousness.
+        </p>
         <aside>
             <button type="button">Finding the source of epidemics</button>
             <div>
@@ -2321,6 +2366,9 @@
                 <input type="range" min="1" max="15" value="5"
                        id="calibration-graph-days-infectious">
                 <span id="calibration-graph-days-infectious-value">2</span>
+                <button type="button" id="calibration-graph-make-another">
+                    New observations
+                </button>
             </div>
             <p id="calibration-alert">
             </p>

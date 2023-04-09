@@ -56,12 +56,23 @@
     }
   }
 
+  const setdxdy = function(agent) {
+    const dxdy = [ [-1, -1], [-1, 0], [-1, 1],
+                   [0, -1], [0, 1],
+                   [1, -1], [1, 0], [1, 1]];
+    const index = Math.floor(Math.random() * dxdy.length);
+    const [dx, dy] = dxdy[index];
+    agent.dx = dx;
+    agent.dy = dy;
+  }
+
+
   EpiMicro.eventSetAgentPositions = function(model) {
     const radius = (model.options && model.options.radius) ||  4;
     const gap = (model.options && model.options.gap) || radius;
-    const width = (model.options && model.options.width) ||
+    const width = model.working.width || (model.options && model.options.width) ||
           (Math.sqrt(model.agents.length) + 1) * (radius + gap);
-    const height = width;
+    const height = model.working.height || width;
     const area = width * height;
     model.working.width = width;
     model.working.height = height;
@@ -81,12 +92,98 @@
     }
   }
 
+  EpiMicro.eventSetAgentdxdy = function(model) {
+    for (let agent of model.agents) {
+      setdxdy(agent);
+    }
+  }
+
+
+
+  EpiMicro.eventRandomizeAgentPositions = function(model) {
+    const radius = model.working.radius;
+    const gap = (model.options && model.options.gap) || radius;
+    const diameter = 2 * radius;
+    const x_edge = model.working.width - radius;
+    model.working.x_left = Math.floor(0.25 * model.working.width);
+    const x_left = model.working.x_left + radius + gap;
+    const width = x_edge - x_left;
+    const height = model.working.height - radius - gap;
+    let x_isolated = diameter;
+    let y_isolated = diameter;
+
+    const randomizeAgentPosition = function(agent) {
+      agent.x = Math.floor(Math.random() * width) + x_left + radius + gap;
+      agent.y = Math.floor(Math.random() * height);
+    }
+
+    const placeIsolatedAgent = function(agent) {
+      agent.x = x_isolated;
+      agent.y = y_isolated;
+      x_isolated += radius + 2 * gap;
+      if (x_isolated >= x_left - diameter) {
+        x_isolated = diameter;
+        y_isolated += radius + 2 * gap;
+        if (y_isolated > height - diameter) {
+          agent.x = Math.floor(Math.random() * (x_left - diameter));
+          agent.y = Math.floor(Math.random() * (height - diameter));
+        }
+      }
+    }
+
+    for (let agent of model.agents) {
+      if (agent.isolated === false) {
+        randomizeAgentPosition(agent);
+      } else {
+        placeIsolatedAgent(agent);
+      }
+    }
+    model.working.randomizeAgentPosition = randomizeAgentPosition;
+    model.working.placeIsolatedAgent = placeIsolatedAgent;
+  }
+
   EpiMicro.eventSetAgentCompartments = function(model) {
     let i = 0;
     for (const [compartment, num] of Object.entries(model.compartments)) {
       let end = i + num;
       for (; i < end; i++)
         model.agents[i]['compartment'] = compartment;
+    }
+  }
+
+  EpiMicro.eventSetIsolate = function(model) {
+    for (let agent of model.agents) {
+      agent.isolated = false;
+      agent.previously_isolated = false;
+    }
+  }
+
+  EpiMicro.eventIsolateAgents = function(model) {
+    if (model.parameters.Ξ > 0 && model.parameters.i > 0.0) {
+      for (let agent of model.agents) {
+        if (agent.compartment == 'I' && agent.isolated == false &&
+            agent.previously_isolated == false) {
+          let r = Math.random();
+          if (r < model.parameters.i) {
+            agent.isolated = true;
+            agent.previously_isolated = true;
+            model.working.placeIsolatedAgent(agent);
+          }
+        }
+      }
+    }
+  }
+
+  EpiMicro.eventUnisolateAgents = function(model) {
+    if (model.parameters.Ξ > 0) {
+      for (let agent of model.agents) {
+        if (agent.isolated === true) {
+          if (Math.random() < model.working.risk_leave_isolation) {
+            agent.isolated = false;
+            model.working.randomizeAgentPosition(agent);
+          }
+        }
+      }
     }
   }
 
@@ -109,6 +206,53 @@
   EpiMicro.eventAge = function(model) {
     for (let agent of model.agents)
       agent.age += EpiMicro.DAY;
+  }
+
+  const distanceSquared = function(A, B) {
+    const d_x = (A.x - B.x);
+    const d_y = (A.y - B.y);
+    return d_x * d_x + d_y * d_y;
+  }
+
+  EpiMicro.touching = function(A, B, radius) {
+    const d = distanceSquared(A, B);
+    if (d < 4 * radius * radius)
+      return true;
+    return false;
+  }
+
+  EpiMicro.moveAgent = function(model, A) {
+    const radius = model.working.radius;
+    if (Math.random() < 0.25) {
+      setdxdy(A);
+    }
+    A.x += A.dx;
+    A.y += A.dy;
+
+    if (A.x >= model.working.width - radius) {
+      A.x = model.working.width - radius;
+      A.dx = -A.dx;
+    }
+    if (A.x <= model.working.x_left) {
+      A.x = model.working.x_left + radius;
+      A.dx = -A.dx;
+    }
+    if (A.y >= model.working.height - radius) {
+      A.y = model.working.height - radius;
+      A.dy = -A.dy;
+    }
+    if (A.y <= radius) {
+      A.y = radius;
+      A.dy = -A.dy;
+    }
+  }
+
+  EpiMicro.eventMoveAgents = function(model) {
+    for (let agent of model.agents) {
+      if (agent.isolated === false) {
+        EpiMicro.moveAgent(model, agent);
+      }
+    }
   }
 
   const calcN = function(model) {

@@ -97,45 +97,52 @@ function getObservationsAndModel(R0, daysExposed, daysInfectious)
 }
 
 
-function makeCalibrationGraph()
+function makeCalibrationGraph(calibrationChart = undefined)
 {
   const R0 = 4.0;
   const DaysExposed = 2.0;
   const DaysInfectious = 5.0;
   const data = getObservationsAndModel(R0, DaysExposed, DaysInfectious);
   let labels = [];
-  for (let i =0; i < data['model'].length; i++) {
+  for (let i = 0; i < data['model'].length; i++) {
     labels.push(i);
   }
   const ctx = document.getElementById('calibration-chart');
 
-  let calibrationChart = new Chart(ctx, {
-    data: {
-      type: 'line',
-      labels: labels,
-      datasets: [
-        {
-          label: 'Observed',
-          data: data['observations'],
-          borderWidth: 1,
-          type: 'line'
-        },
-        {
-          label: 'Model',
-          data: data['model'],
-          borderWidth: 1,
-          type: 'line'
-        },
-      ]
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true
+  if (calibrationChart === undefined) {
+    calibrationChart = new Chart(ctx, {
+      data: {
+        type: 'line',
+        labels: labels,
+        datasets: [
+          {
+            label: 'Observations',
+            data: data['observations'],
+            borderWidth: 1,
+            type: 'line'
+          },
+          {
+            label: 'Model',
+            data: data['model'],
+            borderWidth: 1,
+            type: 'line'
+          },
+        ]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
         }
       }
-    }
-  });
+    });
+  } else {
+    calibrationChart.data.datasets[0].data = data['observations'];
+    calibrationChart.data.datasets[1].data = data['model'];
+    calibrationChart.update();
+  }
+
   return [calibrationChart, data];
 }
 
@@ -150,19 +157,19 @@ function meanSquaredError(Y1, Y2)
   return total / n;
 }
 
-function maxSquaredError(observed)
+function maxSquaredError(observation)
 {
   let zeros = [];
-  for (const _ of observed) zeros.push(0);
-  const maxError = meanSquaredError(observed, zeros);
+  for (const _ of observation) zeros.push(0);
+  const maxError = meanSquaredError(observation, zeros);
   return [0.01 * maxError, 0.1 * maxError, maxError]
 }
 
-function checkIfMatch(observed, model)
+function checkIfMatch(observation, model)
 {
-  const mse = meanSquaredError(observed, model).toFixed(2);
+  const mse = meanSquaredError(observation, model).toFixed(2);
 
-  const [small, medium, _] = maxSquaredError(observed);
+  const [small, medium, _] = maxSquaredError(observation);
 
   if (mse < small) {
     document.getElementById('calibration-alert').textContent =
@@ -222,6 +229,10 @@ function setupCalibration()
       document.getElementById('calibration-graph-days-infectious-value').
         textContent = e.target.value;
       updateCalibrationChart(chart, data);
+    });
+  document.getElementById('calibration-graph-make-another').
+    addEventListener('click', function() {
+      [chart, data] = makeCalibrationGraph(chart);
     });
 }
 

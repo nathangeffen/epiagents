@@ -18,7 +18,6 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 "use strict";
 
 (function (EpiUI) {
@@ -116,6 +115,13 @@
     ctx.closePath();
   }
 
+  function drawIsolationLine(ctx, width, height) {
+    ctx.beginPath();
+    ctx.moveTo(width, 0);
+    ctx.lineTo(width, height);
+    ctx.stroke();
+  }
+
   function drawMacroPopulation(ctx, populationCanvas, model, colors) {
     const numAgents = EpiMacro.calcN(model.compartments);
     const width = populationCanvas.width;
@@ -187,6 +193,11 @@
       } else {
         drawMicroPopulation(ctx, populationCanvas, model, colors);
       }
+    }
+    if (model.parameters.hasOwnProperty('Ξ')) {
+      const x = model.working.x_left * (populationCanvas.width /
+                                        model.working.width);
+      drawIsolationLine(ctx, x, populationCanvas.height);
     }
   }
 
@@ -268,9 +279,9 @@
     const totalIterations = (model.parameters &&
                              model.parameters.iterations) ||
           defaultIterations;
-    const iterationsPerUpdate = totalIterations /
+    const iterationsPerUpdate = Math.floor(totalIterations /
           ( (model.parameters && model.parameters.updates) ||
-            defaultUpdates);
+            defaultUpdates));
 
     const options = model.options || {};
 
@@ -364,11 +375,10 @@
     runButton.textContent = "Run";
     runButton.classList.add('epi-run-btn');
     runButtonDiv.append(runButton);
-    populationCanvas.height = options.parameters && options.parameters.height ||
-      populationDiv.clientHeight - 45;
     populationCanvas.width = options.parameters && options.parameters.width ||
       populationDiv.clientWidth - 30;
-
+    populationCanvas.height = options.parameters && options.parameters.height ||
+      populationDiv.clientHeight - 45;
     return [resultsDiv, chartDiv, populationDiv, parametersDiv, runButtonDiv];
   }
 
@@ -468,6 +478,8 @@
         let chartCanvas = chartDiv.querySelector('canvas');
         let populationCanvas = populationDiv.querySelector('canvas');
         workingModel = EpiMacro.deepCopy(model);
+        workingModel.working.width = populationCanvas.width;
+        workingModel.working.height = populationCanvas.height;
         workingModel.working.runStatus = "running";
         workingModel.working.runBtn = runBtn;
         runBtn.textContent = "Stop";
