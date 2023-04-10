@@ -754,9 +754,7 @@
         <p>
             A differential equation expresses the rate of change in a
             compartment as the time step becomes tinier and tinier, getting
-            closer and closer to zero. <span class="review-query">Is this
-            accurately and clearly expressed? If not how can I do
-            better?</span> <span class="footnote">A rudimentary calculus book
+            closer and closer to zero. <span class="footnote">A rudimentary calculus book
             can explain this better and in more depth. Also, the explanation in
             <a href="https://anintroductiontoinfectiousdiseasemodelling.com/">Vynnycky and
                 White</a> is excellent.</span> Instead of using the subscript
@@ -1085,11 +1083,11 @@
         <p>
             A more serious misconception during the height of the pandemic was
             the concept of herd immunity. Many implied that once herd immunity
-            was reached, that was pretty much the end of the epidemic. Putting
-            aside that the SARS-CoV-2 virus keeps mutating, with the consequence
-            that recovered people become susceptible again, even in its
-            idealised meaning herd immuunity does not mean an epidemic has
-            ended, or is even necessarily close to the end.
+            was reached, that was pretty much the end of the epidemic. But
+            putting aside that the SARS-CoV-2 virus keeps mutating, with the
+            consequence that recovered or vaccinated people become susceptible
+            again, even in its idealised meaning herd immuunity does not mean an
+            epidemic has ended, or is even necessarily close to the end.
         </p>
 
         <p>
@@ -1119,15 +1117,23 @@
 
 
         <p>
-            The Herd Immunity Threshold is the target proportion of the
-            population vaccination programmes aims to reach to suppress an
-            infectious disease, such as measles for example. During the height
-            of the Covid pandemic, But the problem with \underline{R_0} and
-            \underline{R_t} is that they are easy to define and calculate in our
-            idealised SIR model. They are hard to calculate in micro models or
-            even complex macro models. And they are extremely hard to estimate
-            in real world epidemics, which usually progress in fits and starts
-            and not the nice smooth curves of our macro models.
+            The Herd Immunity Threshold is the proportion of the population that
+            needs to be immune, either naturally or due to vaccination, to
+            prevent a new outbreak of a disease. It is the target proportion of
+            the population that vaccination programmes aim to reach to suppress
+            an infectious disease, such as measles for example. Measles, mumps
+            and rubella are examples of diseases which confer almost 100%
+            immunity after recovery or vaccination (<a href="https://anintroductiontoinfectiousdiseasemodelling.com/">Vynnycky and
+            White</a>). But when a virus mutates as fast as Covid, however, it's
+            a much less useful concept.
+        </p>
+        <p>
+            A problem with \underline{R_0} and \underline{R_t} is that they are
+            easy to define and calculate in our idealised SIR model. They are
+            hard to calculate in micro models or even complex macro models. And
+            they are extremely hard to estimate in real world epidemics, which
+            usually progress in fits and starts and not the nice smooth curves
+            of our macro models.
         </p>
 
         <h2>Adding an exposure compartment</h2>
@@ -1155,6 +1161,11 @@
             \begin{equation} I_{t+1} = I_t + f I_t - r I_t \end{equation}
 
             \begin{equation} R_{t+1} = R_t + r R_t \end{equation}
+        </p>
+
+        <p>
+            We've introduced a new parameter, $f$, which is the rate at which
+            people move from the exposure to the infectious compartments.
         </p>
 
         <p>
@@ -1367,12 +1378,13 @@
             grades so turnover is about 20% a year. We will assume the
             infectious period with measles is about two weeks (this isn't
             accurate but good enough for our over-simplified purposes), and this
-            is our time-step. We set $\underline{R_0}$ to 0.
+            is our time-step. We set $\underline{R_0}$ to 2.
         </p>
         <p>
             In our model that implements this model world there are just three
             compartments: $S$, $I$ and $R$. $N$ is the constant population size
-            ($S+I+R$) and \beta is the population turnover rate. Here are the
+            ($S+I+R$) and \beta is the population turnover rate. We also assume
+            people stay infected for exactly one time step. Here are the
             difference equations:
 
             \begin{equation} I_{t+1} = \underline{R}_0 I_t {S_t \over N}
@@ -1386,7 +1398,7 @@
         <p>
             This is a simple model but it's also unstable. Set $\underline{R}_0$
             a bit high and either $S$ or $R$ goes below zero and the model falls
-            apart. So I've sligthly adapted the code for the above equations to
+            apart. So I've slightly adapted the code for the above equations to
             not reduce $S$ or $R$ below zero. This keeps the model stable.
         </p>
 
@@ -1437,8 +1449,15 @@
             do we simply have a set of equations (or rules in the micro model)
             that happen to approximate the infection distribution of measles?
             Where, for instance, did all the measles go in the non-epidemic
-            years? I don't know the answer, and the models don't tell us. I find
-            this unsatisfying; better models of measles are needed than this.
+            years? I don't know the answer, and the models don't tell us.
+            Another problem is that estimates of $\underline{R_0}$ for measles
+            outbreaks are 12 to 18 (<a href="https://anintroductiontoinfectiousdiseasemodelling.com/">Vynnycky and
+            White</a>), much higher than 2, which we've used here.
+        </p>
+
+        <p>
+            Consequently, I find the models of measles here unsatisfying; better
+            ones are needed.
         </p>
 
         <aside>
@@ -1793,11 +1812,13 @@
         <p>
             While I have done my best to match the two models, the course of the
             epidemic is now highly non-linear and I haven't achieved
-            near-perfect matching like in the SIR and SEIR models. Nevertheless,
-            in infectious disease modelling we are seldom, if ever, interested
-            in precise predictions; we merely hope for plausible approximations.
-            So the differences between the outputs of the two models appear to
-            be inconsequential.
+            near-perfect matching like in the SIR and SEIR models. Sometimes in
+            infectious disease modelling this is fine; we merely hope for
+            plausible approximations and the differences between the outputs of
+            the two models may then be inconsequential. But sometimes more
+            precise estimates are required and if a macro and micro model making
+            similar assumptions give different outputs then the task of
+            explaining why becomes important.
         </p>
 
         <aside>
@@ -2036,27 +2057,28 @@
         </p>
         <ul>
             <li>
-                To start with we have a large susceptible (S) population and
+                To start with we have a large susceptible ($S$) population and
                 a few people who are infected with SARS-CoV-2.
             </li>
             <li>
                 People progress through several stages of infection: exposed
-                (E), infectious asymptomatic (Ia), infectious symptomatic (Is),
-                infectious hospitalised (Ih) and infectious ICU (Iu). Every
-                E person becomes Ia but all other stages can be skipped.
+                ($E$), infectious asymptomatic ($Ia$), infectious symptomatic ($Is$),
+                infectious hospitalised ($Ih$) and infectious ICU ($Iu$). Every
+                $E$ person becomes $Ia$ but all other stages can be skipped.
             </li>
             <li>
-                The level of infectiousness of people varies from stage to
-                stage. People in the Is compartment are more infectiousness than
-                people in Ia, Ih and Iu (the latter two because infectious
-                control should be better in hospitals).
+                The infectiousness of people varies from stage to stage. People
+                in the Is compartment are more infectiousness than people in
+                $Ia$, $Ih$ and $Iu$ (the latter two because infectious control
+                should be better in hospitals). These infectiousness factors are
+                represented by $Inf\_Ia$, $Inf\_Is$, $Inf\_Ih$ and $Inf\_Ii$.
             </li>
             <li>
                 At the end of the infection stages, a person either recovered
-                (R) or dies (D).
+                ($R$) or dies ($D$).
             </li>
             <li>
-                People can also become vaccinated (V), in which case, if they
+                People can also become vaccinated ($V$), in which case, if they
                 are uninfected they are more likely to remain so than
                 susceptible people.
             </li>
@@ -2065,23 +2087,25 @@
                 again.
             </li>
             <li>
-                At a random interval, a susceptible person becomes exposed to
-                Covid outside the community. (This is so we can model
-                introducing Covid continuously into the community.)
+                Randomly, a susceptible person becomes exposed to Covid. This is
+                so we can model introducing Covid continuously into the
+                community, even when no one else is in the community is
+                infected.
             </li>
         </ul>
         <p>
-            In our model, our compartments are S, E, Ia, Is, Ih, Ii, R, V and D.
-            The time step is one day. The probability at which people transition
-            between two compartments is specified by the name of the source
-            compartment, an underscore, _, and the name of the destination
-            department. For example if we set Ia_Is to 0.2, this means there is
-            a 20% chance that people in the infectious asymptomatic compartment
-            will move to the infectious symptomatic compartment on a time step.
+            In our model, our compartments are $S$, $E$, $Ia$, $Is$, $Ih$, $Ii$,
+            $R$, $V$ and $D$. The time step is one day. The probability at which
+            people transition between two compartments is specified by the name
+            of the source compartment, an underscore, _, and the name of the
+            destination department. For example if we set $Ia\_Is$ to 0.2, this
+            means there is a 20% chance that people in the infectious
+            asymptomatic compartment will move to the infectious symptomatic
+            compartment on a time step.
         </p>
         <p>
             People in some compartments can transition to one of two mutually
-            exclusive compartments. For example there is also an Ia_R
+            exclusive compartments. For example there is also an $Ia\_R$
             transition, representing people who move straight from asymptomatic
             infection to recovery. The model must first calculate the one
             transition and then the other. The order matters. The order in which
@@ -2092,10 +2116,9 @@
             It's tricky to use $\underline{R_0}$ directly to calculate the
             number of people that become exposed per time step in this model.
             This is because the average number of days of infectiousness, $D$ in
-            equation \eqref{eq:R0}, is very hard to calculate.
-            <span class="review-query">Does this make sense?</span>
-            Instead the parameter α replaces it so that on a given time step the
-            number of new infections (i.e. the transition from S to E, S_E) is:
+            equation \eqref{eq:R0}, is very hard to calculate. Instead the
+            parameter α replaces it so that on a given time step the number of
+            new infections (i.e. the transition from $S$ to $E$, $S\_E$) is:
 
             \begin{equation} S\_E = { {α \times I \times S} \over N_0 }
             \end{equation}
@@ -2103,13 +2126,18 @@
             where $N_0$ is the initial population.
         </p>
         <p>
+            $I$ is calculated by multiplying the infectiousness of each
+            infectious compartment by the value of the compartment itself and then summing these:
+            \begin{equation}
+            I = Inf\_Ia \times Ia + Inf\_Is \times Is + Inf\_Ih \times Ih +
+            Inf_Ii \times Ii
+            \end{equation}
+        </p>
+        <p>
             The rate at which susceptible people are exposed outside the
             community on a time step is given by the parameter $r$.
         </p>
-        <p>
-            The relative infectiousness of each infectious stage Ia, Is, Ih and
-            Ii is specified by Inf_Ia, Inf_Is, Inf_ih and Inf_Ii respectively.
-        </p>
+
         <p>
             Here is our macro model using difference equations.
         </p>
@@ -2319,8 +2347,6 @@
             </div>
         </aside>
 
-        <h2>Simulating thousands of infectious diseases ##TODO</h2>
-
         <h2>Calibrating models to real-world data</h2>
 
         <p>
@@ -2421,10 +2447,6 @@
         </p>
 
         <p>
-            This mean squared error is partially differentiable with respect
-            to each output, which means it can be used easily with function
-            minimization techniques such as gradient descent.
-            <span class="review-query">Is this correct?</span>
             Formally, the goal of calibration then is to find a set of values
             for the model parameters, $p_1, p_2 ... p_m$, that minimises the
             error function. (If you have come across the term <em>sum of the
@@ -2568,10 +2590,35 @@
             </div>
         </aside>
 
-
-
         <h2>Example microsimulation in C++ and Python</h2>
 
+        <p>
+            During Covid, there was much consideration of the effectiveness of
+            isolating infected people and quarantining their contacts. (From
+            hereon, for the purposes of this discussion, the word isolation
+            refers both isolating and quarantining.) A question that arose from
+            this is for what kinds of airborne infectious diseases is contact
+            tracing coupled with isolation likely to be effective?
+        </p>
+        <p>
+            To answer this question we simulated thousands of infectious
+            diseases. Each simulation had 10,000 agents and ran for 500 time
+            steps. Each disease was defined by randomly peturbing a number of
+            parameters within specified ranges. We generated 15,000 diseases.
+            For each disease we compared five different scenarios, ranging from
+            no isolation at all to complete adherence to isolation of infectious
+            people and their contacts. Because this was a stochastic
+            microsimulation, we ran each model ten times to get an average for
+            the model's outputs. In total we ran 750,000 simulations (<a href="https://www.medrxiv.org/content/10.1101/2020.10.07.20207845v1.full.pdf">Geffen and Low</a>,
+            2020). In fact, since we had several test runs, as well as bugs and
+            flops along the way to our final set of results, we actually ran
+            millions of simulations.
+        </p>
+        <p>
+            It would be impractical to have done this using an interpreted
+            language like Python or R. It would have been far too slow. Instead
+            we coded it in C++.
+        </p>
         <p>
             Modellers I've spoken to often yearn to make their micro, or
             agent-based, models much faster. They usually don't have a computer
