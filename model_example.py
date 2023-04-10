@@ -418,7 +418,7 @@ def event_print_agents(model):
 # then it will execute the following code. Otherwise it can be imported
 # as a module.
 if __name__ == '__main__':
-    model = Model(
+    Model(
         # An improvement would be to allow the user to specify the parameters
         # at the command line or in a configuration file.
         parameters={
@@ -469,6 +469,4 @@ if __name__ == '__main__':
         after_events=[
             event_tally_states, event_print_stats, event_sort_agents,
             event_print_agents
-        ])
-
-    model.run()
+        ]).run()

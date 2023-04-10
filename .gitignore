@@ -12,4 +12,6 @@ minimize.c
 model_example
 output.csv
 output.txt
+output_cc.txt
+output_py.txt
 __pycache__/
