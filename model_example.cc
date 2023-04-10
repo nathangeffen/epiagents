@@ -1,4 +1,6 @@
 /*
+ * C++ microsimulation model example.
+ *
  * Compilation instructions using gcc (tested on Linux using gcc version
  * 11.3):
  *
@@ -68,7 +70,7 @@
 // mechanism. You can safely remove thread_local in the current version.
 
 thread_local std::random_device rd{};
-thread_local std::mt19937 gen{rd()};
+thread_local std::default_random_engine gen(rd());
 
 // Every agent will have a sex because the death rates between males and
 // females will be different. Vaccine uptake will also differ.
@@ -88,9 +90,8 @@ enum State {
   COUNT
 };
 
-// This is the agent struct. An array (std::vector actually) of these is
+// An array (std::vector actually) of instances of the following Agent struct is
 // kept in the Model struct.
-
 struct Agent {
   int id;
   Sex sex;
@@ -113,7 +114,7 @@ typedef std::vector<EventFunc> EventArray;
 // having a name and an associated value.
 typedef std::unordered_map<std::string, std::any> Parameters;
 
-// This is the struct at the heart of our program.
+// This is the struct at the heart of our microsimulation.
 
 struct Model {
   // To avoid using a constructor, the model variables that need to be
@@ -130,7 +131,7 @@ struct Model {
   int current_time_step = 0;
 
   // This is used to track how many agents are in each state. It is updated
-  // by the function event_tally_stats.
+  // by the function event_tally_states.
   std::array<int, State::COUNT> state_counter;
 
   // Track the number of births that have to be given on a particular
@@ -380,6 +381,7 @@ void event_death(Model &model) {
   // These death rates per sex and age (up to 90) are taken from the
   // Thembisa model. An improvement would be to read this in from a file.
   static const std::vector<std::vector<double>> death_risk{
+      // Males
       {0.000076520889, 0.000017192652, 0.000007240219, 0.000005732737,
        0.000004441361, 0.000003385837, 0.000002569825, 0.000001990536,
        0.000001632355, 0.000001482819, 0.000001580916, 0.000001897548,
@@ -399,6 +401,7 @@ void event_death(Model &model) {
        0.000109436436, 0.000115770302, 0.000122776669, 0.000130516418,
        0.000138964572, 0.000148092754, 0.000157955894, 0.000168657991,
        0.000180337069},
+      // Females
       {
           0.000084085544, 0.000019234231, 0.000008680390, 0.000006692589,
           0.000005033958, 0.000003712643, 0.000002730538, 0.000002065006,

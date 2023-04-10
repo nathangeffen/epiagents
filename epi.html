@@ -2570,7 +2570,7 @@
 
 
 
-        <h2>An example micro model in C++</h2>
+        <h2>Example microsimulation in C++ and Python</h2>
 
         <p>
             Modellers I've spoken to often yearn to make their micro, or
@@ -2578,8 +2578,11 @@
             science background and only know a smattering of C or C++. If you
             are in this boat, below is a heavily commented non-trivial, but not
             too complicated ether, example model in C++ that can be extended
-            quite easily. (In the Github repository it is model_example.cc.) <span class="review-query">Should I do an
-            equivalent Python program so that modellers, more used to the latter, can then compare with the C++ code? And R too?</span>
+            quite easily. (In the Github repository it is model_example.cc.) And
+            if you've got some experience with Python, to make it easier to
+            understand the C++ exampled, I've coded an almost equivalent Python
+            version of the program. (In the Github repository it is
+            model_example.py.)
         </p>
         <p>
             The model has these characteristics:
@@ -2610,21 +2613,33 @@
 
         <p>Here is the code:</p>
 
-        <iframe id="cc-micro-model-example"
-                title="C++ micro model example"
-                width="100%"
-                height="500px"
-                src="model_example.html">
-        </iframe>
-
+        <div class="code-comparison">
+            <div>
+                <iframe id="cc-micro-model-example"
+                        title="C++ microsimulation model example"
+                        width="100%"
+                        height="500px"
+                        src="model_example_cc.html">
+                </iframe>
+            </div>
+            <div>
+                <iframe id="py-micro-model-example"
+                        title="Python microsimulation model example"
+                        width="100%"
+                        height="500px"
+                        src="model_example_py.html">
+                </iframe>
+            </div>
+        </div>
         <h2>Acknowledgements</h2>
 
         <p>
-            Thanks to Alex Welte and Stefan Scholz for advice. I have learnt
-            much about the modelling done here through discussions with Leigh
-            Johnson, Marcus Low and Eduard Grebe. Stefan Scholz has coauthored
-            papers with me, advised me, introduce me to various modelling
-            software tools and helped me to understand calibration better.<br>
+            Thanks to Alex Welte for advice, and Leigh Johnson and Stefan Scholz
+            for suggesting several improvements. I have learnt much about the
+            modelling done here through discussions with them as well as Marcus
+            Low and Eduard Grebe. Stefan coauthored papers with me, advised me,
+            introduce me to various modelling software tools and helped me to
+            understand calibration better.<br>
             All errors are my responsibility.
         </p>
 

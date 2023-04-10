@@ -98,12 +98,10 @@ blockquote {
   h1 {
     text-align: center;
   }
-  .sir, .epi-simulation {
+  .sir, .epi-simulation, .code-comparison {
     padding: 4px;
     border: 1px dashed #6495ED;
     border-radius: 5px;
-    /* padding: 16px;*/
-    /* margin: 24px auto 24px auto;*/
   }
 }
 
@@ -130,7 +128,7 @@ blockquote {
     padding-left: 16px;
     padding-right: 16px;
   }
-  .sir, .epi-simulation {
+  .sir, .epi-simulation, .code-comparison {
     padding-bottom: 12px;
     border-bottom: 1px dashed #6495ED;
   }
@@ -156,16 +154,19 @@ img {
   content: counter(models, upper-alpha)". ";
 }
 
-.sir {
+.sir, .code-comparison {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 12px;
-  counter-increment: models;
   margin-bottom: 12px;
 }
 
-.sir > div {
+.sir {
+  counter-increment: models;
+}
+
+.sir > div, .code-comparison > div {
   width: 47%;
 }
 
@@ -177,10 +178,10 @@ img {
 }
 
 @media (max-width: 800px) {
-  .sir {
+  .sir, .code-comparison {
     flex-direction: column;
   }
-  .sir > div {
+  .sir > div, .code-comparison > div {
     width: 95%;
   }
 }

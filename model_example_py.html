@@ -1,3 +1,18 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="author" content="Nathan Geffen" >
+        <meta name="description" content="Python example of micro model">
+        <meta name="keywords" content="Epidemiology,models,micro models,macro models,agent-based models,simulation,infectious disease">
+        <title>Python example of micromodel</title>
+    </head>
+    <body>
+        <pre class="prettyprint lang-py" style="border:none;">
+
 # Python 3 version of C++ microsimulation model, model_example.cc.
 #
 # This is free software published under the GNU General Public License
@@ -146,7 +161,7 @@ class Agent:
     def __init__(self, state=State.SUSCEPTIBLE, age=None):
         self.id = Agent.__id__
         Agent.__id__ = Agent.__id__ + 1
-        if random.random() < 0.5:
+        if random.random() &lt; 0.5:
             self.sex = Sex.MALE
         else:
             self.sex = Sex.FEMALE
@@ -209,7 +224,7 @@ def event_initialize_agents(model):
     # Now we loop through the number of susceptible and exposed, creating an
     # agent, appropriately initialized, on each iteration.
     for i in range(num_susceptible + num_exposed):
-        if i < num_susceptible:
+        if i &lt; num_susceptible:
             state = State.SUSCEPTIBLE
         else:
             state = State.EXPOSED
@@ -261,7 +276,7 @@ def event_infect(model):
                 contact_index = rng.integers(0, len(alive_indices))
                 if model.agents[alive_indices[contact_index]].state == \
                    State.INFECTIOUS:
-                    if rng.uniform() < risk_exposure:
+                    if rng.uniform() &lt; risk_exposure:
                         model.agents[i].state = State.EXPOSED
                         break
 
@@ -272,7 +287,7 @@ def change_agent_states(model, from_state, to_state, parameter):
     risk = model.parameters[parameter]
     for agent in model.agents:
         if agent.state == from_state:
-            if rng.uniform() < risk:
+            if rng.uniform() &lt; risk:
                 agent.state = to_state
 
 
@@ -326,7 +341,7 @@ def event_births(model):
     for i in range(int(model.birth_tracker)):
         model.agents.append(Agent(State.SUSCEPTIBLE, 0.0))
 
-    if model.birth_tracker > 0:
+    if model.birth_tracker &gt; 0:
         model.birth_tracker -= math.floor(model.birth_tracker)
 
 
@@ -346,7 +361,7 @@ def event_death(model):
 
             # For agents who are older than the maximum age catered for in our
             # mortality risk array, we simply use the last entry in the array.
-            if age_index >= len(DEATH_RISK[agent.sex]):
+            if age_index &gt;= len(DEATH_RISK[agent.sex]):
                 age_index = len(DEATH_RISK[agent.sex]) - 1
             risk = DEATH_RISK[agent.sex][age_index]
 
@@ -355,7 +370,7 @@ def event_death(model):
             # have a separate set of mortality risks for infectious agents.
             if agent.state == State.INFECTIOUS:
                 risk *= model.parameters['infectious_mortality_factor']
-            if rng.random() < risk:
+            if rng.random() &lt; risk:
                 if agent.state == State.INFECTIOUS:
                     model.deaths_while_infectious += 1
                 agent.state = State.DEAD
@@ -472,3 +487,10 @@ if __name__ == '__main__':
         ])
 
     model.run()
+
+    </pre>
+        <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+    </body>
+    </head>
+</html>
+

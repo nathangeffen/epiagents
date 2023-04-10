@@ -12,3 +12,4 @@ minimize.c
 model_example
 output.csv
 output.txt
+__pycache__/
