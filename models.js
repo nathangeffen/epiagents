@@ -38,8 +38,8 @@ const HELP = {
 
 const NAMES = {
   R0: "<i><u>R</u><sub>0</sub></i>",
-  E_I: "Days exposed",
-  I_R: "Days infectious",
+  E_I: "Days exposed (<i>1/f</i>)",
+  I_R: "Days infectious (D)",
   ri: "Random infection",
   updates: 'Updates',
   iterations: 'Time steps',
@@ -120,6 +120,7 @@ const microSIR = {
     updates: 10,
   },
   names: NAMES,
+  help: HELP,
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
@@ -238,6 +239,7 @@ const microSEIR = {
     updates: 10,
   },
   names: NAMES,
+  help: HELP,
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
@@ -365,6 +367,7 @@ const microMeasles = {
     updates: 5,
   },
   names: NAMES,
+  help: HELP,
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
@@ -477,6 +480,7 @@ const macroGranichEtAl = {
     updates: 10
   },
   names: NAMES,
+  help: HELP,
   initialize: [
     function(model) {
       model.compartments.I = tallyInfectionsGranich(model).value;
@@ -650,6 +654,7 @@ const microGranichEtAl = {
   compartments: EpiMacro.deepCopy(macroGranichEtAl.compartments),
   parameters: EpiMacro.deepCopy(macroGranichEtAl.parameters),
   names: NAMES,
+  help: HELP,
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
@@ -885,6 +890,7 @@ const macroCovid = {
     updates: 10
   },
   names: NAMES,
+  help: HELP,
   initialize: [
     function(model) {
       const N = EpiMacro.calcN(model.compartments, ['D']);
@@ -999,6 +1005,7 @@ const microCovid = {
   compartments: macroCovid.compartments,
   parameters: macroCovid.parameters,
   names: NAMES,
+  help: HELP,
   beforeEvents: [
     EpiMicro.eventCreateAgents, EpiMicro.eventSetAgentIds,
     EpiMicro.eventSetAgentCompartments, EpiMicro.eventSetCompartmentColors,
