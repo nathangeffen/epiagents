@@ -212,7 +212,7 @@ function setupCalibration()
 {
     let [chart, data] = makeCalibrationGraph();
     checkIfMatch(data['observations'], data['model']);
-     ['click', 'touchstart'].forEach(function(evt) {
+     ['click', 'touchend'].forEach(function(evt) {
          document.getElementById('calibration-graph-R0').
              addEventListener(evt, function(e) {
                  document.getElementById('calibration-graph-R0-value').textContent =
@@ -220,7 +220,7 @@ function setupCalibration()
                  updateCalibrationChart(chart, data);
              });
      });
-    ['click', 'touchstart'].forEach(function(evt) {
+    ['click', 'touchend'].forEach(function(evt) {
         document.getElementById('calibration-graph-days-exposed').
             addEventListener(evt, function(e) {
                 document.getElementById('calibration-graph-days-exposed-value').textContent =
@@ -228,7 +228,7 @@ function setupCalibration()
                 updateCalibrationChart(chart, data);
             });
     });
-    ['click', 'touchstart'].forEach(function(evt) {
+    ['click', 'touchend'].forEach(function(evt) {
         document.getElementById('calibration-graph-days-infectious').
             addEventListener(evt, function(e) {
                 document.getElementById('calibration-graph-days-infectious-value').
