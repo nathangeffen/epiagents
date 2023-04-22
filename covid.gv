@@ -1,0 +1,25 @@
+digraph sir {
+        rankdir=LR;
+        shape=box;
+        S [label=< <I>S</I> >]
+        E [label=< <I>E</I> >]
+        Ia [label=< <I>I<SUB>a</SUB></I> >]
+        Is [label=< <I>I<SUB>s</SUB></I> >]
+        Ih [label=< <I>I<SUB>h</SUB></I> >]
+        Ii [label=< <I>I<SUB>i</SUB></I> >]
+        R [label=< <I>R</I> >]
+        V [label=< <I>V</I> >]
+        S -> E [label=< <I>yIS/N<SUB>0</SUB> + rS</I> >]
+        S -> V
+        E -> Ia
+        Ia -> Is
+        Ia -> R
+        Is -> Ih
+        Is -> R
+        Ih -> Ii
+        Ih -> R
+        Ii -> Dead
+        Ii -> R
+        R -> S
+        V -> S
+}

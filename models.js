@@ -28,24 +28,83 @@ const HELP = {
   'R0': `Average number of people infected by a single infectious individual in
   naive population`,
   'D': 'Average number of days that an individual is infectious',
+  'I_R': 'Average number of days that an individual is infectious',
+  'E_I': 'Average number of days that an individual is exposed',
+  'β': 'Population turnover or growth rate',
   'iterations': 'Number of iterations the model executes',
   'updates': 'Number of iterations that are executed before the GUI is updated',
   'ri': 'Specifies probability of infectious agent being spontaneously created',
   'Ρ': 'Risk of infection if two agents collide',
   'Ξ': 'Average number of isolation time steps',
-  'i': 'Average number of time steps before isolation'
+  'i': 'Average number of time steps before isolation',
+  // Granich et al. parameters
+  'I1': 'Untreated infectious stage 1 of 4',
+  'I2': 'Untreated infectious stage 2 of 4',
+  'I3': 'Untreated infectious stage 3 of 4',
+  'I4': 'Untreated infectious stage 4 of 4',
+  'A1': 'ARV treated infectious stage 1 of 4',
+  'A2': 'ARV treated infectious stage 2 of 4',
+  'A3': 'ARV treated infectious stage 3 of 4',
+  'A4': 'ARV treated infectious stage 4 of 4',
+  'μ': 'Death rate',
+  'ρ': 'Rate at which people move through untreated infectious stages',
+  'τ': 'Rate at which infectious people move onto treatment',
+  'φ': 'Rate at which treated people move back into untreated infectious stages',
+  'σ': 'Rate at which treated people move through stages',
+  'λ0': 'Determines infection rate',
+  'α': 'Determines (with n) change of infection rate',
+  'n': 'Determines (with α) change of infection rate',
+  'ε': 'Determines infectiousness of treated individuals',
+  'Ia': 'Infectious and asymptomatic',
+  'Is': 'Infectious and symptomatic',
+  'Ih': 'Infectious and hospitalised',
+  'Ii': 'Infectious in intensive care',
+  'y': 'Used to calculate the infection rate',
+  'r': 'Rate at which people are exposed by people outside the community',
+  'S_V': 'Rate at which susceptible people are vaccinated',
+  'E_Ia': 'Rate at which exposed people become asymptomatically infectious',
+  'Ia_Is': 'Rate at which asymptomatic people become symptomatic',
+  'Ia_R': 'Rate that asymptomatic people recover (without becoming symptomatic)',
+  'Is_Ih': 'Rate that symptomatic people are hospitalised',
+  'Is_R': 'Rate that symptomatic people recover (without being hospitalised)',
+  'Ih_Ii': 'Rate that hospitalised people to ICU',
+  'Ih_R': 'Rate that hospitalised people recover (no ICU)',
+  'Ii_D': 'Rate that people in ICU die',
+  'Ii_R': 'Rate that people in ICU recover',
+  'V_S': 'Rate that vaccinated people become susceptible',
+  'R_S': 'Rate that recovered people become susceptible',
+  'I_Ia': 'Infectiousness of asymptomatic people',
+  'I_Is': 'Infectiousness of symptomatic people',
+  'I_Ih': 'Infectiousness of hospitalised people',
+  'I_Ii': 'Infectiousness of people in ICU',
 };
 
 const NAMES = {
   R0: "<i><u>R</u><sub>0</sub></i>",
-  E_I: "Days exposed (<i>1/f</i>)",
-  I_R: "Days infectious (D)",
+  E_I: "F",
+  I_R: "D",
   ri: "Random infection",
   updates: 'Updates',
   iterations: 'Time steps',
   Ρ: 'Risk infection',
   Ξ: 'Isolation time steps',
-  i: 'Pre-isolation time steps'
+  i: 'Pre-isolation time steps',
+  'Ia': 'I<sub>a</sub>',
+  'Is': 'I<sub>s</sub>',
+  'Ih': 'I<sub>h</sub>',
+  'Ii': 'I<sub>i</sub>',
+  'E_Ia': 'E_<sub>I<sub>a</sub></sub>',
+  'Ia_R': 'I<sub>a</sub>_R',
+  'Is_R': 'I<sub>s</sub>_R',
+  'Ih_R': 'I<sub>h</sub>_R',
+  'Ii_R': 'I<sub>i</sub>_R',
+  'Ia_Is': 'I<sub>a</sub>_I<sub>s</sub>',
+  'Is_Ih': 'I<sub>s</sub>_I<sub>h</sub>',
+  'Ih_Ii': 'I<sub>h</sub>_I<sub>i</sub>',
+  'I_Ia': 'ι<sub>I<sub>a</sub></sub>',
+  'I_Is': 'I<sub>I<sub>s</sub></sub>',
+  'I_Ih': 'I<sub>I<sub>h</sub></sub>',
+  'I_Ii': 'I<sub>I<sub>i</sub></sub>',
 };
 
 // SIR models
@@ -858,7 +917,7 @@ const macroCovid = {
     I: 10
   },
   parameters: {
-    α: 0.8,
+    y: 0.8,
     r: 0.001,
 
     S_V: 0.001,
@@ -881,10 +940,10 @@ const macroCovid = {
 
     R_S: 0.004,
 
-    Inf_Ia: 0.5,
-    Inf_Is: 1.0,
-    Inf_Ih: 0.7,
-    Inf_Ii: 0.7,
+    I_Ia: 0.5,
+    I_Is: 1.0,
+    I_Ih: 0.7,
+    I_Ii: 0.7,
 
     iterations: 3*365,
     updates: 10
@@ -894,7 +953,7 @@ const macroCovid = {
   initialize: [
     function(model) {
       const N = EpiMacro.calcN(model.compartments, ['D']);
-      model.working.β = model.parameters.α / N;
+      model.working.b = model.parameters.y / N;
     },
     function(model) {
       model.compartments.I = tallyInfectionsCovid(model).value;
@@ -904,11 +963,11 @@ const macroCovid = {
     // S->E
     function(model) {
       const I =
-            model.parameters.Inf_Ia * model.compartments.Ia +
-            model.parameters.Inf_Is * model.compartments.Is +
-            model.parameters.Inf_Ih * model.compartments.Ih +
-            model.parameters.Inf_Ii * model.compartments.Ii;
-      const λt = model.working.β * I;
+            model.parameters.I_Ia * model.compartments.Ia +
+            model.parameters.I_Is * model.compartments.Is +
+            model.parameters.I_Ih * model.compartments.Ih +
+            model.parameters.I_Ii * model.compartments.Ii;
+      const λt = model.working.b * I;
       const change = λt * model.compartments.S;
       return {
         'from': 'S',
@@ -1012,7 +1071,7 @@ const microCovid = {
     EpiMicro.eventSetAgentPositions,
     function(model) {
       const N = EpiMacro.calcN(model.compartments, ['D']);
-      model.working.β = model.parameters.α / N;
+      model.working.b = model.parameters.y / N;
     },
     function(model) {
       model.compartments.I = tallyInfectionsCovid(model).value;
@@ -1025,11 +1084,11 @@ const microCovid = {
     // S->E
     function(model) {
       const I =
-            model.parameters.Inf_Ia * model.compartments.Ia +
-            model.parameters.Inf_Is * model.compartments.Is +
-            model.parameters.Inf_Ih * model.compartments.Ih +
-            model.parameters.Inf_Ii * model.compartments.Ii;
-      const λt = model.working.β * I;
+            model.parameters.I_Ia * model.compartments.Ia +
+            model.parameters.I_Is * model.compartments.Is +
+            model.parameters.I_Ih * model.compartments.Ih +
+            model.parameters.I_Ii * model.compartments.Ii;
+      const λt = model.working.b * I;
       for (let agent of model.agents) {
         if (agent.compartment === 'S' && Math.random() < λt) {
           agent.compartment = 'E';

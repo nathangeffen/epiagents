@@ -1135,14 +1135,21 @@
             Threshold.
         </p>
 
-        <h2>Adding an exposure compartment</h2>
+        <h2>Adding an <b>E</b>xposed compartment</h2>
 
         <p>
             Let's get a bit more complicated. We change our model world so that
-            there's an exposure compartment before an infectious one. When
+            there's an <b>E</b>xposed compartment before an infectious one. When
             exposed a person is infected, but not infectious. In our model world
             the average exposure period is two days. This is an SEIR model.
         </p>
+
+        <p>
+            We need to introduce a new parameter, $F$, the average number of
+            days in the exposed compartment, $F$. Then $f = 1/F$ is the rate at
+            which people move from the exposure to the infectious compartments.
+        </p>
+
 
         <p>
             <img src="seir.svg" alt="SEIR graph">
@@ -1162,12 +1169,6 @@
             \begin{equation} R_{t+1} = R_t + r R_t \end{equation}
         </p>
 
-        <p>
-            We've introduced a new parameter, $f$, which is the rate at which
-            people move from the exposure to the infectious compartments. It's
-            the inverse of the average number of days in the exposure
-            compartment.
-        </p>
 
         <p>
             Here's the macro model version of SEIR using difference equations:
@@ -1384,7 +1385,7 @@
         <p>
             In our model that implements this model world there are just three
             compartments: $S$, $I$ and $R$. $N$ is the constant population size
-            ($S+I+R$) and \beta is the population turnover rate. We also assume
+            ($S+I+R$) and $\beta$ is the population turnover rate. We also assume
             people stay infected for exactly one time step. Here are the
             difference equations:
 
@@ -2064,16 +2065,17 @@
             </li>
             <li>
                 People progress through several stages of infection: exposed
-                ($E$), infectious asymptomatic ($Ia$), infectious symptomatic ($Is$),
-                infectious hospitalised ($Ih$) and infectious ICU ($Iu$). Every
-                $E$ person becomes $Ia$ but all other stages can be skipped.
+                ($E$), infectious asymptomatic ($I_a$), infectious symptomatic
+                ($I_s$), infectious hospitalised ($I_h$) and infectious ICU
+                ($I_u$). Every $E$ person becomes $I_a$ but all other stages can
+                be skipped.
             </li>
             <li>
                 The infectiousness of people varies from stage to stage. People
                 in the Is compartment are more infectiousness than people in
-                $Ia$, $Ih$ and $Iu$ (the latter two because infectious control
+                $I_a$, $I_h$ and $I_u$ (the latter two because infectious control
                 should be better in hospitals). These infectiousness factors are
-                represented by $Inf\_Ia$, $Inf\_Is$, $Inf\_Ih$ and $Inf\_Ii$.
+                represented by $I_{I_a}$, $I_{I_s}$, $I_{I_h}$ and $I_{I_i}$.
             </li>
             <li>
                 At the end of the infection stages, a person either recovered
@@ -2097,12 +2099,12 @@
         </ul>
 
         <p>
-            In our model, our compartments are $S$, $E$, $Ia$, $Is$, $Ih$, $Ii$,
-            $R$, $V$ and $D$. The time step is one day. The probability at which
-            people transition between two compartments is specified by the name
-            of the source compartment, an underscore, _, and the name of the
-            destination department. For example if we set $Ia\_Is$ to 0.2, this
-            means there is a 20% chance that people in the infectious
+            In our model, our compartments are $S$, $E$, $I_a$, $I_s$, $I_h$,
+            $I_i$, $R$, $V$ and $D$. The time step is one day. The probability
+            at which people transition between two compartments is specified by
+            the name of the source compartment, an underscore, _, and the name
+            of the destination department. For example if we set $I_a\_I_s$ to
+            0.2, this means there is a 20% chance that people in the infectious
             asymptomatic compartment will move to the infectious symptomatic
             compartment on a time step.
         </p>
@@ -2120,10 +2122,10 @@
             number of people that become exposed per time step in this model.
             This is because the average number of days of infectiousness, $D$ in
             equation \eqref{eq:R0}, is very hard to calculate. Instead the
-            parameter α replaces it so that on a given time step the number of
+            parameter $y$ replaces it so that on a given time step the number of
             new infections (i.e. the transition from $S$ to $E$, $S\_E$) is:
 
-            \begin{equation} S\_E = { {α \times I \times S} \over N_0 }
+            \begin{equation} S\_E = { {y \times I \times S} \over N_0 }
             \end{equation}
 
             where $N_0$ is the initial population.
@@ -2135,9 +2137,9 @@
         </p>
 
         <p>
-            $$I = Inf\_Ia \times Ia + Inf\_Is \times Is$$
             \begin{equation}
-            + Inf\_Ih \times Ih + Inf\_Ii \times Ii
+            I = I_{I_a} \times I_a + I_{I_s} \times I_s
+            + I_{I_h} \times I_h + I_{I_i} \times I_i
             \end{equation}
 
         </p>
@@ -2145,6 +2147,13 @@
         <p>
             The rate at which susceptible people are exposed outside the
             community on a time step is given by the parameter $r$.
+        </p>
+
+        <p>
+            <!-- Leave as png not svg. The svg output doesn't format the
+                 subscript for N0 properly.
+            -->
+            <img src="covid.png" alt="Covid model graph">
         </p>
 
         <p>

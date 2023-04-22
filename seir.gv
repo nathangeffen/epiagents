@@ -1,11 +1,11 @@
 digraph sir {
-         rankdir=LR;
-         shape=box;
-         S [label=< <I>S</I> >]
-         E [label=< <I>E</I> >]
-         I [label=< <I>I</I> >]
-         R [label=< <I>R</I> >]
-         S -> E
-         E -> I
-         I -> R
- }
+        rankdir=LR;
+        shape=box;
+        S [label=< <I>S</I> >]
+        E [label=< <I>E</I> >]
+        I [label=< <I>I</I> >]
+        R [label=< <I>R</I> >]
+        S -> E
+        E -> I
+        I -> R
+}
