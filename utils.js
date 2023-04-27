@@ -3,116 +3,118 @@
 
 function setupAsides()
 {
-  let asides = document.querySelectorAll("aside");
-  for (let aside of asides) {
-    let div = aside.querySelector('div');
-    div.classList.add('hide');
-    let bar = aside.querySelector('button');
-    bar.classList.add("click-to-open");
-    bar.addEventListener('click', function(e) {
-      if (div.classList.contains('show')) {
-        div.classList.remove('show');
+    let asides = document.querySelectorAll("aside");
+    for (let aside of asides) {
+        let div = aside.querySelector('div');
         div.classList.add('hide');
+        let bar = aside.querySelector('button');
         bar.classList.add("click-to-open");
-        bar.classList.remove("click-to-close");
-      } else {
-        div.classList.add('show');
-        div.classList.remove('hide');
-        bar.classList.add("click-to-close");
-        bar.classList.remove("click-to-open");
-      }
-    });
-  }
+        bar.addEventListener('click', function(e) {
+            if (div.classList.contains('show')) {
+                div.classList.remove('show');
+                div.classList.add('hide');
+                bar.classList.add("click-to-open");
+                bar.classList.remove("click-to-close");
+            } else {
+                div.classList.add('show');
+                div.classList.remove('hide');
+                bar.classList.add("click-to-close");
+                bar.classList.remove("click-to-open");
+            }
+        });
+    }
 }
 
 function makeTOCTable(selectors, useLevels)
 {
-  const selector = selectors.join();
-  const headings = document.querySelectorAll(selector);
-  let toc = [];
-  let current_level = 0;
-  let levelArr = [0];
-  for (const heading of headings) {
-    if (useLevels) {
-      const level = selectors.indexOf(heading.nodeName.toLowerCase());
-      if (level == current_level) {
-        ++levelArr[levelArr.length - 1];
-      } else {
-        if (level > current_level) {
-          levelArr.push(1);
+    const selector = selectors.join();
+    const headings = document.querySelectorAll(selector);
+    let toc = [];
+    let current_level = 0;
+    let levelArr = [0];
+    for (const heading of headings) {
+        if (useLevels) {
+            const level = selectors.indexOf(heading.nodeName.toLowerCase());
+            if (level == current_level) {
+                ++levelArr[levelArr.length - 1];
+            } else {
+                if (level > current_level) {
+                    levelArr.push(1);
+                } else {
+                    levelArr.pop();
+                    ++levelArr[levelArr.length - 1];
+                }
+                current_level = level;
+            }
         } else {
-          levelArr.pop();
-          ++levelArr[levelArr.length - 1];
+            ++current_level;
         }
-        current_level = level;
-      }
-    } else {
-      ++current_level;
-    }
 
-    const prefix = useLevels ? (levelArr.join('.') + '.\t') : "";
-    const entry = {
-      'prefix': prefix,
-      'class': 'level-' + heading.nodeName.toLowerCase(),
-      'text': prefix + heading.textContent,
-      'node': heading,
-      'id': useLevels ? levelArr.join('_') : current_level + "_"
+        const prefix = useLevels ? (levelArr.join('.') + '.\t') : "";
+        const entry = {
+            'prefix': prefix,
+            'class': 'level-' + heading.nodeName.toLowerCase(),
+            'text': prefix + heading.textContent,
+            'node': heading,
+            'id': useLevels ? levelArr.join('_') : current_level + "_"
+        }
+        toc.push(entry);
     }
-    toc.push(entry);
-  }
-  return toc;
+    return toc;
 }
 
 function displayTOCTable(tocClass, selector, prefix, useLevels)
 {
-  const elem = document.querySelector(tocClass);
-  if (elem) {
-    const toc = makeTOCTable(selector, useLevels);
-    let div = document.createElement('div');
-    let ul = document.createElement('ul');
-    div.append(ul);
-    elem.append(div);
-    for (let entry of toc) {
-      const id = prefix + entry.id;
-      let li = document.createElement('li');
-      li.classList.add(entry['class']);
-      let link = document.createElement('a');
-      link.setAttribute('href', "#" + id);
-      link.textContent = entry.text;
-      li.append(link);
-      ul.append(li);
-      let target = document.createElement('a');
-      target.id = id;
-      const saved_html = entry.node.innerHTML;
-      entry.node.innerHTML = "";
-      entry.node.append(target);
-      entry.node.innerHTML += entry.prefix + saved_html;
+    const elem = document.querySelector(tocClass);
+    if (elem) {
+        const toc = makeTOCTable(selector, useLevels);
+        let div = document.createElement('div');
+        let ul = document.createElement('ul');
+        div.append(ul);
+        elem.append(div);
+        for (let entry of toc) {
+            const id = prefix + entry.id;
+            let li = document.createElement('li');
+            li.classList.add(entry['class']);
+            let link = document.createElement('a');
+            link.setAttribute('href', "#" + id);
+            link.textContent = entry.text;
+            li.append(link);
+            ul.append(li);
+            let target = document.createElement('a');
+            target.id = id;
+            const saved_html = entry.node.innerHTML;
+            entry.node.innerHTML = "";
+            entry.node.append(target);
+            entry.node.innerHTML += entry.prefix + saved_html;
+        }
     }
-  }
 }
 
 
 
 function manageFootnotes() {
 
-  const footnotes = document.querySelectorAll(".footnote");
-  let i = 1;
-  for (let footnote of footnotes) {
-    footnote.classList.add('footnote-hide');
-    let span = document.createElement('span');
-    span.classList.add('footnote-curtain');
-    span.textContent = i++;
-    span.addEventListener('click', function(e) {
-      if (footnote.classList.contains('footnote-show')) {
-        footnote.classList.remove('footnote-show');
+    const footnotes = document.querySelectorAll(".footnote");
+    let i = 1;
+    for (let footnote of footnotes) {
         footnote.classList.add('footnote-hide');
-      } else {
-        footnote.classList.add('footnote-show');
-        footnote.classList.remove('footnote-hide');
-      }
-    });
-    footnote.parentNode.insertBefore(span, footnote);
-  }
+        let span = document.createElement('span');
+        span.classList.add('footnote-curtain');
+        span.textContent = i++;
+        ['click', 'mouseover'].forEach(function(evt) {
+            span.addEventListener(evt, function(e) {
+                if (footnote.classList.contains('footnote-show')) {
+                    footnote.classList.remove('footnote-show');
+                    footnote.classList.add('footnote-hide');
+                } else {
+                    footnote.classList.add('footnote-show');
+                    footnote.classList.remove('footnote-hide');
+                }
+            });
+        });
+        footnote.parentNode.insertBefore(span, footnote);
+    }
 }
 
 window.MathJax = {
