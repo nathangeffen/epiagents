@@ -679,10 +679,18 @@
   "https://en.wikipedia.org/wiki/Comma-separated_values">comma-separated
   values</a> file of the outputs.</p>
   <p>Here is the structure of our micro models:</p>
-  <pre> Execute <em>before</em> events # Simulation loop: Loop for
-            <em>n</em> time steps: for each <em>during</em> event, e: For each
-  agent, a: If e should be applied to a: e(a) Execute <em>after</em>
-  events </pre>
+
+  <pre> 
+      Execute <em>before</em> events 
+      # Simulation loop: 
+      Loop for <em>n</em> time steps: 
+          For each <em>during</em> event, e: 
+              For each agent, a:
+                  If e should be applied to a: 
+                      e(a) 
+      Execute <em>after</em> events 
+  </pre>
+  
   <p>Here is a micro model for our simple model world.</p>
   <div id="microSIR" class="sir">
     <noscript>You need Javascript enabled to run this webpage's
@@ -748,25 +756,38 @@
         On Firefox or Chromium I press CTRL-SHIFT-C and then click
         on the console tab.</li>
         <li>Then execute this code:
-          <pre> series =
-        EpiMicro.runSimulations(microSIR100, 100);
+
+          <pre> 
+        series = EpiMicro.runSimulations(microSIR100, 100);
         EpiMicro.stat(series, -1, 'R', EpiMicro.min);
         EpiMicro.stat(series, -1, 'R', EpiMicro.max);
-        EpiMicro.stat(series, -1, 'R', EpiMicro.mean); </pre>The
+        EpiMicro.stat(series, -1, 'R', EpiMicro.mean); 
+          </pre>
+          
+          The
 first line runs the microSIR100 model 100 times. The next three
 lines get the min, max and mean of the final value of the
 recoveries in the model.
         </li>
         <li>To change the initial values of the model's
         compartments, you can do something like this:
-          <pre> // Change the number of initial susceptible agents
-        to 990 microSIR100.compartments.S = 990; // Change the number
-        of initial infected agents to 10 microSIR100.compartments.I =
-        10; </pre>
+
+          <pre> 
+          // Change the number of initial susceptible agents to 990 
+          microSIR100.compartments.S = 990; 
+          // Change the number of initial infected agents to 10 
+          microSIR100.compartments.I = 10; 
+          </pre>
+
         </li>
         <li>To change the model's parameters, you can first view
         them like so:
-          <pre> microSIR.parameters; </pre>And then modify them as
+
+          <pre> 
+          microSIR.parameters; 
+          </pre>
+
+          And then modify them as
           appropriate.
         </li>
       </ol>
