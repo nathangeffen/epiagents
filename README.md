@@ -1,9 +1,10 @@
-# Epidemiological modelling demonstration: Macro and micro models for infectious disease epidemics.
+# Modelling infectious diseases
 
-## Source code
-
-The source code for this project is available here:
+The repository for the source code and media for this project is available at:
 https://github.com/nathangeffen/understandingepi
+
+The website is:
+https://epi.simhub.online
 
 ## License and copying
 
