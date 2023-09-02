@@ -35,7 +35,7 @@ body {
   }
 }
 
-h1, h2, h3, p, ul, ol, dl, li, aside, blockquote,
+h1, h2, h3, p, ul, ol, dl, li, aside, details, blockquote,
 figure, figcaption, iframe {
   max-width: 600px;
 }
@@ -553,4 +553,32 @@ nav a {
   font-size: 80%;
   cursor: pointer;
   color: blue;
+}
+
+/** <details> tag formatting - added September 2023
+ * from MDN site
+ **/
+
+details {
+  background-color: lightgray;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 0.5em 0.5em 0;
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+summary {
+  font-weight: bold;
+  margin: -0.5em -0.5em 0;
+  padding: 0.5em;
+}
+
+details[open] {
+  padding: 0.5em;
+}
+
+details[open] summary {
+  border-bottom: 1px solid #aaa;
+  margin-bottom: 0.5em;
 }

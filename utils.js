@@ -130,5 +130,5 @@ window.MathJax = {
 
 setupAsides();
 displayTOCTable('#table-of-contents', ['h2', 'h3', 'h4'], "_toc_", true);
-displayTOCTable('#table-of-asides', ['aside > button'], "_aside_", false);
+displayTOCTable('#table-of-asides', ['details > summary'], "_aside_", false);
 manageFootnotes();
